@@ -1,0 +1,58 @@
+plugins {
+    id 'java'
+}
+
+group 'ch.unibas.dmi.dbis'
+version '1.2'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
+
+
+    implementation group: 'com.sparkjava', name: 'spark-core', version: '2.7.2'
+
+    ////// MongoDB
+    implementation group: 'org.mongodb', name: 'mongodb-driver', version: '3.8.2'
+
+    ////// CLI PARSING
+    implementation group: 'com.github.rvesse', name: 'airline', version: '2.5.0'
+
+    ////// LOGGING
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.+'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.+'
+
+
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+}
+
+
+jar {
+    manifest {
+        attributes "Version": "$version"
+        attributes "Manifest-Version": "1.0"
+        attributes 'Main-Class': 'ch.unibas.dmi.dbis.vrem.VREM'
+    }
+
+    from {
+        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+task copyResources {
+    doLast {
+        copy {
+            from "config.json"
+            into "$buildDir/libs/"
+        }
+    }
+}
+
+task deploy(dependsOn: [build, jar, copyResources])
