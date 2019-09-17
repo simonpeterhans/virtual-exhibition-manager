@@ -67,7 +67,7 @@ public class WebServer implements Runnable {
             get("/exhibitions/list", new ListExhibitionsHandler(reader));
             get("/exhibits/list", new ListExhibitsHandler(reader));
             get("/exhibitions/load/:id", new LoadExhibitionHandler(reader));
-            get("/exhibitions/loadbykey/:key", new LoadExhibitionHandler(reader));
+            get("/exhibitions/loadbyname/:name", new LoadExhibitionHandler(reader));
             post("/exhibitions/save", new SaveExhibitionHandler(writer));
             post("/exhibits/upload", new UploadExhibitHandler(writer, docRoot));
 

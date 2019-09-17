@@ -28,6 +28,7 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.imageio.ImageIO;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.util.FileUtils;
@@ -87,14 +89,12 @@ public class ExhibitionImporter implements Runnable {
     @Option(title = "Remove Old Exhibition", name = {"--clean"}, description = "Remove old exhibitions with the same key")
     private boolean clean = false;
 
-    @Option(title = "Exhibition-Name", name = {"--name"}, description = "Name of the exhibition to be imported")
-    private String exhibitionName = "default-name";
 
     @Option(title = "Exhibition-Description", name = {"--description"}, description = "Description of the exhibition to be imported")
     private String exhibitionDescription = "";
 
-    @Option(title = "Exhibition-Key", name = {"--key"}, description = "Key of the exhibition to be imported, i.e. human readable key")
-    private String key = null;
+    @Option(title = "Exhibition-Name", name = {"--name"}, description = "Name of the exhibition to be imported")
+    private String name = "default-name";
 
     private Gson gson;
     private Exhibition reference = null;
@@ -126,20 +126,15 @@ public class ExhibitionImporter implements Runnable {
             db = client.getDatabase(config.database.database);
             writer = new VREMWriter(db);
 
-            Exhibition exhibition;
-            if (key != null) {
-                VREMReader reader = new VREMReader(db);
-                if (reader.getExhibition(key) != null) {
-                    if (!clean) {
-                        LOGGER.warn("An exhibition with key {} already exists. Please remove this exhibition from your database. Exiting.", key);
-                        return;
-                    }
-                    writer.deleteExhibition(key);
+            VREMReader reader = new VREMReader(db);
+            if (reader.getExhibition(name) != null) {
+                if (!clean) {
+                    LOGGER.warn("An exhibition with name {} already exists. Please remove this exhibition from your database. Exiting.", name);
+                    return;
                 }
-                exhibition = new Exhibition(key, exhibitionName, exhibitionDescription);
-            } else {
-                exhibition = new Exhibition(exhibitionName, exhibitionDescription);
+                writer.deleteExhibition(name);
             }
+            Exhibition exhibition = new Exhibition(name, exhibitionDescription);
 
             LOGGER.info("Starting to import exhibition at {}", exhibitionRoot);
             Arrays.stream(Objects.requireNonNull(exhibitionRoot.toFile().listFiles(File::isDirectory))).forEach(f -> {

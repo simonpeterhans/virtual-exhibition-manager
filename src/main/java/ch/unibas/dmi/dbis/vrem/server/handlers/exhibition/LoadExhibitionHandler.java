@@ -15,7 +15,7 @@ public class LoadExhibitionHandler extends ParsingActionHandler<Exhibition> {
 
     private final static String ATTRIBUTE_ID = ":id";
 
-    private final static String ATTRIBUTE_KEY = ":key";
+    private final static String ATTRIBUTE_NAME = ":name";
 
     private final static Logger LOGGER = LogManager.getLogger(LoadExhibitionHandler.class);
 
@@ -31,10 +31,10 @@ public class LoadExhibitionHandler extends ParsingActionHandler<Exhibition> {
             LOGGER.debug("Loading exhibition by objectID {}", objectId);
             exhibition = this.reader.getExhibition(objectId);
         }
-        if (parameters.containsKey(ATTRIBUTE_KEY) && exhibition == null) {
-            final String key = parameters.get(ATTRIBUTE_KEY);
-            LOGGER.debug("Loading exhibition by key {}", key);
-            exhibition = this.reader.getExhibition(key);
+        if (parameters.containsKey(ATTRIBUTE_NAME) && exhibition == null) {
+            final String name = parameters.get(ATTRIBUTE_NAME);
+            LOGGER.debug("Loading exhibition by name {}", name);
+            exhibition = this.reader.getExhibition(name);
         }
         if (exhibition == null) {
             LOGGER.warn("No exhibition found for parameter values {}", Arrays.toString(parameters.values().toArray()));
