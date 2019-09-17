@@ -34,5 +34,5 @@ by typing into your console:
 As an exmple, consider the following command:
 
 ```
-import-folder --path ../vre-fantasy/exhibition --config config.json --name "Fantasy Basel 2019" --description "Exhibition for Fantasy Basel 2019" --key fantasybasel --clean
+import-folder --path ../vre-mixnhack19/exhibition --config mixnhack19.json --name "mixnhack19" --description "Exhibition for Mix'n'Hack 2019" --clean
 ```

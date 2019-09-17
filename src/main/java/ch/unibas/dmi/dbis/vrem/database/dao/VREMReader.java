@@ -24,8 +24,8 @@ public class VREMReader extends VREMDao {
     }
 
 
-    public Exhibition getExhibition(String key) {
-        return getExhibition(ExhibitionCodec.FIELD_NAME_KEY, key);
+    public Exhibition getExhibition(String name) {
+        return getExhibition(ExhibitionCodec.FIELD_NAME_NAME, name);
     }
 
     public Exhibition getExhibition(ObjectId id) {
@@ -43,8 +43,8 @@ public class VREMReader extends VREMDao {
     public List<ExhibitionSummary> listExhibitions() {
         final MongoCollection<Document> exhibitions = database.getCollection(EXHIBITION_COLLECTION);
         final List<ExhibitionSummary> list = new ArrayList<>();
-        for (Document document : exhibitions.find().projection(Projections.include(ExhibitionCodec.FIELD_NAME_ID, ExhibitionCodec.FIELD_NAME_KEY))) {
-            list.add(new ExhibitionSummary(document.getObjectId(ExhibitionCodec.FIELD_NAME_ID), document.getString(ExhibitionCodec.FIELD_NAME_KEY)));
+        for (Document document : exhibitions.find().projection(Projections.include(ExhibitionCodec.FIELD_NAME_ID, ExhibitionCodec.FIELD_NAME_NAME))) {
+            list.add(new ExhibitionSummary(document.getObjectId(ExhibitionCodec.FIELD_NAME_ID), document.getString(ExhibitionCodec.FIELD_NAME_NAME)));
         }
         return list;
     }
