@@ -6,6 +6,9 @@ It has been created as part of the [Open Cultural Data Hackathon 2018](http://ma
 
 
 ## Prerequisites
+
+Below is a very shortened version of the [setup guide](https://github.com/VIRTUE-DBIS/virtual-exhibition-presenter/wiki/Setup-Guide) on how to setup VREM.
+
 ### System dependencies
 * git
 * JDK 8 or higher
