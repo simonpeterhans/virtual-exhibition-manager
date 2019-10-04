@@ -51,9 +51,9 @@ public class VREMWriter extends VREMDao {
     }
 
     /**
-     * @param key {@link ExhibitionCodec#FIELD_NAME_KEY} of the exhibition to be deleted. all exhibitions with said key will be removed.
+     * @param key {@link ExhibitionCodec#FIELD_NAME_NAME} of the exhibition to be deleted. all exhibitions with said key will be removed.
      */
     public void deleteExhibition(String key) {
-        this.database.getCollection(EXHIBITION_COLLECTION).deleteMany(Filters.eq(ExhibitionCodec.FIELD_NAME_KEY, key));
+        this.database.getCollection(EXHIBITION_COLLECTION).deleteMany(Filters.eq(ExhibitionCodec.FIELD_NAME_NAME, key));
     }
 }
