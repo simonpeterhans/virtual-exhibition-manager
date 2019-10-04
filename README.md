@@ -1,4 +1,6 @@
 # Virtual Reality Exhibition Manager (VREM)
+[![Build Status](https://travis-ci.org/VIRTUE-DBIS/virtual-exhibition-manager.svg?branch=master)](https://travis-ci.org/VIRTUE-DBIS/virtual-exhibition-manager)
+
 The Virtual Reality Exhibition Manager (VREM) is a tool that allows for configuration, storage of and access to VR exhibition definitions.
 This is the Backend. For the front end in Unity see [VREP](https://github.com/dbisUnibas/virtual-exhibition-presenter).
 For the User Interface see [VREM-UI](https://github.com/sauterl/virtual-exhibition-manager-ui)
