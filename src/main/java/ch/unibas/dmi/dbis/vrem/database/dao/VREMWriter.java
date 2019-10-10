@@ -10,8 +10,14 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Arrays;
 
 public class VREMWriter extends VREMDao {
+
+    private static final Logger LOGGER = LogManager.getLogger(VREMWriter.class);
 
     /**
      *
@@ -43,9 +49,17 @@ public class VREMWriter extends VREMDao {
         // Construct Path with ID
         to_add.path = exhibitUpload.artCollection + "/" + to_add.id + "." + exhibitUpload.fileExtension;
 
-        // Add Exhibit to DB
-        UpdateResult result = mongoCollection.updateOne(Filters.eq("name", exhibitUpload.artCollection), Updates.push("exhibits", to_add));
-
+        if(mongoCollection.countDocuments() == 0){
+            LOGGER.debug("There is no previous document in {} collection. We're adding one", CORPUS_COLLECTION);
+            ArtCollection artCollection = new ArtCollection("Classics", Arrays.asList(to_add));
+            mongoCollection.insertOne(artCollection);
+            LOGGER.debug("Successfully inserted a new artcollection");
+        }else{
+            UpdateResult result = mongoCollection.updateOne(Filters.eq("name", exhibitUpload.artCollection), Updates.push("exhibits", to_add));
+            if(result.getMatchedCount() == 0){
+                LOGGER.error("Could not update the art collection");
+            }
+        }
         return to_add.path;
 
     }

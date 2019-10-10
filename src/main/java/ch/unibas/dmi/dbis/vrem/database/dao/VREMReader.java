@@ -11,6 +11,9 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -52,10 +55,17 @@ public class VREMReader extends VREMDao {
     public List<Exhibit> listExhibits() {
         // Get all Exhibits from all ArtCollections.
         final MongoCollection<Document> artCollections = database.getCollection(CORPUS_COLLECTION);
-        final List<Exhibit> list = new ArrayList<>();
+        final List<Exhibit> list = new ArrayList<>(listExhibitsFromExhibitions());
         for (Exhibit e : artCollections.distinct(ArtCollectionCodec.FIELD_NAME_EXHIBITS, Exhibit.class)) {
             list.add(e);
         }
+        return list.stream().distinct().collect(Collectors.toList());
+    }
+
+    public List<Exhibit> listExhibitsFromExhibitions(){
+        final MongoCollection<Exhibition> exhibitions = database.getCollection(EXHIBITION_COLLECTION, Exhibition.class);
+        final List<Exhibit> list = new ArrayList<>();
+        exhibitions.find().forEach((Consumer<? super Exhibition>) e -> list.addAll(e.getExhibits()));
         return list;
     }
 }

@@ -1,4 +1,4 @@
-package ch.unibas.dmi.dbis.vrem.server.handlers.exhibition;
+package ch.unibas.dmi.dbis.vrem.server.handlers.collection;
 
 import ch.unibas.dmi.dbis.vrem.database.dao.VREMReader;
 import ch.unibas.dmi.dbis.vrem.model.ListExhibitsResponse;

@@ -12,7 +12,7 @@ import ch.unibas.dmi.dbis.vrem.database.dao.VREMWriter;
 import ch.unibas.dmi.dbis.vrem.server.handlers.collection.UploadExhibitHandler;
 import ch.unibas.dmi.dbis.vrem.server.handlers.content.RequestContentHandler;
 import ch.unibas.dmi.dbis.vrem.server.handlers.exhibition.ListExhibitionsHandler;
-import ch.unibas.dmi.dbis.vrem.server.handlers.exhibition.ListExhibitsHandler;
+import ch.unibas.dmi.dbis.vrem.server.handlers.collection.ListExhibitsHandler;
 import ch.unibas.dmi.dbis.vrem.server.handlers.exhibition.LoadExhibitionHandler;
 import ch.unibas.dmi.dbis.vrem.server.handlers.exhibition.SaveExhibitionHandler;
 import com.github.rvesse.airline.annotations.Command;

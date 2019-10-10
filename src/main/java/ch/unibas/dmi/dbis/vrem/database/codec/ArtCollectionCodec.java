@@ -66,6 +66,7 @@ public class ArtCollectionCodec implements Codec<ArtCollection> {
         writer.writeStartDocument();
         writer.writeString(FIELD_NAME_OBJECTID, value.id);
         writer.writeString(FIELD_NAME_NAME, value.name);
+        writer.writeName(FIELD_NAME_EXHIBITS);
         writer.writeStartArray();
         for (Exhibit exhibit : value.getExhibits()) {
             this.codec.encode(writer, exhibit, encoderContext);
