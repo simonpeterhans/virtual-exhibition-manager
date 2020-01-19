@@ -8,27 +8,21 @@ import org.bson.codecs.configuration.CodecProvider
 import org.bson.codecs.configuration.CodecRegistry
 
 /**
- * TODO: Write JavaDoc
+ * Codec provider for mongodb
  * @author loris.sauter
  */
 class VREMCodecProvider : CodecProvider {
 
     override fun <T : Any?> get(clazz: Class<T>?, registry: CodecRegistry?): Codec<T>? {
-        if (clazz == Exhibition::class.java) {
-            return (ExhibitionCodec(registry!!) as Codec<T>)
-        } else if (clazz == Room::class.java) {
-            return (RoomCodec(registry!!) as Codec<T>)
-        } else if (clazz == Wall::class.java) {
-            return (WallCodec(registry!!) as Codec<T>)
-        } else if (clazz == Exhibit::class.java) {
-            return (ExhibitCodec(registry!!) as Codec<T>)
-        } else if (clazz == CulturalHertiageObject::class.java) {
-            return (CulturalHeritageObjectCodec() as Codec<T>)
-        } else if (clazz == Vector3f::class.java) {
-            return (VectorCodec() as Codec<T>)
-        } else if (clazz == ArtCollection::class.java) {
-            return (ArtCollectionCodec(registry!!) as Codec<T>)
+        return when (clazz) {
+            Exhibition::class.java -> (ExhibitionCodec(registry!!) as Codec<T>)
+            Room::class.java -> (RoomCodec(registry!!) as Codec<T>)
+            Wall::class.java -> (WallCodec(registry!!) as Codec<T>)
+            Exhibit::class.java -> (ExhibitCodec(registry!!) as Codec<T>)
+            CulturalHertiageObject::class.java -> (CulturalHeritageObjectCodec() as Codec<T>)
+            Vector3f::class.java -> (VectorCodec() as Codec<T>)
+            ArtCollection::class.java -> (ArtCollectionCodec(registry!!) as Codec<T>)
+            else -> null
         }
-        return null
     }
 }
