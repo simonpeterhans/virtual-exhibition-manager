@@ -13,17 +13,17 @@ import org.bson.types.ObjectId
 object ObjectIdSerializer : KSerializer<ObjectId>{
     override val descriptor: SerialDescriptor = StringDescriptor.withName("Name") // Not sure what this is exactly for
 
-    override fun serialize(encoder: Encoder, obj: ObjectId) {
-        encoder.encodeString(obj.toHexString())
-    }
-
-    override fun deserialize(decoder: Decoder): ObjectId {
-        return when(decoder){
-            is BsonFlexibleDecoder -> {
-                val bsonDecoder = decoder as BsonFlexibleDecoder
-                bsonDecoder.reader.readObjectId()
-            }
-            else -> ObjectId(decoder.decodeString())
+        override fun serialize(encoder: Encoder, obj: ObjectId) {
+            encoder.encodeString(obj.toHexString())
         }
+
+        override fun deserialize(decoder: Decoder): ObjectId {
+            return when(decoder){
+                is BsonFlexibleDecoder -> {
+                    val bsonDecoder = decoder as BsonFlexibleDecoder
+                    bsonDecoder.reader.readObjectId()
+                }
+                else -> ObjectId(decoder.decodeString())
+            }
     }
 }

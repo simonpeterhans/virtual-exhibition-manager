@@ -13,10 +13,14 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
+import io.javalin.plugin.json.FromJsonMapper
+import io.javalin.plugin.json.JavalinJson
+import io.javalin.plugin.json.ToJsonMapper
 import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.LogManager
 import org.litote.kmongo.KMongo
+import org.litote.kmongo.json
 import java.io.File
 import java.nio.file.Files
 
@@ -30,8 +34,17 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
     private val LOGGER = LogManager.getLogger(APIEndpoint::class.java)
 
-    companion object {
-        val json = Json(kotlinx.serialization.json.JsonConfiguration.Stable)
+    init {
+        JavalinJson.toJsonMapper = object : ToJsonMapper {
+            override fun map(obj: Any):String{
+                return obj.json
+            }
+        }
+        JavalinJson.fromJsonMapper = object : FromJsonMapper {
+            override fun <T> map(jsonString:String, targetClass:Class<T>):T{
+                return targetClass.newInstance()
+            }
+        }
     }
 
     override fun run() {
@@ -101,6 +114,6 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
     private fun readConfig(): Config {
         val jsonString = File(this.config).readText()
-        return json.parse(Config.serializer(), jsonString)
+        return Json(kotlinx.serialization.json.JsonConfiguration.Stable).parse(Config.serializer(), jsonString)
     }
 }
