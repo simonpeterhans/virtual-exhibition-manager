@@ -1,5 +1,6 @@
 package ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.bson.types.ObjectId
 import java.util.*
 
@@ -24,6 +25,7 @@ class Exhibition(
         return Collections.unmodifiableList(rooms)
     }
 
+    @JsonIgnore
     fun getExhibits(): MutableList<Exhibit> {
         val exhibits = mutableListOf<Exhibit>()
 
@@ -38,6 +40,7 @@ class Exhibition(
         return Collections.unmodifiableList(exhibits)
     }
 
+    @JsonIgnore
     fun getExhibits(type:CulturalHertiageObject.Companion.CHOType): List<Exhibit> {
         return getExhibits().filter { e -> e.type == type }
     }
