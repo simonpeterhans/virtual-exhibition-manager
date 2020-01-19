@@ -1,16 +1,15 @@
 package ch.unibas.dmi.dbis.vrem.kotlin.database.dao
 
-import ch.unibas.dmi.dbis.vrem.kotlin.database.codec.ArtCollectionCodec
-import ch.unibas.dmi.dbis.vrem.kotlin.database.codec.ExhibitionCodec
 import ch.unibas.dmi.dbis.vrem.kotlin.model.api.request.ExhibitUploadRequest
 import ch.unibas.dmi.dbis.vrem.kotlin.model.collection.ArtCollection
 import ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition.Exhibition
 import com.mongodb.client.MongoDatabase
-import com.mongodb.client.model.Filters
-import com.mongodb.client.model.Updates
 import org.apache.logging.log4j.LogManager
 import org.bson.types.ObjectId
+import org.litote.kmongo.eq
+import org.litote.kmongo.push
+import org.litote.kmongo.replaceOneById
 
 /**
  * TODO: Write JavaDoc
@@ -21,8 +20,8 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
     private val LOGGER = LogManager.getLogger(VREMWriter::class.java)
 
     fun saveExhibition(exhibition: Exhibition): Boolean {
-        val collection = database.getCollection(EXHIBITION_COLLECTION, Exhibition::class.java)
-        val result = collection.replaceOne(Filters.eq(ExhibitionCodec.FIELD_NAME_ID, exhibition.id), exhibition)
+        val collection = getExhibitionCollection()
+        val result = collection.replaceOneById(exhibition.id, exhibition)
         if (result.matchedCount == 0L) {
             collection.insertOne(exhibition)
         }
@@ -30,7 +29,7 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
     }
 
     fun uploadExhibit(exhibitUploadRequest: ExhibitUploadRequest): String {
-        val collection = database.getCollection(CORPUS_COLLECTION, ArtCollection::class.java)
+        val collection = getCorporaCollection()
 
         val toAdd = Exhibit.copy(exhibitUploadRequest.exhibit)
         toAdd.path = "${exhibitUploadRequest.artCollection}/${toAdd.id}.${exhibitUploadRequest.fileExtension}"
@@ -41,7 +40,7 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
             collection.insertOne(artCollection)
             LOGGER.info("Successfully created the default corpus 'DefaultCorpus' and added an exhibit to it")
         } else {
-            val result = collection.updateOne(Filters.eq(ArtCollectionCodec.FIELD_NAME_NAME, exhibitUploadRequest.artCollection), Updates.push(ArtCollectionCodec.FIELD_NAME_EXHIBITS, toAdd))
+            val result = collection.updateOne(ArtCollection::name eq exhibitUploadRequest.artCollection, push(ArtCollection::exhibits, toAdd))
             if (result.matchedCount == 0L) {
                 LOGGER.error("Could not update the corpus ${exhibitUploadRequest.artCollection}")
             } else {
@@ -52,6 +51,6 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
     }
 
     fun deleteExhibition(name: String) {
-        database.getCollection(EXHIBITION_COLLECTION).deleteMany(Filters.eq(ExhibitionCodec.FIELD_NAME_NAME, name))
+        getExhibitionCollection().deleteMany(Exhibition::name eq name)
     }
 }

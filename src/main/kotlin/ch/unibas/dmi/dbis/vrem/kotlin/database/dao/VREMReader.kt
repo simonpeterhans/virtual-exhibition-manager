@@ -1,10 +1,9 @@
 package ch.unibas.dmi.dbis.vrem.kotlin.database.dao
 
-import ch.unibas.dmi.dbis.vrem.kotlin.database.codec.ArtCollectionCodec
+import ch.unibas.dmi.dbis.vrem.kotlin.model.collection.ArtCollection
 import ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition.ExhibitionSummary
-import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import org.bson.types.ObjectId
 import org.litote.kmongo.*
@@ -16,7 +15,7 @@ import org.litote.kmongo.id.toId
  */
 class VREMReader(database: MongoDatabase) : VREMDao(database) {
 
-    fun getExhibition(name:String): Exhibition {
+    fun getExhibition(name: String): Exhibition {
         val col = getExhibitionCollection()
         return col.findOne(Exhibition::name eq name)!!
     }
@@ -33,16 +32,12 @@ class VREMReader(database: MongoDatabase) : VREMDao(database) {
     }
 
     fun listExhibits(): List<Exhibit> {
-        val artCollections = database.getCollection(CORPUS_COLLECTION)
-        return artCollections.distinct(ArtCollectionCodec.FIELD_NAME_EXHIBITS, Exhibit::class.java).toList()
+        val artCollections = database.getCollection<ArtCollection>(CORPUS_COLLECTION)
+        return artCollections.distinct(ArtCollection::exhibits).first()!!
     }
 
     fun listExhibitsFromExhibitions(): List<Exhibition> {
         val exhibitions = database.getCollection(EXHIBITION_COLLECTION, Exhibition::class.java)
         return exhibitions.find().toMutableList()
-    }
-
-    private fun getExhibitionCollection(): MongoCollection<Exhibition> {
-        return  database.getCollection<Exhibition>(EXHIBITION_COLLECTION)
     }
 }
