@@ -42,8 +42,11 @@ compileTestKotlin {
 dependencies {
 
     /////// LEGACY
+    // TODO remove as soon as legacy java code is removed
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
     implementation group: 'com.sparkjava', name: 'spark-core', version: '2.7.2'
+    implementation group: 'com.github.rvesse', name: 'airline', version: '2.5.0'
+    implementation group: 'org.mongodb', name: 'mongodb-driver', version: '3.8.2'
 
     /////// CLI
     implementation "com.github.ajalt:clikt:2.3.0"
@@ -52,16 +55,10 @@ dependencies {
     implementation 'io.javalin:javalin:3.7.0'
 
     /////// FasterXML/Jackson JSON
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.10.+"
-    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.+"
-
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.+" /* required for javalin custom seralization */
 
     ////// MongoDB
-    implementation group: 'org.mongodb', name: 'mongodb-driver', version: '3.8.2'
     implementation 'org.litote.kmongo:kmongo-serialization:3.11.2'
-
-    ////// CLI PARSING
-    implementation group: 'com.github.rvesse', name: 'airline', version: '2.5.0'
 
     ////// Log4J
     implementation "org.slf4j:slf4j-api:1.7.25"
