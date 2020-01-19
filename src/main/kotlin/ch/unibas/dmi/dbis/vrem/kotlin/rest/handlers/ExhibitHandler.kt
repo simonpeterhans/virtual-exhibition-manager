@@ -4,7 +4,6 @@ import ch.unibas.dmi.dbis.vrem.kotlin.database.dao.VREMReader
 import ch.unibas.dmi.dbis.vrem.kotlin.database.dao.VREMWriter
 import ch.unibas.dmi.dbis.vrem.kotlin.model.api.request.ExhibitUploadRequest
 import ch.unibas.dmi.dbis.vrem.kotlin.model.api.response.ListExhibitsResponse
-import ch.unibas.dmi.dbis.vrem.kotlin.rest.APIEndpoint
 import io.javalin.http.Context
 import kotlinx.serialization.toUtf8Bytes
 import org.apache.logging.log4j.LogManager
@@ -18,12 +17,12 @@ class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWri
 
     fun listExhibits(ctx: Context) {
         LOGGER.debug("List exhibits")
-        ctx.result(APIEndpoint.objectMapper.writeValueAsString(ListExhibitsResponse(reader.listExhibits())))
+        ctx.json(ListExhibitsResponse(reader.listExhibits()))
     }
 
     fun saveExhibit(ctx: Context): ExhibitUploadRequest? {
         LOGGER.debug("Save exhibit request")
-        val exhibitUpload = APIEndpoint.objectMapper.readValue(ctx.body(), ExhibitUploadRequest::class.java)
+        val exhibitUpload = ctx.body<ExhibitUploadRequest>()
 
         LOGGER.debug("Save exhibit.id=${exhibitUpload.exhibit.id} and for corpus ${exhibitUpload.artCollection}")
         val path = writer.uploadExhibit(exhibitUpload)

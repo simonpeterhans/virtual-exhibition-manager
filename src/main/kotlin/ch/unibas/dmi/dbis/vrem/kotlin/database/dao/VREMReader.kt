@@ -1,14 +1,14 @@
 package ch.unibas.dmi.dbis.vrem.kotlin.database.dao
 
 import ch.unibas.dmi.dbis.vrem.kotlin.database.codec.ArtCollectionCodec
-import ch.unibas.dmi.dbis.vrem.kotlin.database.codec.ExhibitionCodec
 import ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition.ExhibitionSummary
+import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
-import com.mongodb.client.model.Filters
-import com.mongodb.client.model.Projections
 import org.bson.types.ObjectId
+import org.litote.kmongo.*
+import org.litote.kmongo.id.toId
 
 /**
  * TODO: Write JavaDoc
@@ -17,21 +17,19 @@ import org.bson.types.ObjectId
 class VREMReader(database: MongoDatabase) : VREMDao(database) {
 
     fun getExhibition(name:String): Exhibition {
-        return getExhibition(ExhibitionCodec.FIELD_NAME_NAME, name)
+        val col = getExhibitionCollection()
+        return col.findOne(Exhibition::name eq name)!!
     }
 
     fun getExhibition(id: ObjectId): Exhibition {
-        return getExhibition(ExhibitionCodec.FIELD_NAME_ID, id)
+        val col = getExhibitionCollection()
+        return col.findOne { Exhibition::id eq id.toId() }!!
     }
 
-    fun getExhibition(fieldName:String, key:Any): Exhibition {
-        val exhibitions = database.getCollection(EXHIBITION_COLLECTION, Exhibition::class.java)
-        return exhibitions.find(Filters.eq(fieldName, key)).first()!!
-    }
 
     fun listExhibitions(): List<ExhibitionSummary> {
-        val exhibitions = database.getCollection(EXHIBITION_COLLECTION)
-        return exhibitions.find().projection(Projections.include(ExhibitionCodec.FIELD_NAME_ID, ExhibitionCodec.FIELD_NAME_NAME)).map { document -> ExhibitionSummary(document.getObjectId(ExhibitionCodec.FIELD_NAME_ID), document.getString(ExhibitionCodec.FIELD_NAME_NAME)) }.toList()
+        val col = getExhibitionCollection()
+        return col.find().projection(Exhibition::id, Exhibition::name).map { ExhibitionSummary(it.id.toString(), it.name) }.toMutableList()
     }
 
     fun listExhibits(): List<Exhibit> {
@@ -41,6 +39,10 @@ class VREMReader(database: MongoDatabase) : VREMDao(database) {
 
     fun listExhibitsFromExhibitions(): List<Exhibition> {
         val exhibitions = database.getCollection(EXHIBITION_COLLECTION, Exhibition::class.java)
-        return exhibitions.find().toList()
+        return exhibitions.find().toMutableList()
+    }
+
+    private fun getExhibitionCollection(): MongoCollection<Exhibition> {
+        return  database.getCollection<Exhibition>(EXHIBITION_COLLECTION)
     }
 }

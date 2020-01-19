@@ -41,7 +41,7 @@ class WallCodec(registry:CodecRegistry):Codec<Wall> {
         vectorCodec.encode(writer, value.color, encoderContext)
         writer.writeName(FIELD_NAME_EXHIBITS)
         writer.writeStartArray()
-        value.getExhibits().forEach { exhibit -> exhibitCodec.encode(writer, exhibit, encoderContext) }
+        value.exhibits.forEach { exhibit -> exhibitCodec.encode(writer, exhibit, encoderContext) }
         writer.writeEndArray()
         writer.writeEndDocument()
     }

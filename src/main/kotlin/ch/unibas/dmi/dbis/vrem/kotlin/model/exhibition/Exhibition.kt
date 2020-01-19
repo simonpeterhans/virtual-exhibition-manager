@@ -1,17 +1,22 @@
 package ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import org.bson.types.ObjectId
+import kotlinx.serialization.ContextualSerialization
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import org.litote.kmongo.Id
+import org.litote.kmongo.newId
 import java.util.*
 
-class Exhibition(
-        val id:String,
+@Serializable
+data class Exhibition(
+        @SerialName("_id") @ContextualSerialization
+        val id: Id<Exhibition> = newId(),
         val name:String,
-        val description:String
+        val description:String = "",
+        val rooms:MutableList<Room> = mutableListOf()
 ) {
-    private val rooms = mutableListOf<Room>()
 
-    constructor(name: String,description: String):this(ObjectId().toHexString(),name,description)
 
     fun addRoom(room:Room): Boolean {
         return if(!rooms.contains(room)){
@@ -21,20 +26,17 @@ class Exhibition(
         }
     }
 
-    fun getRooms(): MutableList<Room> {
-        return Collections.unmodifiableList(rooms)
-    }
 
     @JsonIgnore
     fun getExhibits(): MutableList<Exhibit> {
         val exhibits = mutableListOf<Exhibit>()
 
         rooms.forEach { r ->
-            exhibits.addAll(r.getExhibits())
-            exhibits.addAll(r.getNorth().getExhibits())
-            exhibits.addAll(r.getEast().getExhibits())
-            exhibits.addAll(r.getSouth().getExhibits())
-            exhibits.addAll(r.getWest().getExhibits())
+            exhibits.addAll(r.exhibits)
+            exhibits.addAll(r.getNorth().exhibits)
+            exhibits.addAll(r.getEast().exhibits)
+            exhibits.addAll(r.getSouth().exhibits)
+            exhibits.addAll(r.getWest().exhibits)
         }
 
         return Collections.unmodifiableList(exhibits)

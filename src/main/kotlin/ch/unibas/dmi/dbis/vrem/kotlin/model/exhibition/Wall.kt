@@ -1,26 +1,23 @@
 package ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition
 
 import ch.unibas.dmi.dbis.vrem.kotlin.model.math.Vector3f
-import java.util.*
+import kotlinx.serialization.Serializable
 
 /**
  * TODO: Write JavaDoc
  * @author loris.sauter
  */
-class Wall(
+@Serializable
+data class Wall(
         val color:Vector3f,
         val texture:String,
-        val direction:Direction
+        val direction:Direction,
+        val exhibits:MutableList<Exhibit> = mutableListOf()
 ) {
 
     constructor(direction:Direction, color: Vector3f):this(color,"none", direction)
     constructor(direction:Direction, texture: String):this(Vector3f.UNIT, texture, direction)
 
-    private val exhibits = mutableListOf<Exhibit>();
-
-    fun getExhibits():List<Exhibit>{
-        return Collections.unmodifiableList(exhibits)
-    }
 
     fun placeExhibit(exhibit:Exhibit): Boolean {
         if(exhibit.type != CulturalHertiageObject.Companion.CHOType.IMAGE){

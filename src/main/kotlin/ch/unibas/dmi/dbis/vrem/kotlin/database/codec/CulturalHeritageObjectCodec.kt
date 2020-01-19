@@ -56,6 +56,6 @@ class CulturalHeritageObjectCodec: Codec<CulturalHertiageObject> {
             }
         }
         reader.readEndDocument()
-        return CulturalHertiageObject(id!!,name!!,type!!,path!!,description!!)
+        return CulturalHertiageObject(id!!.toHexString(),name!!,type!!,path!!,description!!)
     }
 }

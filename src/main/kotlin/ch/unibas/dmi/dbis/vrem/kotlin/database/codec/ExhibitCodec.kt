@@ -81,6 +81,6 @@ class ExhibitCodec(registry: CodecRegistry) : Codec<Exhibit> {
         if (id == null) {
             id = ObjectId()
         }
-        return Exhibit(id=id,name= name!!,description =  description!!,path =  path!!,type =  type!!,position =  position!!, size = size!!, audio = guide,light =  light)
+        return Exhibit(id=id.toHexString(),name= name!!,description =  description!!,path =  path!!,type =  type!!,position =  position!!, size = size!!, audio = guide,light =  light)
     }
 }

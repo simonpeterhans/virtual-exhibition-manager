@@ -1,5 +1,7 @@
 package ch.unibas.dmi.dbis.vrem.kotlin.config
 
+import kotlinx.serialization.Serializable
+
 /**
  * VREM configuration.
  *
@@ -8,4 +10,5 @@ package ch.unibas.dmi.dbis.vrem.kotlin.config
  *
  * @author loris.sauter
  */
+@Serializable
 data class Config (val database:DatabaseConfig, val server:WebServerConfig)

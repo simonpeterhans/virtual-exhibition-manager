@@ -1,6 +1,7 @@
 package ch.unibas.dmi.dbis.vrem.kotlin.config
 
 import com.mongodb.ConnectionString
+import kotlinx.serialization.Serializable
 
 /**
  * Configuration of the (mongodb) database
@@ -11,6 +12,7 @@ import com.mongodb.ConnectionString
  *
  * @author loris.sauter
  */
+@Serializable
 data class DatabaseConfig (
     val host:String,
     val port:Short,

@@ -11,6 +11,7 @@ import org.bson.codecs.DecoderContext
 import org.bson.codecs.EncoderContext
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.types.ObjectId
+import org.litote.kmongo.id.toId
 
 /**
  * TODO: Write JavaDoc
@@ -33,12 +34,12 @@ class ExhibitionCodec(registry: CodecRegistry): Codec<Exhibition> {
 
     override fun encode(writer: BsonWriter?, value: Exhibition?, encoderContext: EncoderContext?) {
         writer!!.writeStartDocument()
-        writer.writeObjectId(ExhibitionCodec.FIELD_NAME_ID, ObjectId(value!!.id))
-        writer.writeString(ExhibitionCodec.FIELD_NAME_NAME, value.name)
+        writer.writeObjectId(ExhibitionCodec.FIELD_NAME_ID, ObjectId(value!!.id.toString()))
+        writer.writeString(ExhibitionCodec.FIELD_NAME_NAME, value!!.name)
         writer.writeString(ExhibitionCodec.FIELD_NAME_DESCRIPTION, value.description)
         writer.writeName(ExhibitionCodec.FIELD_NAME_ROOMS)
         writer.writeStartArray()
-        for (room in value.getRooms()) {
+        for (room in value.rooms) {
             codec.encode(writer, room, encoderContext)
         }
         writer.writeEndArray()
@@ -68,7 +69,7 @@ class ExhibitionCodec(registry: CodecRegistry): Codec<Exhibition> {
             }
         }
         reader.readEndDocument()
-        val exhibition = Exhibition(id!!.toHexString(), name!!, description!!)
+        val exhibition = Exhibition(id!!.toId(),name!!, description!!)
         for (room in rooms) {
             exhibition.addRoom(room)
         }

@@ -1,13 +1,15 @@
 package ch.unibas.dmi.dbis.vrem.kotlin.model.math
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import kotlinx.serialization.Serializable
 
 /**
  * Vector in 3 dimensions with component type float.
  *
  * @author loris.sauter
  */
-class Vector3f(val x:Float, val y:Float, val z:Float) {
+@Serializable
+data class Vector3f(val x:Float, val y:Float, val z:Float) {
 
     private constructor(x:Float) : this(x,x,x)
 

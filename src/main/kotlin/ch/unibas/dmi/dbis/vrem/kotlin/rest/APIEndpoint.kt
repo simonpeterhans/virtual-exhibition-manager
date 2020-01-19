@@ -2,25 +2,21 @@ package ch.unibas.dmi.dbis.vrem.kotlin.rest
 
 import ch.unibas.dmi.dbis.vrem.kotlin.config.Config
 import ch.unibas.dmi.dbis.vrem.kotlin.config.DatabaseConfig
-import ch.unibas.dmi.dbis.vrem.kotlin.database.codec.VREMCodecProvider
 import ch.unibas.dmi.dbis.vrem.kotlin.database.dao.VREMReader
 import ch.unibas.dmi.dbis.vrem.kotlin.database.dao.VREMWriter
 import ch.unibas.dmi.dbis.vrem.kotlin.model.api.response.ErrorResponse
 import ch.unibas.dmi.dbis.vrem.kotlin.rest.handlers.ExhibitHandler
 import ch.unibas.dmi.dbis.vrem.kotlin.rest.handlers.ExhibitionHandler
 import ch.unibas.dmi.dbis.vrem.kotlin.rest.handlers.RequestContentHandler
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
-import com.mongodb.MongoClientSettings
-import com.mongodb.client.MongoClients
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
 import kotlinx.io.IOException
+import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.LogManager
-import org.bson.codecs.configuration.CodecRegistries
+import org.litote.kmongo.KMongo
 import java.io.File
 import java.nio.file.Files
 
@@ -35,7 +31,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
     private val LOGGER = LogManager.getLogger(APIEndpoint::class.java)
 
     companion object {
-        val objectMapper = jacksonObjectMapper()
+        val json = Json(kotlinx.serialization.json.JsonConfiguration.Stable)
     }
 
     override fun run() {
@@ -95,15 +91,16 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
     }
 
     private fun getDAOs(dbConfig: DatabaseConfig): Pair<VREMReader, VREMWriter> {
-        val registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(VREMCodecProvider()))
-        val dbSettings = MongoClientSettings.builder().codecRegistry(registry).applyConnectionString(dbConfig.getConnectionString()).applicationName("VREM").build()
-        val dbClient = MongoClients.create(dbSettings)
+        //val registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(VREMCodecProvider()))
+        //val dbSettings = MongoClientSettings.builder().codecRegistry(registry).applyConnectionString(dbConfig.getConnectionString()).applicationName("VREM").build()
+        //val dbClient = MongoClients.create(dbSettings)
+        val dbClient = KMongo.createClient(dbConfig.getConnectionString())
         val db = dbClient.getDatabase(dbConfig.database)
         return VREMReader(db) to VREMWriter(db)
     }
 
     private fun readConfig(): Config {
-        val json = File(this.config).readText()
-        return objectMapper.readValue<Config>(json)
+        val jsonString = File(this.config).readText()
+        return json.parse(Config.serializer(), jsonString)
     }
 }

@@ -1,5 +1,7 @@
 package ch.unibas.dmi.dbis.vrem.kotlin.config
 
+import kotlinx.serialization.Serializable
+
 /**
  * Configuration for the REST Endpoint
  * @property documentRoot The document root path as a string
@@ -7,4 +9,5 @@ package ch.unibas.dmi.dbis.vrem.kotlin.config
  *
  * @author loris.sauter
  */
+@Serializable
 data class WebServerConfig (val documentRoot:String, val port:Short)

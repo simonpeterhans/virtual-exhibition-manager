@@ -60,7 +60,7 @@ class RoomCodec(registry: CodecRegistry):Codec<Room> {
         writer.writeEndArray()
         writer.writeName(FIELD_NAME_EXHIBITS)
         writer.writeStartArray()
-        value.getExhibits().forEach { exhibit ->   exhibitCodec.encode(writer, exhibit, encoderContext) }
+        value.exhibits.forEach { exhibit ->   exhibitCodec.encode(writer, exhibit, encoderContext) }
         writer.writeEndArray()
         if (value.ambient != null) {
             writer.writeString(FIELD_NAME_AMBIENT, value.ambient)

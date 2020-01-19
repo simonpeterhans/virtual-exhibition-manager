@@ -2,20 +2,24 @@ package ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition
 
 import ch.unibas.dmi.dbis.vrem.kotlin.model.math.Vector3f
 import com.fasterxml.jackson.annotation.JsonIgnore
+import kotlinx.serialization.Serializable
 import java.util.*
 
 /**
  * TODO: Write JavaDoc
  * @author loris.sauter
  */
-class Room(
+@Serializable
+data class Room(
         val text:String,
         val floor:String,
         val ceiling:String,
         val position:Vector3f,
         val size:Vector3f,
         val entrypoint:Vector3f,
-        val ambient:String?
+        val ambient:String?,
+        val exhibits:MutableList<Exhibit> = mutableListOf(),
+        val walls:MutableList<Wall> = mutableListOf()
 ) {
     companion object{
         fun build(text: String,floor: String,ceiling: String,size: Vector3f,position: Vector3f,entrypoint: Vector3f,ambient: String?,walls:List<Wall>): Room {
@@ -25,12 +29,6 @@ class Room(
         }
     }
 
-    private val exhibits = mutableListOf<Exhibit>()
-    private val walls = mutableListOf<Wall>()
-
-    fun getWalls(): MutableList<Wall> {
-        return Collections.unmodifiableList(walls)
-    }
 
     constructor(text: String,floor: String,ceiling: String,size: Vector3f,position: Vector3f,entrypoint: Vector3f):this(text, floor, ceiling, position, size, entrypoint, null)
 
@@ -43,11 +41,6 @@ class Room(
         }else{
             false
         }
-    }
-
-    @JsonIgnore
-    fun getExhibits(): MutableList<Exhibit> {
-        return Collections.unmodifiableList(exhibits)
     }
 
     @JsonIgnore
