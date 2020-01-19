@@ -8,19 +8,26 @@ import ch.unibas.dmi.dbis.vrem.kotlin.model.api.response.ErrorResponse
 import ch.unibas.dmi.dbis.vrem.kotlin.rest.handlers.ExhibitHandler
 import ch.unibas.dmi.dbis.vrem.kotlin.rest.handlers.ExhibitionHandler
 import ch.unibas.dmi.dbis.vrem.kotlin.rest.handlers.RequestContentHandler
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.module.SimpleModule
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
-import io.javalin.plugin.json.FromJsonMapper
-import io.javalin.plugin.json.JavalinJson
-import io.javalin.plugin.json.ToJsonMapper
+import io.javalin.plugin.json.JavalinJackson
 import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.LogManager
+import org.bson.types.ObjectId
+import org.litote.kmongo.Id
 import org.litote.kmongo.KMongo
-import org.litote.kmongo.json
+import org.litote.kmongo.id.toId
 import java.io.File
 import java.nio.file.Files
 
@@ -34,17 +41,29 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
     private val LOGGER = LogManager.getLogger(APIEndpoint::class.java)
 
+    companion object {
+        val json = Json(kotlinx.serialization.json.JsonConfiguration.Stable)
+
+        val idSerializer = object : JsonSerializer<Id<Any>>(){
+            override fun serialize(value: Id<Any>?, gen: JsonGenerator?, serializers: SerializerProvider?) {
+                gen?.writeString(value.toString())
+            }
+
+            override fun handledType(): Class<Id<Any>> {
+                return Id::class.java as Class<Id<Any>>
+            }
+        }
+        val idDeserializer = object : JsonDeserializer<Id<Any>>(){
+            override fun deserialize(p: JsonParser?, ctxt: DeserializationContext?): Id<Any> {
+                val string = p?.valueAsString!!
+                return ObjectId(string).toId()
+            }
+
+        }
+    }
+
     init {
-        JavalinJson.toJsonMapper = object : ToJsonMapper {
-            override fun map(obj: Any):String{
-                return obj.json
-            }
-        }
-        JavalinJson.fromJsonMapper = object : FromJsonMapper {
-            override fun <T> map(jsonString:String, targetClass:Class<T>):T{
-                return targetClass.newInstance()
-            }
-        }
+        JavalinJackson.getObjectMapper().registerModule(SimpleModule("KMongoSupport").addSerializer(idSerializer).addDeserializer(Id::class.java, idDeserializer))
     }
 
     override fun run() {
@@ -104,9 +123,6 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
     }
 
     private fun getDAOs(dbConfig: DatabaseConfig): Pair<VREMReader, VREMWriter> {
-        //val registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), CodecRegistries.fromProviders(VREMCodecProvider()))
-        //val dbSettings = MongoClientSettings.builder().codecRegistry(registry).applyConnectionString(dbConfig.getConnectionString()).applicationName("VREM").build()
-        //val dbClient = MongoClients.create(dbSettings)
         val dbClient = KMongo.createClient(dbConfig.getConnectionString())
         val db = dbClient.getDatabase(dbConfig.database)
         return VREMReader(db) to VREMWriter(db)
@@ -114,6 +130,6 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
     private fun readConfig(): Config {
         val jsonString = File(this.config).readText()
-        return Json(kotlinx.serialization.json.JsonConfiguration.Stable).parse(Config.serializer(), jsonString)
+        return json.parse(Config.serializer(), jsonString)
     }
 }
