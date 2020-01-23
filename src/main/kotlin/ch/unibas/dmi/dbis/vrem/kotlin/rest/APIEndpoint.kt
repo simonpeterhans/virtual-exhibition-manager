@@ -44,7 +44,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
     companion object {
         val json = Json(kotlinx.serialization.json.JsonConfiguration.Stable)
 
-        val idSerializer = object : JsonSerializer<Id<Any>>(){
+        val idSerializer = object : JsonSerializer<Id<Any>>() {
             override fun serialize(value: Id<Any>?, gen: JsonGenerator?, serializers: SerializerProvider?) {
                 gen?.writeString(value.toString())
             }
@@ -53,12 +53,23 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
                 return Id::class.java as Class<Id<Any>>
             }
         }
-        val idDeserializer = object : JsonDeserializer<Id<Any>>(){
+        val idDeserializer = object : JsonDeserializer<Id<Any>>() {
             override fun deserialize(p: JsonParser?, ctxt: DeserializationContext?): Id<Any> {
                 val string = p?.valueAsString!!
                 return ObjectId(string).toId()
             }
 
+        }
+
+        fun getDAOs(dbConfig: DatabaseConfig): Pair<VREMReader, VREMWriter> {
+            val dbClient = KMongo.createClient(dbConfig.getConnectionString())
+            val db = dbClient.getDatabase(dbConfig.database)
+            return VREMReader(db) to VREMWriter(db)
+        }
+
+        fun readConfig(config: String): Config {
+            val jsonString = File(config).readText()
+            return json.parse(Config.serializer(), jsonString)
         }
     }
 
@@ -67,7 +78,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
     }
 
     override fun run() {
-        val config = readConfig()
+        val config = readConfig(this.config)
         val (reader, writer) = getDAOs(config.database)
 
         val docRoot = File(config.server.documentRoot).toPath()
@@ -108,7 +119,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
             }
         }
         // Exception Handling, semi-transparent
-        endpoint.exception(Exception::class.java){e,ctx ->
+        endpoint.exception(Exception::class.java) { e, ctx ->
             LOGGER.error("An exception occurred. Sending 500 and exception name", e)
             ctx.status(500).json(ErrorResponse("Error of type ${e.javaClass.simpleName} occurred. See the server log for more info"))
         }
@@ -122,14 +133,5 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         // TODO make CLI-alike to gracefully stop the server
     }
 
-    private fun getDAOs(dbConfig: DatabaseConfig): Pair<VREMReader, VREMWriter> {
-        val dbClient = KMongo.createClient(dbConfig.getConnectionString())
-        val db = dbClient.getDatabase(dbConfig.database)
-        return VREMReader(db) to VREMWriter(db)
-    }
 
-    private fun readConfig(): Config {
-        val jsonString = File(this.config).readText()
-        return json.parse(Config.serializer(), jsonString)
-    }
 }

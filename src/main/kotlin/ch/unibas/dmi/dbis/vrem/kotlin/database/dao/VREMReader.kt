@@ -15,6 +15,11 @@ import org.litote.kmongo.id.toId
  */
 class VREMReader(database: MongoDatabase) : VREMDao(database) {
 
+    fun existsExhibition(name:String): Boolean {
+        val col = getExhibitionCollection()
+        return col.find(Exhibition::name eq name).any()
+    }
+
     fun getExhibition(name: String): Exhibition {
         val col = getExhibitionCollection()
         return col.findOne(Exhibition::name eq name)!!
