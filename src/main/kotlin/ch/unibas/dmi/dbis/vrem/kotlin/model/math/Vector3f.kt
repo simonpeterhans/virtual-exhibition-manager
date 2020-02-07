@@ -11,6 +11,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Vector3f(val x:Float, val y:Float, val z:Float) {
 
+    constructor(x:Number, y:Number,z:Number):this(x.toFloat(),y.toFloat(),z.toFloat())
+
+    constructor(x:Number, y:Number):this(x.toFloat(),y.toFloat(), 0f)
+
     private constructor(x:Float) : this(x,x,x)
 
     companion object {

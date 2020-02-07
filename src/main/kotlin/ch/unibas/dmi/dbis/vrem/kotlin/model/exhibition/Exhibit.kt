@@ -8,9 +8,9 @@ import org.bson.types.ObjectId
  *
  */
 @Serializable
-data class Exhibit( val id: String = ObjectId().toHexString(),
-                   val name: String,
-                   val description: String,
+data class Exhibit(val id: String = ObjectId().toHexString(),
+                   var name: String,
+                   var description: String,
                    var path: String,
                    val type: CulturalHertiageObject.Companion.CHOType,
                    val size: Vector3f,

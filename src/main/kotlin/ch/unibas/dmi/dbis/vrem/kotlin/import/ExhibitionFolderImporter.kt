@@ -1,4 +1,4 @@
-package ch.unibas.dmi.dbis.vrem.kotlin.importer
+package ch.unibas.dmi.dbis.vrem.kotlin.import
 
 import ch.unibas.dmi.dbis.vrem.kotlin.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.kotlin.rest.APIEndpoint

@@ -98,24 +98,28 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         }.routes {
             path("/exhibitions") {
                 path("list") {
-                    get { exhibitionHandler.listExhibitions(it) }
+                    get ( exhibitionHandler::listExhibitions )
                 }
                 path("load/:id") {
-                    get { exhibitionHandler.loadExhibitionById(it) }
+                    get ( exhibitionHandler::loadExhibitionById )
                 }
                 path("loadbyname/:name") {
-                    get { exhibitionHandler.loadExhibitionByName(it) }
+                    get ( exhibitionHandler::loadExhibitionByName )
                 }
-                post("save") { exhibitionHandler.saveExhibition(it) }
+                path("save"){
+                  post(exhibitionHandler::saveExhibition)
+                }
             }
             path("/content/get/:path") {
-                get { contentHandler.serveContent(it) }
+                get ( contentHandler::serveContent )
             }
             path("/exhibits") {
                 path("list") {
-                    get { exhibitHandler.listExhibits(it) }
+                    get ( exhibitHandler::listExhibits )
                 }
-                post("upload") { exhibitHandler.saveExhibit(it) }
+                path("upload"){
+                    post(exhibitHandler::saveExhibit)
+                }
             }
         }
         // Exception Handling, semi-transparent
