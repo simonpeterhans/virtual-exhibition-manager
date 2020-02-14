@@ -14,7 +14,7 @@ data class Room(
         val text:String,
         val floor:String,
         val ceiling:String,
-        val position:Vector3f,
+        var position:Vector3f,
         val size:Vector3f,
         val entrypoint:Vector3f,
         val ambient:String?,

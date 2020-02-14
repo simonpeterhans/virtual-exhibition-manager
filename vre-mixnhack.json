@@ -5,7 +5,7 @@
     "database" : "vrem"
   },
   "server" : {
-    "documentRoot" : "../vre-mixnhack19",
-    "port" : 4567
+    "documentRoot" : "../vre-mixnhack19/",
+    "port" : 5555
   }
 }

@@ -20,7 +20,7 @@ data class CulturalHertiageObject(
 
     companion object{
         enum class CHOType{
-            IMAGE, MODEL, VIDEO
+            IMAGE, MODEL, VIDEO, MODEL_STRUCTURAL
         }
     }
 }

@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 data class Wall(
         val color:Vector3f,
         val texture:String,
-        val direction:Direction,
+        var direction:Direction,
         val exhibits:MutableList<Exhibit> = mutableListOf()
 ) {
 
