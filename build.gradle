@@ -61,10 +61,10 @@ dependencies {
 
     ////// Log4J
     implementation "org.slf4j:slf4j-api:1.7.25"
-    implementation "org.apache.logging.log4j:log4j-api:2.11.2"
-    implementation "org.apache.logging.log4j:log4j-core:2.11.2"
-    implementation "org.apache.logging.log4j:log4j-web:2.11.2"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.11.2"
+    implementation "org.apache.logging.log4j:log4j-api:2.13.0"
+    implementation "org.apache.logging.log4j:log4j-core:2.13.0"
+    implementation "org.apache.logging.log4j:log4j-web:2.13.0"
+    implementation "org.apache.logging.log4j:log4j-slf4j18-impl:2.13.0"
 
     ///// Javax
     implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.2'
@@ -82,6 +82,7 @@ jar {
         attributes "Version": "$version"
         attributes "Manifest-Version": "1.0"
         attributes 'Main-Class': "$mainClassName"
+        attributes 'Multi-Release':'true'
     }
 
     from {
