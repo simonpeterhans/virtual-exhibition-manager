@@ -10,7 +10,23 @@ import ch.unibas.dmi.dbis.vrem.kotlin.model.math.Vector3f
  * Collection of utilities for imports
  */
 object ImportUtils {
+    const val WALL_CONFIG_FILE = "wall-config.json"
+    const val ROOM_CONFIG_FILE = "room-config.json"
 
+    val DEFAULT_ROOM_SIZE = Vector3f(10,5,10)
+    val DEFAULT_ROOM_ENTRYPOINT = Vector3f.ORIGIN
+
+    const val NORTH_WALL_NAME = "north"
+    const val EAST_WALL_NAME = "east"
+    const val SOUTH_WALL_NAME = "south"
+    const val WEST_WALL_NAME = "west"
+
+    const val JSON_EXTENSION = "json"
+    const val JPG_EXTENSION = "jpg"
+    const val JPEG_EXTENSION = "jpeg"
+    const val PNG_EXTENSION = "png"
+    const val BMP_EXTENSION = "bmp"
+    val IMAGE_FILE_EXTENSIONS = listOf(JPEG_EXTENSION, JPG_EXTENSION, PNG_EXTENSION, BMP_EXTENSION)
 
     fun calculateRoomPosition(room: Room, siblings: List<Room>): Vector3f {
         return Vector3f(siblings.size, 0, 0)

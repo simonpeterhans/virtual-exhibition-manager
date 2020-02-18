@@ -30,25 +30,6 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
     lateinit var referenceExhibition:Exhibition
     lateinit var exhibition:Exhibition
 
-    companion object {
-        const val WALL_CONFIG_FILE = "wall-config.json"
-        const val ROOM_CONFIG_FILE = "room-config.json"
-
-        val DEFAULT_ROOM_SIZE = Vector3f(10,5,10)
-        val DEFAULT_ROOM_ENTRYPOINT = Vector3f.ORIGIN
-
-        const val NORTH_WALL_NAME = "north"
-        const val EAST_WALL_NAME = "east"
-        const val SOUTH_WALL_NAME = "south"
-        const val WEST_WALL_NAME = "west"
-
-        const val JSON_EXTENSION = "json"
-        const val JPG_EXTENSION = "jpg"
-        const val JPEG_EXTENSION = "jpeg"
-        const val PNG_EXTENSION = "png"
-        const val BMP_EXTENSION = "bmp"
-        val IMAGE_FILE_EXTENSIONS = listOf(JPEG_EXTENSION, JPG_EXTENSION, PNG_EXTENSION, BMP_EXTENSION)
-    }
 
     override fun run() {
         val config = APIEndpoint.readConfig(this.config)
@@ -108,10 +89,10 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
         LOGGER.trace("Importing $roomFile")
         val room = readRoomConfigOrCreateNew(roomFile)
 
-        room.setNorth(importWall(Direction.NORTH, roomFile.resolve(NORTH_WALL_NAME), root))
-        room.setEast(importWall(Direction.EAST, roomFile.resolve(EAST_WALL_NAME), root))
-        room.setSouth(importWall(Direction.SOUTH, roomFile.resolve(SOUTH_WALL_NAME), root))
-        room.setWest(importWall(Direction.WEST, roomFile.resolve(WEST_WALL_NAME), root))
+        room.setNorth(importWall(Direction.NORTH, roomFile.resolve(ImportUtils.NORTH_WALL_NAME), root))
+        room.setEast(importWall(Direction.EAST, roomFile.resolve(ImportUtils.EAST_WALL_NAME), root))
+        room.setSouth(importWall(Direction.SOUTH, roomFile.resolve(ImportUtils.SOUTH_WALL_NAME), root))
+        room.setWest(importWall(Direction.WEST, roomFile.resolve(ImportUtils.WEST_WALL_NAME), root))
 
         room.position = ImportUtils.calculateRoomPosition(room, siblings)
         return room
@@ -121,13 +102,13 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
         LOGGER.trace("Importing $wallFolder")
         val wall = readWallConfigOrCreateNew(dir, wallFolder)
         wallFolder.listFiles()
-                ?.filter { IMAGE_FILE_EXTENSIONS.contains(it.extension) }
+                ?.filter { ImportUtils.IMAGE_FILE_EXTENSIONS.contains(it.extension) }
                 ?.forEach { wall.placeExhibit(importExhibit(root, it, wall.exhibits)) }
         return wall
     }
 
     private fun readExhibitConfigOrCreateNew(exhibitionRoot: File, exhibitFile:File): Exhibit {
-        val configFile = exhibitFile.parentFile.resolve("${exhibitFile.nameWithoutExtension}.$JSON_EXTENSION")
+        val configFile = exhibitFile.parentFile.resolve("${exhibitFile.nameWithoutExtension}.${ImportUtils.JSON_EXTENSION}")
         LOGGER.trace("Looking for exhibit configuration at $configFile")
         val path = exhibitFile.relativeTo(exhibitionRoot).toString().replace('\\', '/') // In case its windows
         return if(configFile.exists()){
@@ -141,7 +122,7 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
     }
 
     private fun readWallConfigOrCreateNew(dir:Direction, wallFolder:File): Wall {
-        val wallConfigFile = wallFolder.resolve(WALL_CONFIG_FILE)
+        val wallConfigFile = wallFolder.resolve(ImportUtils.WALL_CONFIG_FILE)
         LOGGER.trace("Looking for wall configuration at $wallConfigFile")
         return if(wallConfigFile.exists()){
             val jsonString = wallConfigFile.readText()
@@ -154,13 +135,13 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
     }
 
     private fun readRoomConfigOrCreateNew(room:File): Room {
-        val roomConfigFile = room.resolve(ROOM_CONFIG_FILE)
+        val roomConfigFile = room.resolve(ImportUtils.ROOM_CONFIG_FILE)
         LOGGER.trace("Looking for room configuration at $room")
         return if(roomConfigFile.exists()){
             val josnString = roomConfigFile.readText()
             return json.parse(Room.serializer(), josnString)
         }else{
-            return Room(room.name, "NONE", "NONE", Vector3f.ORIGIN, DEFAULT_ROOM_SIZE, DEFAULT_ROOM_ENTRYPOINT)
+            return Room(room.name, "NONE", "NONE", Vector3f.ORIGIN, ImportUtils.DEFAULT_ROOM_SIZE, ImportUtils.DEFAULT_ROOM_ENTRYPOINT)
         }
     }
 }
