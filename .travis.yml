@@ -6,7 +6,7 @@ matrix:
       jdk:
         - openjdk11
     - os: osx
-      osx_image: xcode11
+      osx_image: xcode10.1
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -17,5 +17,4 @@ cache:
     - $HOME/.gradle/wrapper/
 
 script: 
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./gradlew check          ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./gradlew check        ; fi
+  - ./gradlew check
