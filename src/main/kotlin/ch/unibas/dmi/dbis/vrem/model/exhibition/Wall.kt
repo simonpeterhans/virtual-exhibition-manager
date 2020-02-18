@@ -10,12 +10,15 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Wall(
         val color:Vector3f,
-        val texture:String,
+        val texture:String = DEFAULT_TEXTURE,
         var direction:Direction,
         val exhibits:MutableList<Exhibit> = mutableListOf()
 ) {
 
-    constructor(direction:Direction, color: Vector3f):this(color,"none", direction)
+    companion object{
+        const val DEFAULT_TEXTURE = "NONE"
+    }
+
     constructor(direction:Direction, texture: String):this(Vector3f.UNIT, texture, direction)
 
 

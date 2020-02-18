@@ -141,7 +141,7 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
             val josnString = roomConfigFile.readText()
             json.parse(Room.serializer(), josnString)
         }else{
-            Room(room.name, "NONE", "NONE", Vector3f.ORIGIN, ImportUtils.DEFAULT_ROOM_SIZE, ImportUtils.DEFAULT_ROOM_ENTRYPOINT)
+            Room(room.name, "NONE", "NONE", Vector3f.ORIGIN, Room.DEFAULT_SIZE, Room.DEFAULT_ENTRYPOINT)
         }
     }
 }

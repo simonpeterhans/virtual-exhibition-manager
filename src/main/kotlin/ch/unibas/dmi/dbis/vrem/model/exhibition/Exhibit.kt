@@ -11,18 +11,23 @@ import org.bson.types.ObjectId
 data class Exhibit(val id: String = ObjectId().toHexString(),
                    var name: String,
                    var description: String,
-                   var path: String,
-                   val type: CulturalHertiageObject.Companion.CHOType,
-                   var size: Vector3f,
-                   var position: Vector3f,
-                   val audio: String?,
-                   val light: Boolean,
+                   var path: String = "",
+                   val type: CulturalHertiageObject.Companion.CHOType = DEFAULT_TYPE,
+                   var size: Vector3f = DEFAULT_SIZE,
+                   var position: Vector3f = DEFAULT_POSITION,
+                   val audio: String? = null,
+                   val light: Boolean = false,
                    val metadata:MutableMap<String,String> = mutableMapOf()) {
 
     companion object{
         fun copy(e:Exhibit): Exhibit {
             return Exhibit(e.name, e.description, e.path, e.type, e.position, e.size, e.audio!!, e.light)
         }
+
+        val DEFAULT_SIZE = Vector3f.UNIT
+        val DEFAULT_POSITION = Vector3f.ORIGIN
+        val DEFAULT_TYPE = CulturalHertiageObject.Companion.CHOType.IMAGE
+
     }
 
     constructor(id: ObjectId, name: String, description: String, path: String, type: CulturalHertiageObject.Companion.CHOType) : this(id = id.toHexString(), name = name, description = description, path = path, type = type, position = Vector3f.ORIGIN, size = Vector3f.UNIT, audio = null, light = false)

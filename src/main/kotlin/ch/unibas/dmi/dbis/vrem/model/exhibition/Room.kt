@@ -12,12 +12,12 @@ import java.util.*
 @Serializable
 data class Room(
         val text:String,
-        val floor:String,
-        val ceiling:String,
-        var position:Vector3f,
-        val size:Vector3f,
-        val entrypoint:Vector3f,
-        val ambient:String?,
+        val floor:String = DEFAULT_FLOOR,
+        val ceiling:String = DEFAULT_CEILING,
+        var position:Vector3f = DEFAULT_POSITION,
+        val size:Vector3f = DEFAULT_SIZE,
+        val entrypoint:Vector3f = DEFAULT_ENTRYPOINT,
+        val ambient:String? = null,
         val exhibits:MutableList<Exhibit> = mutableListOf(),
         val walls:MutableList<Wall> = mutableListOf()
 ) {
@@ -27,6 +27,12 @@ data class Room(
             room.walls.addAll(walls)
             return room
         }
+
+        val DEFAULT_SIZE = Vector3f(10,5,10)
+        val DEFAULT_ENTRYPOINT = Vector3f.ORIGIN
+        val DEFAULT_POSITION = Vector3f.ORIGIN
+        const val DEFAULT_FLOOR = "NONE"
+        const val DEFAULT_CEILING = "NONE"
     }
 
 

@@ -12,9 +12,6 @@ object ImportUtils {
     const val WALL_CONFIG_FILE = "wall-config.json"
     const val ROOM_CONFIG_FILE = "room-config.json"
 
-    val DEFAULT_ROOM_SIZE = Vector3f(10,5,10)
-    val DEFAULT_ROOM_ENTRYPOINT = Vector3f.ORIGIN
-
     const val NORTH_WALL_NAME = "north"
     const val EAST_WALL_NAME = "east"
     const val SOUTH_WALL_NAME = "south"
