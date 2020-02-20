@@ -38,7 +38,7 @@ class VREMReader(database: MongoDatabase) : VREMDao(database) {
 
     fun listExhibits(): List<Exhibit> {
         val artCollections = database.getCollection<ArtCollection>(CORPUS_COLLECTION)
-        return artCollections.distinct(ArtCollection::exhibits).first()!!
+        return artCollections.find().first()?.exhibits!!
     }
 
     fun listExhibitsFromExhibitions(): List<Exhibition> {

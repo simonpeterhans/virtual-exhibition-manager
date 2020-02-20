@@ -14,7 +14,7 @@ data class ArtCollection(
         @SerialName("_id")
         val id: String,
         val name: String,
-        val exhibits: List<Exhibit>,
+        val exhibits: List<Exhibit> = mutableListOf(),
         val metadata: Map<String, String> = mutableMapOf()
 ) {
 

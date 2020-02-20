@@ -59,8 +59,9 @@ dependencies {
     ////// MongoDB
     implementation 'org.litote.kmongo:kmongo-serialization:3.11.2'
 
-    ////// Log4J
+    ////// Logging
     implementation "org.slf4j:slf4j-api:1.7.25"
+    implementation "org.slf4j:slf4j-simple:1.7.28"
     implementation "org.apache.logging.log4j:log4j-api:2.13.0"
     implementation "org.apache.logging.log4j:log4j-core:2.13.0"
     implementation "org.apache.logging.log4j:log4j-web:2.13.0"
