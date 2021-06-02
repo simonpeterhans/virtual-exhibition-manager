@@ -5,7 +5,6 @@ import ch.unibas.dmi.dbis.vrem.database.dao.VREMWriter
 import ch.unibas.dmi.dbis.vrem.model.api.request.ExhibitUploadRequest
 import ch.unibas.dmi.dbis.vrem.model.api.response.ListExhibitsResponse
 import io.javalin.http.Context
-import kotlinx.serialization.toUtf8Bytes
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Files
 import java.nio.file.Path
@@ -28,7 +27,7 @@ class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWri
         val path = writer.uploadExhibit(exhibitUpload)
 
         val base64Img = exhibitUpload.file.split(",")[1]
-        val decodedImg = Base64.getDecoder().decode(base64Img.toUtf8Bytes())
+        val decodedImg = Base64.getDecoder().decode(base64Img.toByteArray(Charsets.UTF_8))
 
         val dir = docRoot.resolve(exhibitUpload.artCollection)
         if (!Files.exists(dir)) {

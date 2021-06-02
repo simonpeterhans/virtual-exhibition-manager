@@ -21,7 +21,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.plugin.json.JavalinJackson
-import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.LogManager
 import org.bson.types.ObjectId
@@ -29,6 +28,7 @@ import org.litote.kmongo.Id
 import org.litote.kmongo.KMongo
 import org.litote.kmongo.id.toId
 import java.io.File
+import java.io.IOException
 import java.nio.file.Files
 
 /**
@@ -42,8 +42,6 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
     private val LOGGER = LogManager.getLogger(APIEndpoint::class.java)
 
     companion object {
-        val json = Json(kotlinx.serialization.json.JsonConfiguration.Stable)
-
         val idSerializer = object : JsonSerializer<Id<Any>>() {
             override fun serialize(value: Id<Any>?, gen: JsonGenerator?, serializers: SerializerProvider?) {
                 gen?.writeString(value.toString())
@@ -69,7 +67,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
         fun readConfig(config: String): Config {
             val jsonString = File(config).readText()
-            return json.parse(Config.serializer(), jsonString)
+            return Json.decodeFromString(Config.serializer(), jsonString)
         }
     }
 

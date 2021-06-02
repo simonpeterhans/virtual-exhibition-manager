@@ -1,7 +1,7 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import kotlinx.serialization.ContextualSerialization
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.litote.kmongo.Id
@@ -10,7 +10,7 @@ import java.util.*
 
 @Serializable
 data class Exhibition(
-        @SerialName("_id") @ContextualSerialization
+        @SerialName("_id") @Contextual
         val id: Id<Exhibition> = newId(),
         val name:String,
         val description:String = "",

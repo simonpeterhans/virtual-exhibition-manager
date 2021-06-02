@@ -3,13 +3,13 @@ package ch.unibas.dmi.dbis.vrem.import
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import ch.unibas.dmi.dbis.vrem.rest.APIEndpoint
-import ch.unibas.dmi.dbis.vrem.rest.APIEndpoint.Companion.json
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.float
+import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import javax.imageio.ImageIO
@@ -113,7 +113,7 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
         val path = exhibitFile.relativeTo(exhibitionRoot).toString().replace('\\', '/') // In case its windows
         return if(configFile.exists()){
             val jsonString = configFile.readText()
-            val exhibit = json.parse(Exhibit.serializer(), jsonString)
+            val exhibit = Json.decodeFromString(Exhibit.serializer(), jsonString)
             exhibit.path = path
             exhibit
         }else{
@@ -126,7 +126,7 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
         LOGGER.trace("Looking for wall configuration at $wallConfigFile")
         return if(wallConfigFile.exists()){
             val jsonString = wallConfigFile.readText()
-            val wall = json.parse(Wall.serializer(), jsonString)
+            val wall = Json.decodeFromString(Wall.serializer(), jsonString)
             wall.direction = dir
             wall
         }else{
@@ -138,8 +138,8 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
         val roomConfigFile = room.resolve(ImportUtils.ROOM_CONFIG_FILE)
         LOGGER.trace("Looking for room configuration at $room")
         return if(roomConfigFile.exists()){
-            val josnString = roomConfigFile.readText()
-            json.parse(Room.serializer(), josnString)
+            val jsonString = roomConfigFile.readText()
+            Json.decodeFromString(Room.serializer(), jsonString)
         }else{
             Room(room.name, "NONE", "NONE", Vector3f.ORIGIN, Room.DEFAULT_SIZE, Room.DEFAULT_ENTRYPOINT)
         }

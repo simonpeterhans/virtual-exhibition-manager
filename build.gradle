@@ -1,112 +1,84 @@
-group 'ch.unibas.dmi.dbis'
-version '1.3.0-SNAPSHOT'
-
-buildscript {
-    ext.kotlinVersion = '1.3.61'
-
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
-    }
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.5.10'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.10'
+    id 'application'
+    id 'java'
+    id 'idea'
 }
-
-apply plugin: 'application'
-apply plugin: 'java'
-apply plugin: 'kotlin'
-apply plugin: 'kotlinx-serialization'
-apply plugin: 'idea'
-
-mainClassName = 'ch.unibas.dmi.dbis.vrem.VREMKt'
-applicationDefaultJvmArgs = ["-Xms2G", "-Xmx4G"]
-
-sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    jcenter()
-}
-
-compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
 }
 
 dependencies {
+    // Align versions of all Kotlin components.
+    implementation platform('org.jetbrains.kotlin:kotlin-bom')
 
-    /////// LEGACY
-    // TODO remove as soon as legacy java code is removed
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
-    implementation group: 'com.sparkjava', name: 'spark-core', version: '2.7.2'
-    implementation group: 'com.github.rvesse', name: 'airline', version: '2.5.0'
-    implementation group: 'org.mongodb', name: 'mongodb-driver', version: '3.8.2'
+    // Kotlin JDK 8 standard library.
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
 
-    /////// CLI
-    implementation "com.github.ajalt:clikt:2.3.0"
+    // Kotlin test library.
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
 
-    /////// RESTful API
-    implementation 'io.javalin:javalin:3.7.0'
+    // Kotlin JUnit integration.
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
 
-    /////// FasterXML/Jackson JSON
-    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.+" /* required for javalin custom seralization */
+    // KotlinX.
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: '0.1.16'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-core', version: '1.2.1'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-json', version: '1.2.1'
 
-    ////// MongoDB
-    implementation 'org.litote.kmongo:kmongo-serialization:3.11.2'
+    // CLI.
+    implementation group: 'com.github.ajalt', name: 'clikt', version: '2.8.0'
 
-    ////// Logging
-    implementation "org.slf4j:slf4j-api:1.7.25"
-    implementation "org.slf4j:slf4j-simple:1.7.28"
-    implementation "org.apache.logging.log4j:log4j-api:2.13.0"
-    implementation "org.apache.logging.log4j:log4j-core:2.13.0"
-    implementation "org.apache.logging.log4j:log4j-web:2.13.0"
-    implementation "org.apache.logging.log4j:log4j-slf4j18-impl:2.13.0"
+    // RESTful API.
+    implementation group: 'io.javalin', name: 'javalin', version: '3.13.7'
 
-    ///// Javax
-    implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.2'
+    // Jackson JSON (used by Javalin).
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.12.3'
 
-    ///// Kotlin
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlinVersion
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.2'
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-runtime', version: '0.14.0'
+    // Legacy MongoDB.
+    implementation group: 'com.github.rvesse', name: 'airline', version: '2.8.1'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.7'
+
+    // Kotlin MongoDB.
+    implementation group: 'org.litote.kmongo', name: 'kmongo', version: '4.2.7'
+
+    // Logging.
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.1'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+
+    // Javax.
+    implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
 }
 
+group 'ch.unibas.dmi.dbis'
+version '2.0.0-SNAPSHOT'
+
+mainClassName = 'ch.unibas.dmi.dbis.vrem.VREMKt'
+applicationDefaultJvmArgs = ["-Xms2G", "-Xmx4G"]
+sourceCompatibility = 1.11
+
+application {
+    // Main class for the ./gradlew run command.
+    mainClass = mainClassName
+}
 
 jar {
     manifest {
-        attributes "Version": "$version"
-        attributes "Manifest-Version": "1.0"
-        attributes 'Main-Class': "$mainClassName"
-        attributes 'Multi-Release':'true'
+        attributes 'Version': archiveVersion.get()
+        attributes 'Main-Class': mainClassName
+        attributes 'Manifest-Version': '1.0'
+        attributes 'Multi-Release': true
     }
+
+    // Gradle 7.0 requires a duplicate strategy or fails if they occur.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     from {
         configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-}
-
-task copyResources {
-    doLast {
-        copy {
-            from "config.json"
-            into "$buildDir/libs/"
-        }
-    }
-}
-
-task deploy(dependsOn: [build, jar, copyResources])
-
-idea {
-    module {
-        downloadJavadoc = true
-
-        excludeDirs += file('data')
     }
 }
