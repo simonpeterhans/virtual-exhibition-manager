@@ -99,12 +99,12 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
      * Tries to import a single exhibit.
      *
      * @param exhibitionRoot The root folder of the exhibition.
-     * @param exhibitFile The configuration file of the exhibition.
+     * @param exhibitFile The configuration file path of the exhibit.
      * @param siblings Sibling exhibits (in the same room).
      * @return The imported exhibit.
      */
     private fun importExhibit(exhibitionRoot: File, exhibitFile: File, siblings: List<Exhibit>): Exhibit {
-        LOGGER.trace("Importing $exhibitFile.")
+        LOGGER.trace("Importing exhibit $exhibitFile.")
         val exhibit = readExhibitConfigOrCreateNew(exhibitionRoot, exhibitFile)
         val image = ImageIO.read(exhibitFile)
         val aspectRatio = image.height.toFloat() / image.width.toFloat()
@@ -140,13 +140,13 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
     /**
      * Imports a room.
      *
-     * @param root The root folder of the room.
-     * @param roomFile The path of the room to read the config for.
+     * @param root The root folder of the exhibition.
+     * @param roomFile The path of the room.
      * @param siblings Sibling rooms, used to calculate a room's position.
      * @return The created room.
      */
     private fun importRoom(root: File, roomFile: File, siblings: List<Room>): Room {
-        LOGGER.trace("Importing $roomFile.")
+        LOGGER.trace("Importing room $roomFile.")
         val room = readRoomConfigOrCreateNew(roomFile)
 
         room.setNorth(importWall(Direction.NORTH, roomFile.resolve(ImportUtils.NORTH_WALL_NAME), root))
@@ -161,13 +161,13 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
     /**
      * Imports a wall and its exhibits.
      *
-     * @param dir The direction the wall is facing when looking from the origin. // TODO Fixme.
+     * @param dir The direction the wall is facing when looking from the origin.
      * @param wallFolder The path of the wall to read the config for.
      * @param root The root folder of the exhibition.
      * @return The wall (with the imported exhibits).
      */
     private fun importWall(dir: Direction, wallFolder: File, root: File): Wall {
-        LOGGER.trace("Importing $wallFolder.")
+        LOGGER.trace("Importing wall $wallFolder.")
         val wall = readWallConfigOrCreateNew(dir, wallFolder)
         wallFolder.listFiles()
             ?.filter { ImportUtils.IMAGE_FILE_EXTENSIONS.contains(it.extension) }
@@ -200,7 +200,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
     /**
      * Reads a wall configuration, creating a new one with default settings if the file was not found.
      *
-     * @param dir The direction the wall is facing when looking from the origin. TODO Fixme.
+     * @param dir The direction the wall is facing when looking from the origin.
      * @param wallFolder The path of the wall to read the config for.
      * @return The wall as defined in the (potentially defaulted) configuration.
      */

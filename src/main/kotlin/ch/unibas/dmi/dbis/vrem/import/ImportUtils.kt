@@ -98,9 +98,7 @@ object ImportUtils {
     }
 
     /**
-     * Finds an exhibit for a given path.
-     *
-     * TODO Fix me.
+     * Searches an exhibition and its rooms for an exhibit with a given path.
      *
      * @param exhibition The exhibition to find the exhibit for.
      * @param path The path relative to the exhibition to find the exhibit at.
