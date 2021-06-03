@@ -9,13 +9,13 @@ import kotlinx.serialization.Serializable
  * @author loris.sauter
  */
 @Serializable
-data class Vector3f(val x:Float, val y:Float, val z:Float) {
+data class Vector3f(val x: Float, val y: Float, val z: Float) {
 
-    constructor(x:Number, y:Number,z:Number):this(x.toFloat(),y.toFloat(),z.toFloat())
+    constructor(x: Number, y: Number, z: Number) : this(x.toFloat(), y.toFloat(), z.toFloat())
 
-    constructor(x:Number, y:Number):this(x.toFloat(),y.toFloat(), 0f)
+    constructor(x: Number, y: Number) : this(x.toFloat(), y.toFloat(), 0f)
 
-    private constructor(x:Float) : this(x,x,x)
+    private constructor(x: Float) : this(x, x, x)
 
     companion object {
         val ORIGIN = Vector3f(0f)
@@ -53,6 +53,5 @@ data class Vector3f(val x:Float, val y:Float, val z:Float) {
     override fun toString(): String {
         return "Vector3f(x=$x, y=$y, z=$z)"
     }
-
 
 }

@@ -9,28 +9,25 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Wall(
-        val color:Vector3f,
-        val texture:String = DEFAULT_TEXTURE,
-        var direction:Direction,
-        val exhibits:MutableList<Exhibit> = mutableListOf()
+    val color: Vector3f,
+    val texture: String = DEFAULT_TEXTURE,
+    var direction: Direction,
+    val exhibits: MutableList<Exhibit> = mutableListOf()
 ) {
-
-    companion object{
+    companion object {
         const val DEFAULT_TEXTURE = "NONE"
     }
 
-    constructor(direction:Direction, texture: String):this(Vector3f.UNIT, texture, direction)
+    constructor(direction: Direction, texture: String) : this(Vector3f.UNIT, texture, direction)
 
-
-    fun placeExhibit(exhibit:Exhibit): Boolean {
-        if(exhibit.type != CulturalHertiageObject.Companion.CHOType.IMAGE){
+    fun placeExhibit(exhibit: Exhibit): Boolean {
+        if (exhibit.type != CulturalHertiageObject.Companion.CHOType.IMAGE) {
             throw IllegalArgumentException("Only images are to be placed on walls.")
         }
-        return if(!exhibits.contains(exhibit)){
+        return if (!exhibits.contains(exhibit)) {
             exhibits.add(exhibit)
-        }else{
+        } else {
             false
         }
     }
-
 }

@@ -72,7 +72,9 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
     }
 
     init {
-        JavalinJackson.getObjectMapper().registerModule(SimpleModule("KMongoSupport").addSerializer(idSerializer).addDeserializer(Id::class.java, idDeserializer))
+        JavalinJackson.getObjectMapper().registerModule(
+            SimpleModule("KMongoSupport").addSerializer(idSerializer).addDeserializer(Id::class.java, idDeserializer)
+        )
     }
 
     override fun run() {
@@ -96,26 +98,26 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         }.routes {
             path("/exhibitions") {
                 path("list") {
-                    get ( exhibitionHandler::listExhibitions )
+                    get(exhibitionHandler::listExhibitions)
                 }
                 path("load/:id") {
-                    get ( exhibitionHandler::loadExhibitionById )
+                    get(exhibitionHandler::loadExhibitionById)
                 }
                 path("loadbyname/:name") {
-                    get ( exhibitionHandler::loadExhibitionByName )
+                    get(exhibitionHandler::loadExhibitionByName)
                 }
-                path("save"){
-                  post(exhibitionHandler::saveExhibition)
+                path("save") {
+                    post(exhibitionHandler::saveExhibition)
                 }
             }
             path("/content/get/:path") {
-                get ( contentHandler::serveContent )
+                get(contentHandler::serveContent)
             }
             path("/exhibits") {
                 path("list") {
-                    get ( exhibitHandler::listExhibits )
+                    get(exhibitHandler::listExhibits)
                 }
-                path("upload"){
+                path("upload") {
                     post(exhibitHandler::saveExhibit)
                 }
             }
@@ -123,7 +125,8 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         // Exception Handling, semi-transparent
         endpoint.exception(Exception::class.java) { e, ctx ->
             LOGGER.error("An exception occurred. Sending 500 and exception name", e)
-            ctx.status(500).json(ErrorResponse("Error of type ${e.javaClass.simpleName} occurred. See the server log for more info"))
+            ctx.status(500)
+                .json(ErrorResponse("Error of type ${e.javaClass.simpleName} occurred. See the server log for more info"))
         }
         endpoint.after { ctx ->
             ctx.header("Access-Control-Allow-Origin", "*")
@@ -134,6 +137,5 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         println("Ctrl+C to stop the server")
         // TODO make CLI-alike to gracefully stop the server
     }
-
 
 }

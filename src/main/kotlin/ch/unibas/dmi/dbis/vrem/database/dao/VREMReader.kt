@@ -6,8 +6,11 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.ExhibitionSummary
 import com.mongodb.client.MongoDatabase
 import org.bson.types.ObjectId
-import org.litote.kmongo.*
+import org.litote.kmongo.eq
+import org.litote.kmongo.findOne
+import org.litote.kmongo.getCollection
 import org.litote.kmongo.id.toId
+import org.litote.kmongo.projection
 
 /**
  * TODO: Write JavaDoc
@@ -15,7 +18,7 @@ import org.litote.kmongo.id.toId
  */
 class VREMReader(database: MongoDatabase) : VREMDao(database) {
 
-    fun existsExhibition(name:String): Boolean {
+    fun existsExhibition(name: String): Boolean {
         val col = getExhibitionCollection()
         return col.find(Exhibition::name eq name).any()
     }
@@ -30,10 +33,10 @@ class VREMReader(database: MongoDatabase) : VREMDao(database) {
         return col.findOne { Exhibition::id eq id.toId() }!!
     }
 
-
     fun listExhibitions(): List<ExhibitionSummary> {
         val col = getExhibitionCollection()
-        return col.find().projection(Exhibition::id, Exhibition::name).map { ExhibitionSummary(it.id.toString(), it.name) }.toMutableList()
+        return col.find().projection(Exhibition::id, Exhibition::name)
+            .map { ExhibitionSummary(it.id.toString(), it.name) }.toMutableList()
     }
 
     fun listExhibits(): List<Exhibit> {
@@ -45,4 +48,5 @@ class VREMReader(database: MongoDatabase) : VREMDao(database) {
         val exhibitions = database.getCollection(EXHIBITION_COLLECTION, Exhibition::class.java)
         return exhibitions.find().toMutableList()
     }
+
 }

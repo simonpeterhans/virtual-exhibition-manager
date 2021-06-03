@@ -43,12 +43,13 @@ class ExhibitionHandler(private val reader: VREMReader, private val writer: VREM
         LOGGER.debug("Save exhibition request")
         val exhibition = ctx.body<Exhibition>()
         LOGGER.debug("Save exhibition.id=${exhibition.id}")
-        if(writer.saveExhibition(exhibition)){
+        if (writer.saveExhibition(exhibition)) {
             LOGGER.debug("Successfully saved exhibition.id=${exhibition.id}")
             ctx.json(exhibition)
-        }else{
+        } else {
             LOGGER.debug("Could not save exhibition.id=${exhibition.id} for unknown reasons")
             ctx.status(500).json(ErrorResponse("Could not save the exhibition (id=${exhibition.id}"))
         }
     }
+
 }

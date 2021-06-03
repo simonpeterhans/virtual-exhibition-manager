@@ -13,15 +13,15 @@ import kotlinx.serialization.Serializable
  * @author loris.sauter
  */
 @Serializable
-data class DatabaseConfig (
-    val host:String,
-    val port:Short,
-    val database:String
-){
+data class DatabaseConfig(
+    val host: String,
+    val port: Short,
+    val database: String
+) {
     /**
      * Returns the connection string for the mongodb client
      */
-    fun getConnectionString():ConnectionString{
-        return ConnectionString("mongodb://$host:$port");
+    fun getConnectionString(): ConnectionString {
+        return ConnectionString("mongodb://$host:$port")
     }
 }

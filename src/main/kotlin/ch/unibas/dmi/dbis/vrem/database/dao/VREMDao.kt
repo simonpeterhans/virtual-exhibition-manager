@@ -10,18 +10,19 @@ import org.litote.kmongo.getCollection
  * TODO: Write JavaDoc
  * @author loris.sauter
  */
-open class VREMDao(protected val database:MongoDatabase) {
+open class VREMDao(protected val database: MongoDatabase) {
 
-    companion object{
+    companion object {
         const val EXHIBITION_COLLECTION = "exhibitions"
-        const val CORPUS_COLLECTION = "corpora";
+        const val CORPUS_COLLECTION = "corpora"
     }
 
     protected fun getExhibitionCollection(): MongoCollection<Exhibition> {
-        return  database.getCollection<Exhibition>(EXHIBITION_COLLECTION)
+        return database.getCollection<Exhibition>(EXHIBITION_COLLECTION)
     }
 
     protected fun getCorporaCollection(): MongoCollection<ArtCollection> {
-        return  database.getCollection<ArtCollection>(CORPUS_COLLECTION)
+        return database.getCollection<ArtCollection>(CORPUS_COLLECTION)
     }
+
 }

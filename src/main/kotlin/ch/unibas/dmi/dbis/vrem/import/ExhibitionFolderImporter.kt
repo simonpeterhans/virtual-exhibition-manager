@@ -15,32 +15,38 @@ import java.io.File
 import javax.imageio.ImageIO
 import kotlin.system.exitProcess
 
-class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Imports a folder-based exhibition"){
+class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Imports a folder-based exhibition") {
 
     private val LOGGER = LogManager.getLogger(ExhibitionFolderImporter::class.java)
 
     val exhibitionPath by option("-p", "--path", help = "Path to the exhibition root folder").required()
-    val config by option("-c", "--config", help="Relative of full path to the config file to be used").required()
-    val clean by option("--clean", help="Remove old exhibitions with the same name").flag("--keep", default = false)
-    val exhibitionDescription by option("-d", "--description", help="Description of the exhibition").default("")
-    val name by option("-n", "--name", help="The name of the exhibition. Shall be unique").default("default-name")
-    val ignore by option("--ignore", help="An ignore prefix to ignore folders and not treat them as a room folder").default("__")
-    val defaultLongSide : Float by option("--default-long-side", help="The length of the long side of an image in meters").float().default(2f)
+    val config by option("-c", "--config", help = "Relative of full path to the config file to be used").required()
+    val clean by option("--clean", help = "Remove old exhibitions with the same name").flag("--keep", default = false)
+    val exhibitionDescription by option("-d", "--description", help = "Description of the exhibition").default("")
+    val name by option("-n", "--name", help = "The name of the exhibition. Shall be unique").default("default-name")
+    val ignore by option(
+        "--ignore",
+        help = "An ignore prefix to ignore folders and not treat them as a room folder"
+    ).default("__")
+    val defaultLongSide: Float by option(
+        "--default-long-side",
+        help = "The length of the long side of an image in meters"
+    ).float().default(2f)
 
-    lateinit var referenceExhibition:Exhibition
-    lateinit var exhibition:Exhibition
+    lateinit var referenceExhibition: Exhibition
+    lateinit var exhibition: Exhibition
 
 
     override fun run() {
         val config = APIEndpoint.readConfig(this.config)
         val (reader, writer) = APIEndpoint.getDAOs(config.database)
         val exhibitionFolder = File(exhibitionPath)
-        if(!exhibitionFolder.exists() and !exhibitionFolder.isDirectory){
+        if (!exhibitionFolder.exists() and !exhibitionFolder.isDirectory) {
             LOGGER.error("--path argument has to" + " point to an existing directory")
             exitProcess(-1)
-       }
-        if(reader.existsExhibition(name)){
-            if(!clean){
+        }
+        if (reader.existsExhibition(name)) {
+            if (!clean) {
                 LOGGER.error("An exhibition with $name already exists. ")
                 exitProcess(-2)
             }
@@ -48,34 +54,34 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
             LOGGER.info("Successfully removed previously existing exhibiiton '$name' ")
         }
 
-        this.exhibition = Exhibition(name= name, description = exhibitionDescription)
+        this.exhibition = Exhibition(name = name, description = exhibitionDescription)
         val root = File(exhibitionPath)
         LOGGER.info("Startin import exhibition at $root")
         root.listFiles()?.filter { !it.nameWithoutExtension.startsWith(ignore) }
-                ?.forEach { exhibition.addRoom(importRoom(root.parentFile, it, exhibition.rooms)) }
+            ?.forEach { exhibition.addRoom(importRoom(root.parentFile, it, exhibition.rooms)) }
         writer.saveExhibition(exhibition)
         LOGGER.info("Finished import")
     }
 
-    private fun importExhibit(exhibitionRoot:File, exhibitFile: File, siblings: List<Exhibit>): Exhibit {
+    private fun importExhibit(exhibitionRoot: File, exhibitFile: File, siblings: List<Exhibit>): Exhibit {
         LOGGER.trace("Importing $exhibitFile")
         val exhibit = readExhibitConfigOrCreateNew(exhibitionRoot, exhibitFile)
         val image = ImageIO.read(exhibitFile)
         val aspectRatio = image.height.toFloat() / image.width.toFloat()
         var width = defaultLongSide
         var height = defaultLongSide
-        if(image.width > image.height){
-            height = (aspectRatio * (defaultLongSide*100f)) / 100f // in cm for precision
-        }else{
-            width = ((defaultLongSide*100f)/aspectRatio)/100f // cm
+        if (image.width > image.height) {
+            height = (aspectRatio * (defaultLongSide * 100f)) / 100f // in cm for precision
+        } else {
+            width = ((defaultLongSide * 100f) / aspectRatio) / 100f // cm
         }
-        if(exhibit.size.isNaN() or exhibit.size.equals(Vector3f.ORIGIN)){
-            exhibit.size = Vector3f(width,height)
+        if (exhibit.size.isNaN() or exhibit.size.equals(Vector3f.ORIGIN)) {
+            exhibit.size = Vector3f(width, height)
         }
-        if(exhibit.position.isNaN() or exhibit.position.equals(Vector3f.ORIGIN)){
+        if (exhibit.position.isNaN() or exhibit.position.equals(Vector3f.ORIGIN)) {
             exhibit.position = ImportUtils.calculateWallExhibitPosition(exhibit, siblings)
         }
-        if(::referenceExhibition.isInitialized){
+        if (::referenceExhibition.isInitialized) {
             val ref = ImportUtils.findExhibitForPath(exhibition, exhibit.path)
             ref?.let {
                 ImportUtils.copyName(it, exhibit)
@@ -85,7 +91,7 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
         return exhibit
     }
 
-    private fun importRoom(root:File, roomFile:File, siblings: List<Room>): Room {
+    private fun importRoom(root: File, roomFile: File, siblings: List<Room>): Room {
         LOGGER.trace("Importing $roomFile")
         val room = readRoomConfigOrCreateNew(roomFile)
 
@@ -98,50 +104,52 @@ class ExhibitionFolderImporter : CliktCommand(name="import-folder", help="Import
         return room
     }
 
-    private fun importWall(dir: Direction, wallFolder:File, root:File): Wall {
+    private fun importWall(dir: Direction, wallFolder: File, root: File): Wall {
         LOGGER.trace("Importing $wallFolder")
         val wall = readWallConfigOrCreateNew(dir, wallFolder)
         wallFolder.listFiles()
-                ?.filter { ImportUtils.IMAGE_FILE_EXTENSIONS.contains(it.extension) }
-                ?.forEach { wall.placeExhibit(importExhibit(root, it, wall.exhibits)) }
+            ?.filter { ImportUtils.IMAGE_FILE_EXTENSIONS.contains(it.extension) }
+            ?.forEach { wall.placeExhibit(importExhibit(root, it, wall.exhibits)) }
         return wall
     }
 
-    private fun readExhibitConfigOrCreateNew(exhibitionRoot: File, exhibitFile:File): Exhibit {
-        val configFile = exhibitFile.parentFile.resolve("${exhibitFile.nameWithoutExtension}.${ImportUtils.JSON_EXTENSION}")
+    private fun readExhibitConfigOrCreateNew(exhibitionRoot: File, exhibitFile: File): Exhibit {
+        val configFile =
+            exhibitFile.parentFile.resolve("${exhibitFile.nameWithoutExtension}.${ImportUtils.JSON_EXTENSION}")
         LOGGER.trace("Looking for exhibit configuration at $configFile")
         val path = exhibitFile.relativeTo(exhibitionRoot).toString().replace('\\', '/') // In case its windows
-        return if(configFile.exists()){
+        return if (configFile.exists()) {
             val jsonString = configFile.readText()
             val exhibit = Json.decodeFromString(Exhibit.serializer(), jsonString)
             exhibit.path = path
             exhibit
-        }else{
-             Exhibit(exhibitFile.nameWithoutExtension, "", path, CulturalHertiageObject.Companion.CHOType.IMAGE)
+        } else {
+            Exhibit(exhibitFile.nameWithoutExtension, "", path, CulturalHertiageObject.Companion.CHOType.IMAGE)
         }
     }
 
-    private fun readWallConfigOrCreateNew(dir:Direction, wallFolder:File): Wall {
+    private fun readWallConfigOrCreateNew(dir: Direction, wallFolder: File): Wall {
         val wallConfigFile = wallFolder.resolve(ImportUtils.WALL_CONFIG_FILE)
         LOGGER.trace("Looking for wall configuration at $wallConfigFile")
-        return if(wallConfigFile.exists()){
+        return if (wallConfigFile.exists()) {
             val jsonString = wallConfigFile.readText()
             val wall = Json.decodeFromString(Wall.serializer(), jsonString)
             wall.direction = dir
             wall
-        }else{
+        } else {
             Wall(dir, "NONE")
         }
     }
 
-    private fun readRoomConfigOrCreateNew(room:File): Room {
+    private fun readRoomConfigOrCreateNew(room: File): Room {
         val roomConfigFile = room.resolve(ImportUtils.ROOM_CONFIG_FILE)
         LOGGER.trace("Looking for room configuration at $room")
-        return if(roomConfigFile.exists()){
+        return if (roomConfigFile.exists()) {
             val jsonString = roomConfigFile.readText()
             Json.decodeFromString(Room.serializer(), jsonString)
-        }else{
+        } else {
             Room(room.name, "NONE", "NONE", Vector3f.ORIGIN, Room.DEFAULT_SIZE, Room.DEFAULT_ENTRYPOINT)
         }
     }
+
 }

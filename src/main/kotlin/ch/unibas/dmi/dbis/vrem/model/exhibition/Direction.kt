@@ -5,7 +5,6 @@ package ch.unibas.dmi.dbis.vrem.model.exhibition
  * @author loris.sauter
  */
 enum class Direction {
-
     NORTH,
     EAST,
     SOUTH,

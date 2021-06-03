@@ -8,19 +8,20 @@ import org.bson.types.ObjectId
  *
  */
 @Serializable
-data class Exhibit(val id: String = ObjectId().toHexString(),
-                   var name: String,
-                   var description: String,
-                   var path: String = "",
-                   val type: CulturalHertiageObject.Companion.CHOType = DEFAULT_TYPE,
-                   var size: Vector3f = DEFAULT_SIZE,
-                   var position: Vector3f = DEFAULT_POSITION,
-                   val audio: String? = null,
-                   val light: Boolean = false,
-                   val metadata:MutableMap<String,String> = mutableMapOf()) {
-
-    companion object{
-        fun copy(e:Exhibit): Exhibit {
+data class Exhibit(
+    val id: String = ObjectId().toHexString(),
+    var name: String,
+    var description: String,
+    var path: String = "",
+    val type: CulturalHertiageObject.Companion.CHOType = DEFAULT_TYPE,
+    var size: Vector3f = DEFAULT_SIZE,
+    var position: Vector3f = DEFAULT_POSITION,
+    val audio: String? = null,
+    val light: Boolean = false,
+    val metadata: MutableMap<String, String> = mutableMapOf()
+) {
+    companion object {
+        fun copy(e: Exhibit): Exhibit {
             return Exhibit(e.name, e.description, e.path, e.type, e.position, e.size, e.audio!!, e.light)
         }
 
@@ -30,10 +31,62 @@ data class Exhibit(val id: String = ObjectId().toHexString(),
 
     }
 
-    constructor(id: ObjectId, name: String, description: String, path: String, type: CulturalHertiageObject.Companion.CHOType) : this(id = id.toHexString(), name = name, description = description, path = path, type = type, position = Vector3f.ORIGIN, size = Vector3f.UNIT, audio = null, light = false)
-    constructor(id: ObjectId, name: String, description: String, path: String, type: CulturalHertiageObject.Companion.CHOType, position: Vector3f, size: Vector3f) : this(id = id.toHexString(), name = name, description = description, path = path, type = type, position = position, size = size, audio = null, light = false)
-    constructor(name: String, description: String, path: String, type: CulturalHertiageObject.Companion.CHOType) : this(id = ObjectId(), name = name, description = description, path = path, type = type)
-    constructor(name: String, description: String, path: String, type: CulturalHertiageObject.Companion.CHOType, position: Vector3f, size: Vector3f, audio: String, light: Boolean) : this(ObjectId().toHexString(), name, description, path, type, position, size, audio, light)
+    constructor(
+        id: ObjectId,
+        name: String,
+        description: String,
+        path: String,
+        type: CulturalHertiageObject.Companion.CHOType
+    ) : this(
+        id = id.toHexString(),
+        name = name,
+        description = description,
+        path = path,
+        type = type,
+        position = Vector3f.ORIGIN,
+        size = Vector3f.UNIT,
+        audio = null,
+        light = false
+    )
+
+    constructor(
+        id: ObjectId,
+        name: String,
+        description: String,
+        path: String,
+        type: CulturalHertiageObject.Companion.CHOType,
+        position: Vector3f,
+        size: Vector3f
+    ) : this(
+        id = id.toHexString(),
+        name = name,
+        description = description,
+        path = path,
+        type = type,
+        position = position,
+        size = size,
+        audio = null,
+        light = false
+    )
+
+    constructor(name: String, description: String, path: String, type: CulturalHertiageObject.Companion.CHOType) : this(
+        id = ObjectId(),
+        name = name,
+        description = description,
+        path = path,
+        type = type
+    )
+
+    constructor(
+        name: String,
+        description: String,
+        path: String,
+        type: CulturalHertiageObject.Companion.CHOType,
+        position: Vector3f,
+        size: Vector3f,
+        audio: String,
+        light: Boolean
+    ) : this(ObjectId().toHexString(), name, description, path, type, position, size, audio, light)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -72,6 +125,4 @@ data class Exhibit(val id: String = ObjectId().toHexString(),
     override fun toString(): String {
         return "Exhibit(id=$id, name='$name', description='$description', path='$path', type=$type, size=$size, position=$position, audio=$audio, light=$light, metadata=$metadata)"
     }
-
-
 }

@@ -10,4 +10,4 @@ import kotlinx.serialization.Serializable
  * @author loris.sauter
  */
 @Serializable
-data class WebServerConfig (val documentRoot:String, val port:Short)
+data class WebServerConfig(val documentRoot: String, val port: Short)

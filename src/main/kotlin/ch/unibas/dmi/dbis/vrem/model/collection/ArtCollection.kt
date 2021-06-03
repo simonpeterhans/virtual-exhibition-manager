@@ -11,13 +11,11 @@ import org.bson.types.ObjectId
  */
 @Serializable
 data class ArtCollection(
-        @SerialName("_id")
-        val id: String,
-        val name: String,
-        val exhibits: List<Exhibit> = mutableListOf(),
-        val metadata: Map<String, String> = mutableMapOf()
+    @SerialName("_id")
+    val id: String,
+    val name: String,
+    val exhibits: List<Exhibit> = mutableListOf(),
+    val metadata: Map<String, String> = mutableMapOf()
 ) {
-
     constructor(id: ObjectId, name: String, exhibits: List<Exhibit>) : this(id.toHexString(), name, exhibits)
-
 }

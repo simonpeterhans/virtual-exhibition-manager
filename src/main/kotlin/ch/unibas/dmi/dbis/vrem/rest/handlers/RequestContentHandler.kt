@@ -13,17 +13,17 @@ class RequestContentHandler(private val docRoot: Path) {
         const val PARAM_KEY_PATH = ":path"
     }
 
-    fun serveContent(ctx: Context){
+    fun serveContent(ctx: Context) {
         val path = ctx.pathParam(PARAM_KEY_PATH)
 
-        if(path.isBlank()){
+        if (path.isBlank()) {
             LOGGER.error("The requested path was blank. Did you forget to send the actual content path? Sending 404")
             ctx.status(404)
             return
         }
 
         val absolute = docRoot.resolve(path)
-        if(!Files.exists(absolute)){
+        if (!Files.exists(absolute)) {
             LOGGER.error("Cannot serve $absolute, as it does not exist. Sending 404")
             ctx.status(404)
         }
@@ -31,9 +31,9 @@ class RequestContentHandler(private val docRoot: Path) {
         ctx.contentType(Files.probeContentType(absolute))
         ctx.header("Transfer-Encoding", "identity")
         ctx.header("Access-Control-Allow-Origin", "*")
-        ctx.header("Access-Control-Allow-Headers","*")
+        ctx.header("Access-Control-Allow-Headers", "*")
 
         ctx.result(absolute.toFile().inputStream())
-
     }
+
 }

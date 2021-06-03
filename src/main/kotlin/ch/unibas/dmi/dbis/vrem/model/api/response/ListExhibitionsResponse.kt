@@ -11,4 +11,4 @@ import kotlinx.serialization.Serializable
  * @author loris.sauter
  */
 @Serializable
-data class ListExhibitionsResponse (val exhibitions:List<ExhibitionSummary>)
+data class ListExhibitionsResponse(val exhibitions: List<ExhibitionSummary>)

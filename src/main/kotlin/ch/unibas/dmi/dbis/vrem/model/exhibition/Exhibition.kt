@@ -10,22 +10,19 @@ import java.util.*
 
 @Serializable
 data class Exhibition(
-        @SerialName("_id") @Contextual
-        val id: Id<Exhibition> = newId(),
-        val name:String,
-        val description:String = "",
-        val rooms:MutableList<Room> = mutableListOf()
+    @SerialName("_id") @Contextual
+    val id: Id<Exhibition> = newId(),
+    val name: String,
+    val description: String = "",
+    val rooms: MutableList<Room> = mutableListOf()
 ) {
-
-
-    fun addRoom(room:Room): Boolean {
-        return if(!rooms.contains(room)){
+    fun addRoom(room: Room): Boolean {
+        return if (!rooms.contains(room)) {
             rooms.add(room)
-        }else{
+        } else {
             false
         }
     }
-
 
     @JsonIgnore
     fun getExhibits(): MutableList<Exhibit> {
@@ -43,7 +40,7 @@ data class Exhibition(
     }
 
     @JsonIgnore
-    fun getExhibits(type:CulturalHertiageObject.Companion.CHOType): List<Exhibit> {
+    fun getExhibits(type: CulturalHertiageObject.Companion.CHOType): List<Exhibit> {
         return getExhibits().filter { e -> e.type == type }
     }
 }

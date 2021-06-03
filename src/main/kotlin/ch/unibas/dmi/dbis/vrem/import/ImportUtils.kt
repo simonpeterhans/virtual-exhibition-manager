@@ -9,6 +9,7 @@ import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
  * Collection of utilities for imports
  */
 object ImportUtils {
+
     const val WALL_CONFIG_FILE = "wall-config.json"
     const val ROOM_CONFIG_FILE = "room-config.json"
 
@@ -28,7 +29,13 @@ object ImportUtils {
         return Vector3f(siblings.size, 0, 0)
     }
 
-    fun calculateWallExhibitPosition(exhibit: Exhibit, siblings: List<Exhibit>, roomBorder: Float = .5f, exhbitPadding: Float = 1f, exhibitHeight: Float = 1.5f): Vector3f {
+    fun calculateWallExhibitPosition(
+        exhibit: Exhibit,
+        siblings: List<Exhibit>,
+        roomBorder: Float = .5f,
+        exhbitPadding: Float = 1f,
+        exhibitHeight: Float = 1.5f
+    ): Vector3f {
         if (siblings.isEmpty()) {
             return Vector3f(roomBorder + (exhibit.size.x / 2f), exhibitHeight)
         } else {
@@ -63,4 +70,5 @@ object ImportUtils {
         }
         return null
     }
+
 }

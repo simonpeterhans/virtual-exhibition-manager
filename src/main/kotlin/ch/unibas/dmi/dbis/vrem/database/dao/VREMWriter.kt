@@ -40,7 +40,10 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
             collection.insertOne(artCollection)
             LOGGER.info("Successfully created the default corpus 'DefaultCorpus' and added an exhibit to it")
         } else {
-            val result = collection.updateOne(ArtCollection::name eq exhibitUploadRequest.artCollection, push(ArtCollection::exhibits, toAdd))
+            val result = collection.updateOne(
+                ArtCollection::name eq exhibitUploadRequest.artCollection,
+                push(ArtCollection::exhibits, toAdd)
+            )
             if (result.matchedCount == 0L) {
                 LOGGER.error("Could not update the corpus ${exhibitUploadRequest.artCollection}")
             } else {
@@ -53,4 +56,5 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
     fun deleteExhibition(name: String) {
         getExhibitionCollection().deleteMany(Exhibition::name eq name)
     }
+
 }
