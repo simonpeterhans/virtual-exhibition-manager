@@ -10,6 +10,7 @@
     <RollingFile name="File">
       <FileName>logs/core.log</FileName>
       <FilePattern>logs/%d{yyyy-MM-dd-hh}-%i.log.zip</FilePattern>
+      <PatternLayout pattern="${loggingPattern}"/>
       <Policies>
         <SizeBasedTriggeringPolicy size="3000 KB"/>
       </Policies>

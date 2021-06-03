@@ -6,60 +6,19 @@ plugins {
     id 'idea'
 }
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    // Align versions of all Kotlin components.
-    implementation platform('org.jetbrains.kotlin:kotlin-bom')
-
-    // Kotlin JDK 8 standard library.
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-
-    // Kotlin test library.
-    testImplementation 'org.jetbrains.kotlin:kotlin-test'
-
-    // Kotlin JUnit integration.
-    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
-
-    // KotlinX.
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: '0.1.16'
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-core', version: '1.2.1'
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-json', version: '1.2.1'
-
-    // CLI.
-    implementation group: 'com.github.ajalt', name: 'clikt', version: '2.8.0'
-
-    // RESTful API.
-    implementation group: 'io.javalin', name: 'javalin', version: '3.13.7'
-
-    // Jackson JSON (used by Javalin).
-    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.12.3'
-
-    // Legacy MongoDB.
-    implementation group: 'com.github.rvesse', name: 'airline', version: '2.8.1'
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.7'
-
-    // Kotlin MongoDB.
-    implementation group: 'org.litote.kmongo', name: 'kmongo', version: '4.2.7'
-
-    // Logging.
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.1'
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
-    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
-
-    // Javax.
-    implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
-}
-
 group 'ch.unibas.dmi.dbis'
 version '2.0.0-SNAPSHOT'
 
 mainClassName = 'ch.unibas.dmi.dbis.vrem.VREMKt'
 applicationDefaultJvmArgs = ["-Xms2G", "-Xmx4G"]
 sourceCompatibility = 1.11
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
 
 application {
     // Main class for the ./gradlew run command.
@@ -82,3 +41,67 @@ jar {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
+
+idea {
+    module {
+        downloadJavadoc = true
+
+        excludeDirs += file('data')
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Align versions of all Kotlin components.
+    implementation platform('org.jetbrains.kotlin:kotlin-bom')
+
+    // Kotlin JDK 8 standard library.
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+
+    // Kotlin test & JUnit library.
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
+
+    // KotlinX.
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-io', version: '0.1.16'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-core', version: '1.2.1'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-json', version: '1.2.1'
+
+    // CLI.
+    implementation group: 'com.github.ajalt', name: 'clikt', version: '2.8.0'
+    implementation group: 'com.github.rvesse', name: 'airline', version: '2.8.1' // Legacy Java.
+
+    // RESTful API.
+    implementation group: 'io.javalin', name: 'javalin', version: '3.13.7'
+
+    // Jackson JSON (used by Javalin).
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.12.3'
+
+    // MongoDB.
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.7' // Legacy Java.
+    implementation group: 'org.litote.kmongo', name: 'kmongo', version: '4.2.7'
+
+    // Logging.
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-web', version: '2.14.1'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+
+    // Javax.
+    implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
+}
+
+task copyResources {
+    doLast {
+        copy {
+            from "config.json"
+            into "$buildDir/libs/"
+        }
+    }
+}
+
+task deploy(dependsOn: [build, jar, copyResources])
