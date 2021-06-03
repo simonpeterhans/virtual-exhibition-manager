@@ -3,12 +3,11 @@ package ch.unibas.dmi.dbis.vrem.config
 import kotlinx.serialization.Serializable
 
 /**
- * VREM configuration.
+ * VREM configuration with database and webserver, deserialized form of config.json-like files.
  *
- * @property database Database config
- * @property server Endpoint config
- *
- * @author loris.sauter
+ * @property database The database configuration object.
+ * @property server The web server configuration object.
+ * @constructor
  */
 @Serializable
 data class Config(val database: DatabaseConfig, val server: WebServerConfig)

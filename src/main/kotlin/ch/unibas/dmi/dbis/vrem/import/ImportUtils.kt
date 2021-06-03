@@ -6,7 +6,9 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 
 /**
- * Collection of utilities for imports
+ * Utilities used for exhibition import.
+ *
+ * @constructor
  */
 object ImportUtils {
 
@@ -25,25 +27,53 @@ object ImportUtils {
     const val BMP_EXTENSION = "bmp"
     val IMAGE_FILE_EXTENSIONS = listOf(JPEG_EXTENSION, JPG_EXTENSION, PNG_EXTENSION, BMP_EXTENSION)
 
+    /**
+     * Calculates the room position depending on the number of siblings.
+     * As of now, the room X coordinate is simply the room number.
+     *
+     * @param room The room to calculate the position for.
+     * @param siblings The list of all current rooms.
+     * @return The vector of the room's position.
+     */
     fun calculateRoomPosition(room: Room, siblings: List<Room>): Vector3f {
         return Vector3f(siblings.size, 0, 0)
     }
 
+    /**
+     * Calculates the exhibit position on the wall depending on their siblings
+     * (i.e., the total number of exhibits on a single wall).
+     *
+     * TODO Fix me.
+     *
+     * @param exhibit The exhibit to calculate the position for.
+     * @param siblings The siblings of the exhibit on the same wall.
+     * @param roomBorder The border of the room.
+     * @param exhibitPadding Padding of the exhibit.
+     * @param exhibitHeight Height of the exhibit.
+     * @return The vector of the exhibit's position.
+     */
     fun calculateWallExhibitPosition(
         exhibit: Exhibit,
         siblings: List<Exhibit>,
         roomBorder: Float = .5f,
-        exhbitPadding: Float = 1f,
+        exhibitPadding: Float = 1f,
         exhibitHeight: Float = 1.5f
     ): Vector3f {
-        if (siblings.isEmpty()) {
-            return Vector3f(roomBorder + (exhibit.size.x / 2f), exhibitHeight)
+        return if (siblings.isEmpty()) {
+            Vector3f(roomBorder + (exhibit.size.x / 2f), exhibitHeight)
         } else {
-            val dist = siblings.map { it.size.x + exhbitPadding }.sum()
-            return Vector3f(roomBorder + dist + (exhibit.size.x / 2f), exhibitHeight)
+            val dist = siblings.map { it.size.x + exhibitPadding }.sum()
+            Vector3f(roomBorder + dist + (exhibit.size.x / 2f), exhibitHeight)
         }
     }
 
+    /**
+     * Copies the description from one exhibit to another.
+     *
+     * @param src The exhibit to serve as source.
+     * @param dest The destination exhibit to copy the description to.
+     * @param overwrite Whether to overwrite existing descriptions in the destination exhibit.
+     */
     fun copyDescription(src: Exhibit, dest: Exhibit, overwrite: Boolean = false) {
         if (src.description.isNotBlank()) {
             if (overwrite || dest.description.isBlank()) {
@@ -52,6 +82,13 @@ object ImportUtils {
         }
     }
 
+    /**
+     * Copies the name from one exhibit to another.
+     *
+     * @param src The exhibit to serve as source.
+     * @param dest The destination exhibit to copy the name to.
+     * @param overwrite Whether to overwrite existing name in the destination exhibit.
+     */
     fun copyName(src: Exhibit, dest: Exhibit, overwrite: Boolean = false) {
         if (src.name.isNotBlank()) {
             if (overwrite || dest.name.isBlank()) {
@@ -60,6 +97,15 @@ object ImportUtils {
         }
     }
 
+    /**
+     * Finds an exhibit for a given path.
+     *
+     * TODO Fix me.
+     *
+     * @param exhibition The exhibition to find the exhibit for.
+     * @param path The path relative to the exhibition to find the exhibit at.
+     * @return The exhibit if it could be found, null otherwise.
+     */
     fun findExhibitForPath(exhibition: Exhibition, path: String): Exhibit? {
         exhibition.rooms.forEach { room ->
             room.walls.flatMap { it.exhibits }.forEach {

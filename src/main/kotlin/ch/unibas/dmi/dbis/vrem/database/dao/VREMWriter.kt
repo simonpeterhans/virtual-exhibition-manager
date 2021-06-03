@@ -12,13 +12,22 @@ import org.litote.kmongo.push
 import org.litote.kmongo.replaceOneById
 
 /**
- * TODO: Write JavaDoc
- * @author loris.sauter
+ * MongoDB writer for VREM.
+ *
+ * @constructor
+ *
+ * @param database The MongoDB object to create the writer for.
  */
 class VREMWriter(database: MongoDatabase) : VREMDao(database) {
 
     private val LOGGER = LogManager.getLogger(VREMWriter::class.java)
 
+    /**
+     * Stores an exhibition in the exhibition collection.
+     *
+     * @param exhibition The exhibition to store.
+     * @return True if any changes were made, false otherwise.
+     */
     fun saveExhibition(exhibition: Exhibition): Boolean {
         val collection = getExhibitionCollection()
         val result = collection.replaceOneById(exhibition.id, exhibition)
@@ -28,6 +37,15 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
         return result.modifiedCount != 0L
     }
 
+    /**
+     * Store a single exhibit in the exhibit corpus.
+     * Creates the collection if it doesn't exist.
+     *
+     * TODO Return value?
+     *
+     * @param exhibitUploadRequest A request for the object to upload.
+     * @return The path of the uploaded exhibit.
+     */
     fun uploadExhibit(exhibitUploadRequest: ExhibitUploadRequest): String {
         val collection = getCorporaCollection()
 
@@ -53,6 +71,11 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
         return toAdd.path
     }
 
+    /**
+     * Removes an exhibition from the collection by name.
+     *
+     * @param name The name of the exhibition to remove.
+     */
     fun deleteExhibition(name: String) {
         getExhibitionCollection().deleteMany(Exhibition::name eq name)
     }
