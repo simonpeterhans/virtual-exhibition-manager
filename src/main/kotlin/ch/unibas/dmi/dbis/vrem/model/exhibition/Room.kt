@@ -5,8 +5,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import kotlinx.serialization.Serializable
 
 /**
- * TODO: Write JavaDoc
- * @author loris.sauter
+ * Object representation of exhibition rooms.
+ *
+ * @property text The title/description of the room.
+ * @property floor The floor texture of the room.
+ * @property ceiling The ceiling texture of the room.
+ * @property position The position of the room.
+ * @property size The size of the room.
+ * @property entryPoint The spawning/entry point of the room.
+ * @property ambient The ambient of the room.
+ * @property exhibits A list of exhibits present in the room.
+ * @property walls A list of walls present in the room.
+ *                 Note that, usually, exhibits are part of walls and not of the exhibit list of a room object.
+ * @constructor
  */
 @Serializable
 data class Room(
@@ -15,23 +26,36 @@ data class Room(
     val ceiling: String = DEFAULT_CEILING,
     var position: Vector3f = DEFAULT_POSITION,
     val size: Vector3f = DEFAULT_SIZE,
-    val entrypoint: Vector3f = DEFAULT_ENTRYPOINT,
+    val entryPoint: Vector3f = DEFAULT_ENTRYPOINT,
     val ambient: String? = null,
     val exhibits: MutableList<Exhibit> = mutableListOf(),
     val walls: MutableList<Wall> = mutableListOf()
 ) {
     companion object {
+        /**
+         * Builds a room from a list of walls.
+         *
+         * @property text The title/description of the room.
+         * @property floor The floor texture of the room.
+         * @property ceiling The ceiling texture of the room.
+         * @property position The position of the room.
+         * @property size The size of the room.
+         * @property entryPoint The spawning/entry point of the room.
+         * @property ambient The ambient of the room.
+         * @property walls A list of walls present in the room.
+         * @return
+         */
         fun build(
             text: String,
             floor: String,
             ceiling: String,
             size: Vector3f,
             position: Vector3f,
-            entrypoint: Vector3f,
+            entryPoint: Vector3f,
             ambient: String?,
             walls: List<Wall>
         ): Room {
-            val room = Room(text, floor, ceiling, position, size, entrypoint, ambient)
+            val room = Room(text, floor, ceiling, position, size, entryPoint, ambient)
             room.walls.addAll(walls)
             return room
         }
@@ -52,8 +76,14 @@ data class Room(
         entrypoint: Vector3f
     ) : this(text, floor, ceiling, position, size, entrypoint, null)
 
+    /**
+     * Adds an exhibit to the room if it is not already in the room's list of exhibits.
+     *
+     * @param exhibit The exhibit to add.
+     * @return True if the exhibit was successfully added, false otherwise (also in case of duplicates).
+     */
     fun placeExhibit(exhibit: Exhibit): Boolean {
-        if (exhibit.type != CulturalHertiageObject.Companion.CHOType.MODEL) {
+        if (exhibit.type != CulturalHeritageObject.Companion.CHOType.MODEL) {
             throw IllegalArgumentException("Only 3D objects can be placed in a room.")
         }
         return if (!exhibits.contains(exhibit)) {
@@ -63,6 +93,12 @@ data class Room(
         }
     }
 
+    /**
+     * Adds a wall with a given direction to the room.
+     *
+     * @param dir The direction of the wall.
+     * @param w The wall to add.
+     */
     @JsonIgnore
     private fun setWall(dir: Direction, w: Wall) {
         if (w.direction != dir) {
@@ -71,6 +107,12 @@ data class Room(
         walls.add(w)
     }
 
+    /**
+     * Obtains the wall object for a given direction for the room.
+     *
+     * @param dir The direction of the wall.
+     * @return The wall facing the provided direction in the room.
+     */
     @JsonIgnore
     private fun getWall(dir: Direction): Wall {
         try {
@@ -121,7 +163,7 @@ data class Room(
     }
 
     override fun toString(): String {
-        return "Room(text='$text', floor='$floor', ceiling='$ceiling', position=$position, size=$size, entrypoint=$entrypoint, ambient=$ambient, exhibits=$exhibits, walls=$walls)"
+        return "Room(text='$text', floor='$floor', ceiling='$ceiling', position=$position, size=$size, entrypoint=$entryPoint, ambient=$ambient, exhibits=$exhibits, walls=$walls)"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -136,7 +178,7 @@ data class Room(
         if (ceiling != other.ceiling) return false
         if (position != other.position) return false
         if (size != other.size) return false
-        if (entrypoint != other.entrypoint) return false
+        if (entryPoint != other.entryPoint) return false
         if (ambient != other.ambient) return false
         if (exhibits != other.exhibits) return false
         if (walls != other.walls) return false
@@ -151,7 +193,7 @@ data class Room(
         result = 31 * result + ceiling.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + size.hashCode()
-        result = 31 * result + entrypoint.hashCode()
+        result = 31 * result + entryPoint.hashCode()
         result = 31 * result + (ambient?.hashCode() ?: 0)
         result = 31 * result + exhibits.hashCode()
         result = 31 * result + walls.hashCode()

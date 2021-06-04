@@ -4,11 +4,10 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.ExhibitionSummary
 import kotlinx.serialization.Serializable
 
 /**
- * Response to list exhibitions action.
+ * Response for the action to list exhibitions (effectively wrapping them).
  *
- * Wrapper for a list of exhibitions
- *
- * @author loris.sauter
+ * @property exhibitions The list of exhibitions.
+ * @constructor
  */
 @Serializable
 data class ListExhibitionsResponse(val exhibitions: List<ExhibitionSummary>)

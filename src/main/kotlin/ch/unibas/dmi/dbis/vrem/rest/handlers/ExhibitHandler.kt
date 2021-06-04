@@ -19,7 +19,7 @@ class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWri
         ctx.json(ListExhibitsResponse(reader.listExhibits()))
     }
 
-    fun saveExhibit(ctx: Context): Unit {
+    fun saveExhibit(ctx: Context) {
         LOGGER.debug("Save exhibit request")
         val exhibitUpload = ctx.body<ExhibitUploadRequest>()
 
@@ -36,7 +36,7 @@ class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWri
         val contentFile = docRoot.resolve(path).toFile()
         contentFile.writeBytes(decodedImg)
         LOGGER.debug("Stored exhibit and content to db and fs (${exhibitUpload.exhibit.id} / $contentFile")
-        //return exhibitUpload
+        // return exhibitUpload
         // TODO what to return?
     }
 

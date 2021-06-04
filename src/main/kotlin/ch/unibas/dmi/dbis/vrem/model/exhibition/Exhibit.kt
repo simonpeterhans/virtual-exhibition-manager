@@ -5,7 +5,19 @@ import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
 /**
+ * Exhibit object.
  *
+ * @property id The ID of the exhibit (defaulted to the object's ID as hex string).
+ * @property name The name of the exhibit.
+ * @property description The description of the exhibit.
+ * @property path The path of the exhibit.
+ * @property type The type of the exhibit from the CHO type enum.
+ * @property size The size of the exhibit as a vector.
+ * @property position The position of the exhibit as a vector.
+ * @property audio The name of the audio for the exhibit as a string.
+ * @property light Whether the exhibit has light or not.
+ * @property metadata The mapping for the metadata attributed of the object.
+ * @constructor
  */
 @Serializable
 data class Exhibit(
@@ -13,7 +25,7 @@ data class Exhibit(
     var name: String,
     var description: String,
     var path: String = "",
-    val type: CulturalHertiageObject.Companion.CHOType = DEFAULT_TYPE,
+    val type: CulturalHeritageObject.Companion.CHOType = DEFAULT_TYPE,
     var size: Vector3f = DEFAULT_SIZE,
     var position: Vector3f = DEFAULT_POSITION,
     val audio: String? = null,
@@ -21,14 +33,19 @@ data class Exhibit(
     val metadata: MutableMap<String, String> = mutableMapOf()
 ) {
     companion object {
+        /**
+         * Creates a copy of an exhibit and returns the newly created object.
+         *
+         * @param e The exhibit to copy.
+         * @return The newly created copy of the exhibit.
+         */
         fun copy(e: Exhibit): Exhibit {
             return Exhibit(e.name, e.description, e.path, e.type, e.position, e.size, e.audio!!, e.light)
         }
 
         val DEFAULT_SIZE = Vector3f.UNIT
         val DEFAULT_POSITION = Vector3f.ORIGIN
-        val DEFAULT_TYPE = CulturalHertiageObject.Companion.CHOType.IMAGE
-
+        val DEFAULT_TYPE = CulturalHeritageObject.Companion.CHOType.IMAGE
     }
 
     constructor(
@@ -36,7 +53,7 @@ data class Exhibit(
         name: String,
         description: String,
         path: String,
-        type: CulturalHertiageObject.Companion.CHOType
+        type: CulturalHeritageObject.Companion.CHOType
     ) : this(
         id = id.toHexString(),
         name = name,
@@ -54,7 +71,7 @@ data class Exhibit(
         name: String,
         description: String,
         path: String,
-        type: CulturalHertiageObject.Companion.CHOType,
+        type: CulturalHeritageObject.Companion.CHOType,
         position: Vector3f,
         size: Vector3f
     ) : this(
@@ -69,7 +86,7 @@ data class Exhibit(
         light = false
     )
 
-    constructor(name: String, description: String, path: String, type: CulturalHertiageObject.Companion.CHOType) : this(
+    constructor(name: String, description: String, path: String, type: CulturalHeritageObject.Companion.CHOType) : this(
         id = ObjectId(),
         name = name,
         description = description,
@@ -81,7 +98,7 @@ data class Exhibit(
         name: String,
         description: String,
         path: String,
-        type: CulturalHertiageObject.Companion.CHOType,
+        type: CulturalHeritageObject.Companion.CHOType,
         position: Vector3f,
         size: Vector3f,
         audio: String,

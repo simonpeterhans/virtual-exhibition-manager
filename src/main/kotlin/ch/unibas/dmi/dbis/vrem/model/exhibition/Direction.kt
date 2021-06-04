@@ -1,8 +1,9 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
 /**
- * Enumeration of compass directions
- * @author loris.sauter
+ * Enumeration of the usual compass directions.
+ *
+ * @constructor
  */
 enum class Direction {
     NORTH,

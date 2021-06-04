@@ -193,7 +193,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
             exhibit.path = path
             exhibit
         } else {
-            Exhibit(exhibitFile.nameWithoutExtension, "", path, CulturalHertiageObject.Companion.CHOType.IMAGE)
+            Exhibit(exhibitFile.nameWithoutExtension, "", path, CulturalHeritageObject.Companion.CHOType.IMAGE)
         }
     }
 
