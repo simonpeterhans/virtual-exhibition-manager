@@ -40,16 +40,17 @@ object ImportUtils {
     }
 
     /**
-     * Calculates the exhibit position on the wall depending on their siblings
-     * (i.e., the total number of exhibits on a single wall).
+     * Calculates the exhibit position on the wall depending on the number of siblings that have already been added.
+     * Starts on the left-hand side of the wall and fills up towards the right.
+     * Note that, if there are too many exhibits, the images can get placed outside of the wall.
      *
-     * TODO Fix me.
+     * TODO Improve automatic position calculation.
      *
      * @param exhibit The exhibit to calculate the position for.
      * @param siblings The siblings of the exhibit on the same wall.
-     * @param roomBorder The border of the room.
-     * @param exhibitPadding Padding of the exhibit.
-     * @param exhibitHeight Height of the exhibit.
+     * @param roomBorder The border of the room (x offset).
+     * @param exhibitPadding Padding between exhibits.
+     * @param exhibitHeight Height (y) the exhibit is placed at on the wall.
      * @return The vector of the exhibit's position.
      */
     fun calculateWallExhibitPosition(
