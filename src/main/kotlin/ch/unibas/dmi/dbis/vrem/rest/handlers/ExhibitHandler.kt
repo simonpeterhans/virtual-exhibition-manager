@@ -10,20 +10,43 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 
+/**
+ *
+ *
+ * @property reader The VREM MongoDB reader object.
+ * @property writer The VREM MongoDB writer object.
+ * @property docRoot The root folder of the exhibition. // TODO Fixme.
+ * @constructor Create empty Exhibit handler
+ */
 class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWriter, private val docRoot: Path) {
 
     private val LOGGER = LogManager.getLogger(ExhibitHandler::class.java)
 
+    /**
+     * Lists all exhibits currently stored.
+     *
+     * @param ctx The Javalin request context.
+     */
     fun listExhibits(ctx: Context) {
-        LOGGER.debug("List exhibits")
+        LOGGER.debug("List exhibits request received.")
+        // Serialize object to JSON.
         ctx.json(ListExhibitsResponse(reader.listExhibits()))
+
+        // TODO What to do here?
     }
 
+    /**
+     * Stores an exhibit in the MongoDB and filesystem.
+     *
+     * @param ctx The Javalin request context.
+     */
     fun saveExhibit(ctx: Context) {
-        LOGGER.debug("Save exhibit request")
+        LOGGER.debug("Save exhibit request received.")
+
+        // Map the JSON body to a Kotlin object.
         val exhibitUpload = ctx.body<ExhibitUploadRequest>()
 
-        LOGGER.debug("Save exhibit.id=${exhibitUpload.exhibit.id} and for corpus ${exhibitUpload.artCollection}")
+        LOGGER.debug("Save exhibit.id=${exhibitUpload.exhibit.id} and for corpus ${exhibitUpload.artCollection}.")
         val path = writer.uploadExhibit(exhibitUpload)
 
         val base64Img = exhibitUpload.file.split(",")[1]
@@ -35,9 +58,9 @@ class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWri
         }
         val contentFile = docRoot.resolve(path).toFile()
         contentFile.writeBytes(decodedImg)
-        LOGGER.debug("Stored exhibit and content to db and fs (${exhibitUpload.exhibit.id} / $contentFile")
+        LOGGER.debug("Stored exhibit and content to db and fs (${exhibitUpload.exhibit.id} / $contentFile.")
         // return exhibitUpload
-        // TODO what to return?
+        // TODO What to return here?
     }
 
 }

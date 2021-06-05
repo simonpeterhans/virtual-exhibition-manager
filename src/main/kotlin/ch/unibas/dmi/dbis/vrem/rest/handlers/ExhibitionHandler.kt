@@ -10,8 +10,11 @@ import org.apache.logging.log4j.LogManager
 import org.bson.types.ObjectId
 
 /**
- * Handler for exhibition related things
- * @author loris.sauter
+ * Exhibition handler for API requests.
+ *
+ * @property reader The VREM Reader instance to use for MongoDB access.
+ * @property writer The VREM Writer instance to use for MongoDB access.
+ * @constructor
  */
 class ExhibitionHandler(private val reader: VREMReader, private val writer: VREMWriter) {
 
@@ -22,23 +25,43 @@ class ExhibitionHandler(private val reader: VREMReader, private val writer: VREM
         const val PARAM_KEY_NAME = ":name"
     }
 
+    /**
+     * Lists all exhibitions.
+     *
+     * @param ctx The Javalin request context.
+     */
     fun listExhibitions(ctx: Context) {
         LOGGER.debug("List exhibitions")
         ctx.json(ListExhibitionsResponse(reader.listExhibitions()))
     }
 
+    /**
+     * Loads exhibition by ID from the collection of exhibitions.
+     *
+     * @param ctx The Javalin request context.
+     */
     fun loadExhibitionById(ctx: Context) {
         val id = ctx.pathParam(PARAM_KEY_ID)
         LOGGER.debug("Load exhibition by id=$id")
         ctx.json(reader.getExhibition(ObjectId(id)))
     }
 
+    /**
+     * Loads exhibition by name from the collection of exhibitions.
+     *
+     * @param ctx The Javalin request context.
+     */
     fun loadExhibitionByName(ctx: Context) {
         val name = ctx.pathParam(PARAM_KEY_NAME)
         LOGGER.debug("Load exhibition by name=$name")
         ctx.json(reader.getExhibition(name))
     }
 
+    /**
+     * Stores an exhibition in MongoDB.
+     *
+     * @param ctx The Javalin request context.
+     */
     fun saveExhibition(ctx: Context) {
         LOGGER.debug("Save exhibition request")
         val exhibition = ctx.body<Exhibition>()

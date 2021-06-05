@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import kotlinx.serialization.Serializable
 
 /**
- * Vector in 3 dimensions with component type float.
+ * 3D float vector.
  *
- * @author loris.sauter
+ * @property x x value as float.
+ * @property y y value as float.
+ * @property z z value as float
+ * @constructor
  */
 @Serializable
 data class Vector3f(val x: Float, val y: Float, val z: Float) {
@@ -24,7 +27,7 @@ data class Vector3f(val x: Float, val y: Float, val z: Float) {
     }
 
     override fun equals(other: Any?): Boolean {
-        // IntelliJ IDEA generated
+        // IntelliJ IDEA generated.
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
@@ -38,13 +41,18 @@ data class Vector3f(val x: Float, val y: Float, val z: Float) {
     }
 
     override fun hashCode(): Int {
-        // IntelliJ IDEA generated
+        // IntelliJ IDEA generated.
         var result = x.hashCode()
         result = 31 * result + y.hashCode()
         result = 31 * result + z.hashCode()
         return result
     }
 
+    /**
+     * Checks whether a vector is (NaN, NaN, NaN).
+     *
+     * @return True if the vector object is NaN, false otherwise.
+     */
     @JsonIgnore
     fun isNaN(): Boolean {
         return equals(NaN)

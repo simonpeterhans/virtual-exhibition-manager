@@ -5,6 +5,12 @@ import org.apache.logging.log4j.LogManager
 import java.nio.file.Files
 import java.nio.file.Path
 
+/**
+ * Handler for content requests made through the API.
+ *
+ * @property docRoot The document root of the exhibition.
+ * @constructor
+ */
 class RequestContentHandler(private val docRoot: Path) {
 
     private val LOGGER = LogManager.getLogger(RequestContentHandler::class.java)
@@ -13,6 +19,11 @@ class RequestContentHandler(private val docRoot: Path) {
         const val PARAM_KEY_PATH = ":path"
     }
 
+    /**
+     * Serves the requested content.
+     *
+     * @param ctx The Javalin request context.
+     */
     fun serveContent(ctx: Context) {
         val path = ctx.pathParam(PARAM_KEY_PATH)
 

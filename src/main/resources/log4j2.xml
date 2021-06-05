@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration name="CoreConfig" status="INFO">
+<Configuration name="CoreConfig" status="TRACE">
   <Properties>
     <Property name="loggingPattern">[%d{HH:mm:ss.SSS}][%-5level][%t] %c{2} - %msg%n</Property>
   </Properties>
@@ -15,15 +15,15 @@
         <SizeBasedTriggeringPolicy size="3000 KB"/>
       </Policies>
       <DefaultRolloverStrategy max="5" />
-      <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+      <ThresholdFilter level="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
     </RollingFile>
   </Appenders>
   <Loggers>
-    <Logger name="ch.unibas.dmi.dbis.vrem" level="DEBUG" additivity="false">
+    <Logger name="ch.unibas.dmi.dbis.vrem" level="TRACE" additivity="false">
       <AppenderRef ref="Console"/>
       <AppenderRef ref="File"/>
     </Logger>
-    <Root level="WARN">
+    <Root level="TRACE">
       <AppenderRef ref="Console"/>
       <AppenderRef ref="File"/>
     </Root>
