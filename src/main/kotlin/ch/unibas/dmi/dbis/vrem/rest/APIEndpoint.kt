@@ -4,6 +4,7 @@ import ch.unibas.dmi.dbis.vrem.config.Config
 import ch.unibas.dmi.dbis.vrem.config.DatabaseConfig
 import ch.unibas.dmi.dbis.vrem.database.dao.VREMReader
 import ch.unibas.dmi.dbis.vrem.database.dao.VREMWriter
+import ch.unibas.dmi.dbis.vrem.gen.CollectionGenerator
 import ch.unibas.dmi.dbis.vrem.model.api.response.ErrorResponse
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitionHandler
@@ -70,10 +71,18 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         val contentHandler = RequestContentHandler(docRoot)
         val exhibitHandler = ExhibitHandler(reader, writer, docRoot)
 
+        // Collection generator.
+        val collectionGenerator = CollectionGenerator()
+
         // API endpoint.
         val endpoint = Javalin.create { conf ->
             conf.defaultContentType = "application/json"
             conf.enableCorsForAllOrigins()
+
+            // Logger.
+            conf.requestLogger { ctx, ms ->
+                LOGGER.info("Request received at $ms: ${ctx.req.requestURI}")
+            }
         }.routes {
             path("/exhibitions") {
                 path("list") {
@@ -99,6 +108,9 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
                 path("upload") {
                     post(exhibitHandler::saveExhibit)
                 }
+            }
+            path("/generate") { // TODO Add required parameters here.
+                get(collectionGenerator::generateRandomExhibitionForContext)
             }
         }
 

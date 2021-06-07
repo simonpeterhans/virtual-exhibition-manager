@@ -99,7 +99,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
      * Tries to import a single exhibit.
      *
      * @param exhibitionRoot The root folder of the exhibition.
-     * @param exhibitFile The configuration file path of the exhibit.
+     * @param exhibitFile The exhibit file (e.g., an image).
      * @param siblings Sibling exhibits (in the same room).
      * @return The imported exhibit.
      */
