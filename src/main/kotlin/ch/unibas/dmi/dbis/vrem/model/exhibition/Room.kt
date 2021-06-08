@@ -31,6 +31,7 @@ data class Room(
     val exhibits: MutableList<Exhibit> = mutableListOf(),
     val walls: MutableList<Wall> = mutableListOf()
 ) {
+
     companion object {
         /**
          * Builds a room from a list of walls.
@@ -199,4 +200,5 @@ data class Room(
         result = 31 * result + walls.hashCode()
         return result
     }
+
 }

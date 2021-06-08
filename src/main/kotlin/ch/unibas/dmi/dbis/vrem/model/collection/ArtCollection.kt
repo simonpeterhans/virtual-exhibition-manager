@@ -22,5 +22,7 @@ data class ArtCollection(
     val exhibits: List<Exhibit> = mutableListOf(),
     val metadata: Map<String, String> = mutableMapOf()
 ) {
+
     constructor(id: ObjectId, name: String, exhibits: List<Exhibit>) : this(id.toHexString(), name, exhibits)
+
 }

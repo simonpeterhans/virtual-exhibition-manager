@@ -9,7 +9,9 @@ import com.github.ajalt.clikt.core.subcommands
  * VREM Top-level CLI call.
  */
 class VREM : CliktCommand(name = "vrem", help = "This is the virtual-exhibition-manager (VREM)") {
+
     override fun run() = Unit // Top-level command (without args), not executable on its own.
+
 }
 
 /**

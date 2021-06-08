@@ -17,6 +17,7 @@ data class DatabaseConfig(
     val port: Short,
     val database: String
 ) {
+
     /**
      * Returns the connection string for the MongoDB client.
      *
@@ -25,4 +26,5 @@ data class DatabaseConfig(
     fun getConnectionString(): ConnectionString {
         return ConnectionString("mongodb://$host:$port")
     }
+
 }

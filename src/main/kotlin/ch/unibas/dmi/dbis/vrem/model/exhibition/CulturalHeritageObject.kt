@@ -21,6 +21,7 @@ data class CulturalHeritageObject(
     var path: String,
     val description: String
 ) {
+
     constructor(name: String, description: String, path: String, type: CHOType) : this(
         ObjectId().toHexString(),
         name = name,
@@ -31,7 +32,7 @@ data class CulturalHeritageObject(
 
     companion object {
         /**
-         * Types of CHO.
+         * Types of Cultural Heritage Objects.
          *
          * @constructor
          */
@@ -39,4 +40,5 @@ data class CulturalHeritageObject(
             IMAGE, MODEL, VIDEO, MODEL_STRUCTURAL
         }
     }
+
 }

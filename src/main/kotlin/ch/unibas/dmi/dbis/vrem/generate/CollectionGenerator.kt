@@ -23,14 +23,16 @@ class CollectionGenerator {
     companion object {
         private val LOGGER = LogManager.getLogger(CollectionGenerator::class.java)
 
-        // TODO Make those adjustable parameters for generateRandomExhibition().
+        /*
+         * TODO Avoid redefining many of the parameters below (duplicates of the import package)
+         *  when refactoring this once we have a clearer structure of the overall role of the generator.
+         */
         // Path to the folder of the images (= parent of the image folder).
         private const val EXHIBITION_PATH = "../vre-random/images"
 
         // Room properties.
         private const val NUM_IMAGES_PER_WALL = 5
         private const val NUM_WALLS = 4 // This is currently rather redundant.
-
 
         private val DEFAULT_TYPE = CulturalHeritageObject.Companion.CHOType.IMAGE
         private const val DEFAULT_LONG_SIDE_METERS = 2.0
@@ -93,7 +95,8 @@ class CollectionGenerator {
         val exhibits = mutableListOf<Exhibit>()
 
         val root = File(EXHIBITION_PATH)
-        LOGGER.info("Scanning for images at $root.")
+
+        LOGGER.info("Generating random collection for images at $root.")
 
         val files = root.listFiles()?.filter { IMAGE_FILE_EXTENSIONS.contains(it.extension) } ?: return exhibits
 
@@ -188,7 +191,7 @@ class CollectionGenerator {
      * @param save Whether to store the randomly generated exhibition or not.
      * @return The newly created exhibition object.
      */
-    fun generateRandomExhibition(save: Boolean = false): Exhibition {
+    fun generateRandomExhibition(save: Boolean = true): Exhibition {
         val exhibition = Exhibition(name = "Randomized Collection")
 
         // Generate rooms.

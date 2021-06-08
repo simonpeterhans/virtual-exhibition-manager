@@ -19,6 +19,7 @@ data class Wall(
     var direction: Direction,
     val exhibits: MutableList<Exhibit> = mutableListOf()
 ) {
+
     companion object {
         const val DEFAULT_TEXTURE = "NONE"
     }
@@ -41,4 +42,5 @@ data class Wall(
             false
         }
     }
+
 }

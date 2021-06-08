@@ -2,7 +2,10 @@ package ch.unibas.dmi.dbis.vrem.model.exhibition
 
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import kotlinx.serialization.Serializable
+import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
+import org.litote.kmongo.Id
+import org.litote.kmongo.newId
 
 /**
  * Exhibit object.
@@ -21,7 +24,8 @@ import org.bson.types.ObjectId
  */
 @Serializable
 data class Exhibit(
-    val id: String = ObjectId().toHexString(),
+    @BsonId
+    val id: Id<Exhibit> = newId(),
     var name: String,
     var description: String,
     var path: String = "",
@@ -32,6 +36,7 @@ data class Exhibit(
     val light: Boolean = false,
     val metadata: MutableMap<String, String> = mutableMapOf()
 ) {
+
     companion object {
         /**
          * Creates a copy of an exhibit and returns the newly created object.
@@ -55,7 +60,7 @@ data class Exhibit(
         path: String,
         type: CulturalHeritageObject.Companion.CHOType
     ) : this(
-        id = id.toHexString(),
+        id = newId(),
         name = name,
         description = description,
         path = path,
@@ -75,7 +80,7 @@ data class Exhibit(
         position: Vector3f,
         size: Vector3f
     ) : this(
-        id = id.toHexString(),
+        id = newId(),
         name = name,
         description = description,
         path = path,
@@ -87,7 +92,7 @@ data class Exhibit(
     )
 
     constructor(name: String, description: String, path: String, type: CulturalHeritageObject.Companion.CHOType) : this(
-        id = ObjectId(),
+        id = newId(),
         name = name,
         description = description,
         path = path,
@@ -103,7 +108,7 @@ data class Exhibit(
         size: Vector3f,
         audio: String,
         light: Boolean
-    ) : this(ObjectId().toHexString(), name, description, path, type, position, size, audio, light)
+    ) : this(id = newId(), name, description, path, type, position, size, audio, light)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -142,4 +147,5 @@ data class Exhibit(
     override fun toString(): String {
         return "Exhibit(id=$id, name='$name', description='$description', path='$path', type=$type, size=$size, position=$position, audio=$audio, light=$light, metadata=$metadata)"
     }
+
 }

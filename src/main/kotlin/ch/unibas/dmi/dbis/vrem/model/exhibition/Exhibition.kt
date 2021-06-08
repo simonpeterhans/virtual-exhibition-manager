@@ -1,17 +1,14 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.bson.codecs.pojo.annotations.BsonId
 import org.litote.kmongo.Id
 import org.litote.kmongo.newId
 import java.util.*
 
 /**
  * Exhibition object.
- *
- * TODO Fix IDs.
  *
  * @property id The ID of the exhibition (using kmongo to create the ID).
  * @property name The name of the exhibition.
@@ -21,12 +18,13 @@ import java.util.*
  */
 @Serializable
 data class Exhibition(
-    @SerialName("_id") @Contextual
+    @BsonId
     val id: Id<Exhibition> = newId(),
     val name: String,
     val description: String = "",
     val rooms: MutableList<Room> = mutableListOf()
 ) {
+
     /**
      * Adds a room to the exhibition if it is not already present.
      *
@@ -71,4 +69,5 @@ data class Exhibition(
     fun getExhibits(type: CulturalHeritageObject.Companion.CHOType): List<Exhibit> {
         return getExhibits().filter { e -> e.type == type }
     }
+
 }
