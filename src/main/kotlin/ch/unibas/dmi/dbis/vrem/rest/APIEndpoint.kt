@@ -4,7 +4,7 @@ import ch.unibas.dmi.dbis.vrem.config.Config
 import ch.unibas.dmi.dbis.vrem.config.DatabaseConfig
 import ch.unibas.dmi.dbis.vrem.database.dao.VREMReader
 import ch.unibas.dmi.dbis.vrem.database.dao.VREMWriter
-import ch.unibas.dmi.dbis.vrem.gen.CollectionGenerator
+import ch.unibas.dmi.dbis.vrem.generate.CollectionGenerator
 import ch.unibas.dmi.dbis.vrem.model.api.response.ErrorResponse
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitionHandler
@@ -63,7 +63,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
         val docRoot = File(config.server.documentRoot).toPath()
         if (!Files.exists(docRoot)) {
-            throw IOException("DocumentRoot $docRoot does not exist")
+            throw IOException("DocumentRoot $docRoot does not exist!")
         }
 
         // Handlers.
@@ -73,6 +73,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
         // Collection generator.
         val collectionGenerator = CollectionGenerator()
+//        val collectionGenerator = CollectionGenerator(docRoot, writer)
 
         // API endpoint.
         val endpoint = Javalin.create { conf ->
@@ -80,9 +81,9 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
             conf.enableCorsForAllOrigins()
 
             // Logger.
-            conf.requestLogger { ctx, ms ->
-                LOGGER.info("Request received at $ms: ${ctx.req.requestURI}")
-            }
+            /*conf.requestLogger { ctx, ms ->
+                LOGGER.info("Request received: ${ctx.req.requestURI}")
+            }*/
         }.routes {
             path("/exhibitions") {
                 path("list") {
@@ -109,16 +110,16 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
                     post(exhibitHandler::saveExhibit)
                 }
             }
-            path("/generate") { // TODO Add required parameters here.
+            path("/generate") {
                 get(collectionGenerator::generateRandomExhibitionForContext)
             }
         }
 
         // Exception Handling, semi-transparent.
         endpoint.exception(Exception::class.java) { e, ctx ->
-            LOGGER.error("An exception occurred. Sending 500 and exception name", e)
+            LOGGER.error("An exception occurred. Sending 500 and exception name.", e)
             ctx.status(500)
-                .json(ErrorResponse("Error of type ${e.javaClass.simpleName} occurred. See the server log for more info"))
+                .json(ErrorResponse("Error of type ${e.javaClass.simpleName} occurred. See the server log for more info."))
         }
         endpoint.after { ctx ->
             ctx.header("Access-Control-Allow-Origin", "*")
@@ -126,8 +127,8 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         }
         endpoint.start(config.server.port.toInt())
 
-        println("Started the server...")
-        println("Ctrl+C to stop the server")
+        println("Started the server.")
+        println("Ctrl+C to stop the server.")
 
         // TODO Make this CLI-alike to gracefully stop the server.
     }

@@ -4,11 +4,6 @@ import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
 /**
- * Tuple of objectId and name of an exhibition.
- * @author loris.sauter
- */
-
-/**
  * Exhibition summary in the form of a tuple of object ID and the name of the exhibition.
  *
  * @property objectId The ID of the exhibition.
