@@ -18,6 +18,7 @@ import javax.imageio.ImageIO
  * @constructor
  */
 class CollectionGenerator {
+
     // Static stuff.
     companion object {
         private val LOGGER = LogManager.getLogger(CollectionGenerator::class.java)

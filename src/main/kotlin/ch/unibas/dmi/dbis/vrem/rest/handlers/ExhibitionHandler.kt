@@ -18,9 +18,9 @@ import org.bson.types.ObjectId
  */
 class ExhibitionHandler(private val reader: VREMReader, private val writer: VREMWriter) {
 
-    private val LOGGER = LogManager.getLogger(ExhibitionHandler::class.java)
-
     companion object {
+        private val LOGGER = LogManager.getLogger(ExhibitionHandler::class.java)
+
         const val PARAM_KEY_ID = ":id"
         const val PARAM_KEY_NAME = ":name"
     }

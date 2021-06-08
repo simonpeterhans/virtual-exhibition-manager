@@ -20,7 +20,9 @@ import org.litote.kmongo.replaceOneById
  */
 class VREMWriter(database: MongoDatabase) : VREMDao(database) {
 
-    private val LOGGER = LogManager.getLogger(VREMWriter::class.java)
+    companion object {
+        private val LOGGER = LogManager.getLogger(VREMWriter::class.java)
+    }
 
     /**
      * Stores an exhibition in the exhibition collection.

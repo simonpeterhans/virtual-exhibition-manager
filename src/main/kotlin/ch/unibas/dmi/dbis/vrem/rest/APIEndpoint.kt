@@ -28,11 +28,11 @@ import java.nio.file.Files
  */
 class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API endpoint") {
 
-    val config: String by option("-c", "--config", help = "Path to the config file").default("config.json")
-
-    private val LOGGER = LogManager.getLogger(APIEndpoint::class.java)
+    private val config: String by option("-c", "--config", help = "Path to the config file").default("config.json")
 
     companion object {
+        private val LOGGER = LogManager.getLogger(APIEndpoint::class.java)
+
         /**
          * Static method to create data access objects (reader & writer) to access the exhibition/exhibit collections.
          *

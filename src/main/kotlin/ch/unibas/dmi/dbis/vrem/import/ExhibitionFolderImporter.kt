@@ -24,8 +24,6 @@ import kotlin.system.exitProcess
  */
 class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Imports a folder-based exhibition") {
 
-    private val LOGGER = LogManager.getLogger(ExhibitionFolderImporter::class.java)
-
     val exhibitionPath by option("-p", "--path", help = "Path to the exhibition root folder").required()
     val config by option(
         "-c",
@@ -57,6 +55,10 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
     lateinit var referenceExhibition: Exhibition
     lateinit var exhibition: Exhibition
+
+    companion object {
+        private val LOGGER = LogManager.getLogger(ExhibitionFolderImporter::class.java)
+    }
 
     override fun run() {
         // Get config and a reader/writer for the database.
