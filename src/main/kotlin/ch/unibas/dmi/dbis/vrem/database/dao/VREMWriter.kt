@@ -6,7 +6,6 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import com.mongodb.client.MongoDatabase
 import org.apache.logging.log4j.LogManager
-import org.bson.types.ObjectId
 import org.litote.kmongo.eq
 import org.litote.kmongo.push
 import org.litote.kmongo.replaceOneById
@@ -56,7 +55,7 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
 
         if (collection.countDocuments() == 0L) {
             LOGGER.debug("There is no previous document in ${CORPUS_COLLECTION}. We're adding one")
-            val artCollection = ArtCollection(ObjectId(), "DefaultCorpus", listOf(toAdd))
+            val artCollection = ArtCollection(name = "DefaultCorpus", exhibits = listOf(toAdd))
             collection.insertOne(artCollection)
             LOGGER.info("Successfully created the default corpus 'DefaultCorpus' and added an exhibit to it")
         } else {

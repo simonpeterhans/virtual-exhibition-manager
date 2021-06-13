@@ -1,9 +1,10 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bson.codecs.pojo.annotations.BsonId
-import org.bson.types.ObjectId
+import kotlinx.serialization.json.JsonNames
 import org.litote.kmongo.Id
 import org.litote.kmongo.newId
 
@@ -24,10 +25,12 @@ import org.litote.kmongo.newId
  */
 @Serializable
 data class Exhibit(
-    @BsonId
+    @Contextual
+    @SerialName("_id")
+    @JsonNames("id", "_id")
     val id: Id<Exhibit> = newId(),
     var name: String,
-    var description: String,
+    var description: String = "",
     var path: String = "",
     val type: CulturalHeritageObject.Companion.CHOType = DEFAULT_TYPE,
     var size: Vector3f = DEFAULT_SIZE,
@@ -36,6 +39,11 @@ data class Exhibit(
     val light: Boolean = false,
     val metadata: MutableMap<String, String> = mutableMapOf()
 ) {
+    constructor(name: String, path: String, choType: CulturalHeritageObject.Companion.CHOType) : this(
+        name = name,
+        path = path,
+        type = choType
+    )
 
     companion object {
         /**
@@ -45,70 +53,23 @@ data class Exhibit(
          * @return The newly created copy of the exhibit.
          */
         fun copy(e: Exhibit): Exhibit {
-            return Exhibit(e.name, e.description, e.path, e.type, e.position, e.size, e.audio!!, e.light)
+            return Exhibit(
+                newId(),
+                e.name,
+                e.description,
+                e.path,
+                e.type,
+                e.position,
+                e.size,
+                e.audio!!,
+                e.light
+            )
         }
 
         val DEFAULT_SIZE = Vector3f.UNIT
         val DEFAULT_POSITION = Vector3f.ORIGIN
         val DEFAULT_TYPE = CulturalHeritageObject.Companion.CHOType.IMAGE
     }
-
-    constructor(
-        id: ObjectId,
-        name: String,
-        description: String,
-        path: String,
-        type: CulturalHeritageObject.Companion.CHOType
-    ) : this(
-        id = newId(),
-        name = name,
-        description = description,
-        path = path,
-        type = type,
-        position = Vector3f.ORIGIN,
-        size = Vector3f.UNIT,
-        audio = null,
-        light = false
-    )
-
-    constructor(
-        id: ObjectId,
-        name: String,
-        description: String,
-        path: String,
-        type: CulturalHeritageObject.Companion.CHOType,
-        position: Vector3f,
-        size: Vector3f
-    ) : this(
-        id = newId(),
-        name = name,
-        description = description,
-        path = path,
-        type = type,
-        position = position,
-        size = size,
-        audio = null,
-        light = false
-    )
-
-    constructor(name: String, description: String, path: String, type: CulturalHeritageObject.Companion.CHOType) : this(
-        id = newId(),
-        name = name,
-        description = description,
-        path = path,
-        type = type
-    )
-
-    constructor(
-        name: String,
-        description: String,
-        path: String,
-        type: CulturalHeritageObject.Companion.CHOType,
-        position: Vector3f,
-        size: Vector3f,
-        audio: String,
-        light: Boolean
-    ) : this(id = newId(), name, description, path, type, position, size, audio, light)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

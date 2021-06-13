@@ -14,9 +14,15 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
+import io.javalin.plugin.json.FromJsonMapper
+import io.javalin.plugin.json.JavalinJson
+import io.javalin.plugin.json.ToJsonMapper
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import org.apache.logging.log4j.LogManager
 import org.litote.kmongo.KMongo
+import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -30,8 +36,39 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
     private val config: String by option("-c", "--config", help = "Path to the config file").default("config.json")
 
+    init {
+        JavalinJson.toJsonMapper = object : ToJsonMapper {
+            override fun map(obj: Any): String {
+                val serializer = serializer(obj.javaClass)
+                val jsonObj = Json {
+                    serializersModule = IdKotlinXSerializationModule
+                    encodeDefaults = true
+                }
+                return jsonObj.encodeToString(serializer, obj)
+            }
+        }
+
+        JavalinJson.fromJsonMapper = object : FromJsonMapper {
+            override fun <T> map(json: String, targetClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                val deserializer = serializer(targetClass) as KSerializer<T>
+                val jsonObj = Json {
+                    serializersModule = IdKotlinXSerializationModule
+                    ignoreUnknownKeys = true
+                    coerceInputValues = true
+                }
+                return jsonObj.decodeFromString(deserializer, json)
+            }
+
+        }
+    }
+
     companion object {
         private val LOGGER = LogManager.getLogger(APIEndpoint::class.java)
+        private val json = Json {
+            serializersModule = IdKotlinXSerializationModule
+            encodeDefaults = true
+        }
 
         /**
          * Static method to create data access objects (reader & writer) to access the exhibition/exhibit collections.
@@ -53,7 +90,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
          */
         fun readConfig(config: String): Config {
             val jsonString = File(config).readText()
-            return Json.decodeFromString(Config.serializer(), jsonString)
+            return json.decodeFromString(Config.serializer(), jsonString)
         }
     }
 

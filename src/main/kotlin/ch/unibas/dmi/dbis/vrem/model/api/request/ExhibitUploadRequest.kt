@@ -6,8 +6,6 @@ import kotlinx.serialization.Serializable
 /**
  * Exhibit upload request.
  *
- * TODO Fixme.
- *
  * @property artCollection The name of the art collection.
  * @property exhibit The exhibit object to upload.
  * @property file The file (path) of the exhibit.

@@ -1,6 +1,7 @@
 package ch.unibas.dmi.dbis.vrem.model.collection
 
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
@@ -16,13 +17,10 @@ import org.bson.types.ObjectId
  */
 @Serializable
 data class ArtCollection(
+    @Contextual
     @SerialName("_id")
-    val id: String,
+    val id: String = ObjectId().toString(),
     val name: String,
     val exhibits: List<Exhibit> = mutableListOf(),
     val metadata: Map<String, String> = mutableMapOf()
-) {
-
-    constructor(id: ObjectId, name: String, exhibits: List<Exhibit>) : this(id.toHexString(), name, exhibits)
-
-}
+)

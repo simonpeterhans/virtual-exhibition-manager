@@ -11,6 +11,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.float
 import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.LogManager
+import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.system.exitProcess
@@ -58,6 +59,10 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
     companion object {
         private val LOGGER = LogManager.getLogger(ExhibitionFolderImporter::class.java)
+        private val json = Json {
+            serializersModule = IdKotlinXSerializationModule
+            encodeDefaults = true
+        }
     }
 
     override fun run() {
@@ -191,11 +196,11 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         val path = exhibitFile.relativeTo(exhibitionRoot).toString().replace('\\', '/') // In case its Windows.
         return if (configFile.exists()) {
             val jsonString = configFile.readText()
-            val exhibit = Json.decodeFromString(Exhibit.serializer(), jsonString)
+            val exhibit = json.decodeFromString(Exhibit.serializer(), jsonString)
             exhibit.path = path
             exhibit
         } else {
-            Exhibit(exhibitFile.nameWithoutExtension, "", path, CulturalHeritageObject.Companion.CHOType.IMAGE)
+            Exhibit(exhibitFile.nameWithoutExtension, path, CulturalHeritageObject.Companion.CHOType.IMAGE)
         }
     }
 
@@ -211,7 +216,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         LOGGER.trace("Looking for wall configuration at $wallConfigFile.")
         return if (wallConfigFile.exists()) {
             val jsonString = wallConfigFile.readText()
-            val wall = Json.decodeFromString(Wall.serializer(), jsonString)
+            val wall = json.decodeFromString(Wall.serializer(), jsonString)
             wall.direction = dir
             wall
         } else {
@@ -230,7 +235,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         LOGGER.trace("Looking for room configuration at $room.")
         return if (roomConfigFile.exists()) {
             val jsonString = roomConfigFile.readText()
-            Json.decodeFromString(Room.serializer(), jsonString)
+            json.decodeFromString(Room.serializer(), jsonString)
         } else {
             Room(room.name, "NONE", "NONE", Vector3f.ORIGIN, Room.DEFAULT_SIZE, Room.DEFAULT_ENTRYPOINT)
         }

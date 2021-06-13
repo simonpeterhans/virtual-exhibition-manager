@@ -1,7 +1,6 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
-import com.fasterxml.jackson.annotation.JsonIgnore
 import kotlinx.serialization.Serializable
 
 /**
@@ -33,6 +32,12 @@ data class Room(
 ) {
 
     companion object {
+        val DEFAULT_SIZE = Vector3f(10, 5, 10)
+        val DEFAULT_ENTRYPOINT = Vector3f.ORIGIN
+        val DEFAULT_POSITION = Vector3f.ORIGIN
+        const val DEFAULT_FLOOR = "NONE"
+        const val DEFAULT_CEILING = "NONE"
+
         /**
          * Builds a room from a list of walls.
          *
@@ -60,12 +65,6 @@ data class Room(
             room.walls.addAll(walls)
             return room
         }
-
-        val DEFAULT_SIZE = Vector3f(10, 5, 10)
-        val DEFAULT_ENTRYPOINT = Vector3f.ORIGIN
-        val DEFAULT_POSITION = Vector3f.ORIGIN
-        const val DEFAULT_FLOOR = "NONE"
-        const val DEFAULT_CEILING = "NONE"
     }
 
     constructor(
@@ -100,7 +99,6 @@ data class Room(
      * @param dir The direction of the wall.
      * @param w The wall to add.
      */
-    @JsonIgnore
     private fun setWall(dir: Direction, w: Wall) {
         if (w.direction != dir) {
             throw IllegalArgumentException("Wall direction not matching. Expected $dir but got ${w.direction}")
@@ -114,7 +112,6 @@ data class Room(
      * @param dir The direction of the wall.
      * @return The wall facing the provided direction in the room.
      */
-    @JsonIgnore
     private fun getWall(dir: Direction): Wall {
         try {
             return walls.first { w -> w.direction == dir }
@@ -123,42 +120,34 @@ data class Room(
         }
     }
 
-    @JsonIgnore
     fun getNorth(): Wall {
         return getWall(Direction.NORTH)
     }
 
-    @JsonIgnore
     fun setNorth(wall: Wall) {
         setWall(Direction.NORTH, wall)
     }
 
-    @JsonIgnore
     fun getEast(): Wall {
         return getWall(Direction.EAST)
     }
 
-    @JsonIgnore
     fun setEast(wall: Wall) {
         setWall(Direction.EAST, wall)
     }
 
-    @JsonIgnore
     fun getSouth(): Wall {
         return getWall(Direction.SOUTH)
     }
 
-    @JsonIgnore
     fun setSouth(wall: Wall) {
         setWall(Direction.SOUTH, wall)
     }
 
-    @JsonIgnore
     fun getWest(): Wall {
         return getWall(Direction.WEST)
     }
 
-    @JsonIgnore
     fun setWest(wall: Wall) {
         setWall(Direction.WEST, wall)
     }
@@ -168,7 +157,6 @@ data class Room(
     }
 
     override fun equals(other: Any?): Boolean {
-        // IntelliJ IDEA generated
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
@@ -188,7 +176,6 @@ data class Room(
     }
 
     override fun hashCode(): Int {
-        // IntelliJ IDEA generated
         var result = text.hashCode()
         result = 31 * result + floor.hashCode()
         result = 31 * result + ceiling.hashCode()

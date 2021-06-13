@@ -20,7 +20,9 @@ import java.util.*
  */
 class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWriter, private val docRoot: Path) {
 
-    private val LOGGER = LogManager.getLogger(ExhibitHandler::class.java)
+    companion object {
+        private val LOGGER = LogManager.getLogger(ExhibitHandler::class.java)
+    }
 
     /**
      * Lists all exhibits currently stored.

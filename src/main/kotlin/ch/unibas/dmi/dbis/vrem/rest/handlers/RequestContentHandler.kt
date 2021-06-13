@@ -13,9 +13,8 @@ import java.nio.file.Path
  */
 class RequestContentHandler(private val docRoot: Path) {
 
-    private val LOGGER = LogManager.getLogger(RequestContentHandler::class.java)
-
     companion object {
+        private val LOGGER = LogManager.getLogger(RequestContentHandler::class.java)
         const val PARAM_KEY_PATH = ":path"
     }
 

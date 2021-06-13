@@ -57,7 +57,7 @@ class CollectionGenerator {
      */
     private fun loadImageToExhibit(root: File, exhibitFile: File): Exhibit {
         val relativePath = exhibitFile.relativeTo(root).toString().replace('\\', '/') // In case its Windows.
-        val exhibit = Exhibit(exhibitFile.nameWithoutExtension, "", relativePath, DEFAULT_TYPE)
+        val exhibit = Exhibit(exhibitFile.nameWithoutExtension, relativePath, DEFAULT_TYPE)
 
         // Load image as stream so we don't have to load the entire thing.
         val imageStream = ImageIO.createImageInputStream(exhibitFile)
@@ -191,7 +191,7 @@ class CollectionGenerator {
      * @param save Whether to store the randomly generated exhibition or not.
      * @return The newly created exhibition object.
      */
-    fun generateRandomExhibition(save: Boolean = true): Exhibition {
+    fun generateRandomExhibition(save: Boolean = false): Exhibition {
         val exhibition = Exhibition(name = "Randomized Collection")
 
         // Generate rooms.

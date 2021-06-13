@@ -1,8 +1,8 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bson.codecs.pojo.annotations.BsonId
 import org.litote.kmongo.Id
 import org.litote.kmongo.newId
 import java.util.*
@@ -16,9 +16,11 @@ import java.util.*
  * @property rooms A list of rooms that the exhibition consists of.
  * @constructor
  */
+
 @Serializable
 data class Exhibition(
-    @BsonId
+    @Contextual
+    @SerialName("_id")
     val id: Id<Exhibition> = newId(),
     val name: String,
     val description: String = "",
@@ -44,8 +46,7 @@ data class Exhibition(
      *
      * @return A list of all exhibits.
      */
-    @JsonIgnore
-    fun getExhibits(): MutableList<Exhibit> {
+    fun obtainExhibits(): MutableList<Exhibit> {
         val exhibits = mutableListOf<Exhibit>()
 
         rooms.forEach { r ->
@@ -65,9 +66,8 @@ data class Exhibition(
      * @param type The CHO type to obtain.
      * @return A list of all exhibits of the provided type.
      */
-    @JsonIgnore
-    fun getExhibits(type: CulturalHeritageObject.Companion.CHOType): List<Exhibit> {
-        return getExhibits().filter { e -> e.type == type }
+    fun obtainExhibits(type: CulturalHeritageObject.Companion.CHOType): List<Exhibit> {
+        return obtainExhibits().filter { e -> e.type == type }
     }
 
 }

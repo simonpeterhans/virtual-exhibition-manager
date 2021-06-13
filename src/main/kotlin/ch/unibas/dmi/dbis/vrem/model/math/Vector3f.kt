@@ -1,6 +1,5 @@
 package ch.unibas.dmi.dbis.vrem.model.math
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import kotlinx.serialization.Serializable
 
 /**
@@ -12,7 +11,7 @@ import kotlinx.serialization.Serializable
  * @constructor
  */
 @Serializable
-data class Vector3f(val x: Float, val y: Float, val z: Float) {
+data class Vector3f(val x: Float = 0f, val y: Float = 0f, val z: Float = 0f) {
 
     constructor(x: Number, y: Number, z: Number) : this(x.toFloat(), y.toFloat(), z.toFloat())
 
@@ -27,7 +26,6 @@ data class Vector3f(val x: Float, val y: Float, val z: Float) {
     }
 
     override fun equals(other: Any?): Boolean {
-        // IntelliJ IDEA generated.
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
@@ -41,7 +39,6 @@ data class Vector3f(val x: Float, val y: Float, val z: Float) {
     }
 
     override fun hashCode(): Int {
-        // IntelliJ IDEA generated.
         var result = x.hashCode()
         result = 31 * result + y.hashCode()
         result = 31 * result + z.hashCode()
@@ -53,7 +50,6 @@ data class Vector3f(val x: Float, val y: Float, val z: Float) {
      *
      * @return True if the vector object is NaN, false otherwise.
      */
-    @JsonIgnore
     fun isNaN(): Boolean {
         return equals(NaN)
     }

@@ -8,6 +8,7 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import io.javalin.http.Context
 import org.apache.logging.log4j.LogManager
 import org.bson.types.ObjectId
+import org.litote.kmongo.id.toId
 
 /**
  * Exhibition handler for API requests.
@@ -43,7 +44,7 @@ class ExhibitionHandler(private val reader: VREMReader, private val writer: VREM
     fun loadExhibitionById(ctx: Context) {
         val id = ctx.pathParam(PARAM_KEY_ID)
         LOGGER.debug("Load exhibition by id=$id")
-        ctx.json(reader.getExhibition(ObjectId(id)))
+        ctx.json(reader.getExhibition(ObjectId(id).toId()))
     }
 
     /**
