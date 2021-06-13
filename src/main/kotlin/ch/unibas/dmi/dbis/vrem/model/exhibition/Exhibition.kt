@@ -3,6 +3,7 @@ package ch.unibas.dmi.dbis.vrem.model.exhibition
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 import org.litote.kmongo.Id
 import org.litote.kmongo.newId
 import java.util.*
@@ -21,6 +22,7 @@ import java.util.*
 data class Exhibition(
     @Contextual
     @SerialName("_id")
+    @JsonNames("id", "_id")
     val id: Id<Exhibition> = newId(),
     val name: String,
     val description: String = "",

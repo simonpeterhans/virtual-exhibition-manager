@@ -54,12 +54,10 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
                 val deserializer = serializer(targetClass) as KSerializer<T>
                 val jsonObj = Json {
                     serializersModule = IdKotlinXSerializationModule
-                    ignoreUnknownKeys = true
                     coerceInputValues = true
                 }
                 return jsonObj.decodeFromString(deserializer, json)
             }
-
         }
     }
 
