@@ -48,6 +48,9 @@ dependencies {
     // Javalin.
     implementation group: 'io.javalin', name: 'javalin', version: '3.13.7'
 
+    // Fuel.
+    implementation group: 'com.github.kittinunf.fuel', name: 'fuel', version: '2.3.1'
+
     // OpenAPI Dependencies (OkHttp3 and Moshi Serialization).
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.0'
     implementation group: 'com.squareup.moshi', name: 'moshi-kotlin', version: '1.11.0'
