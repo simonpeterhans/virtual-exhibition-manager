@@ -3,6 +3,8 @@ package ch.unibas.dmi.dbis.vrem.model.exhibition
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import kotlinx.serialization.Serializable
 
+// TODO Potentially add path here.
+
 /**
  * Object representation of exhibition rooms.
  *
@@ -37,44 +39,7 @@ data class Room(
         val DEFAULT_POSITION = Vector3f.ORIGIN
         const val DEFAULT_FLOOR = "NONE"
         const val DEFAULT_CEILING = "NONE"
-
-        /**
-         * Builds a room from a list of walls.
-         *
-         * @property text The title/description of the room.
-         * @property floor The floor texture of the room.
-         * @property ceiling The ceiling texture of the room.
-         * @property position The position of the room.
-         * @property size The size of the room.
-         * @property entryPoint The spawning/entry point of the room.
-         * @property ambient The ambient of the room.
-         * @property walls A list of walls present in the room.
-         * @return
-         */
-        fun build(
-            text: String,
-            floor: String,
-            ceiling: String,
-            size: Vector3f,
-            position: Vector3f,
-            entryPoint: Vector3f,
-            ambient: String?,
-            walls: List<Wall>
-        ): Room {
-            val room = Room(text, floor, ceiling, position, size, entryPoint, ambient)
-            room.walls.addAll(walls)
-            return room
-        }
     }
-
-    constructor(
-        text: String,
-        floor: String,
-        ceiling: String,
-        size: Vector3f,
-        position: Vector3f,
-        entrypoint: Vector3f
-    ) : this(text, floor, ceiling, position, size, entrypoint, null)
 
     /**
      * Adds an exhibit to the room if it is not already in the room's list of exhibits.

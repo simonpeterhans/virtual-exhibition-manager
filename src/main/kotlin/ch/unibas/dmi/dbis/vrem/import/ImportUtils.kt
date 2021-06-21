@@ -4,6 +4,8 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
+import java.io.File
+import javax.imageio.ImageIO
 
 /**
  * Utilities used for exhibition import.
@@ -25,6 +27,7 @@ object ImportUtils {
     const val JPEG_EXTENSION = "jpeg"
     const val PNG_EXTENSION = "png"
     const val BMP_EXTENSION = "bmp"
+
     val IMAGE_FILE_EXTENSIONS = listOf(JPEG_EXTENSION, JPG_EXTENSION, PNG_EXTENSION, BMP_EXTENSION)
 
     /**
@@ -66,6 +69,36 @@ object ImportUtils {
             val dist = siblings.map { it.size.x + exhibitPadding }.sum()
             Vector3f(roomBorder + dist + (exhibit.size.x / 2f), exhibitHeight)
         }
+    }
+
+    fun calculateExhibitSize(exhibitFile: File, exhibit: Exhibit, defaultLongSide: Float) {
+        // Load image as stream so we don't have to load the entire thing.
+        val imageStream = ImageIO.createImageInputStream(exhibitFile)
+
+        val reader = ImageIO.getImageReaders(imageStream).next()
+        reader.input = imageStream
+
+        // Get width and height.
+        val imageHeight = reader.getWidth(0)
+        val imageWidth = reader.getHeight(0)
+
+        // Close stream.
+        imageStream.close()
+
+        // Calculate aspect ratio and adjust width/height accordingly.
+        val aspectRatio = imageHeight / imageWidth
+
+        var width = defaultLongSide
+        var height = defaultLongSide
+
+        if (imageWidth > imageHeight) {
+            height = (aspectRatio * (defaultLongSide * 100f)) / 100f // Convert to cm for precision.
+        } else {
+            width = ((defaultLongSide * 100f) / aspectRatio) / 100f // Convert to cm for precision.
+        }
+
+        // Update width/height.
+        exhibit.size = Vector3f(width, height)
     }
 
     /**

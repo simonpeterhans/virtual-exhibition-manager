@@ -1,5 +1,7 @@
 package ch.unibas.dmi.dbis.vrem.import
 
+import ch.unibas.dmi.dbis.vrem.import.ImportUtils.calculateExhibitSize
+import ch.unibas.dmi.dbis.vrem.import.ImportUtils.calculateWallExhibitPosition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import ch.unibas.dmi.dbis.vrem.rest.APIEndpoint
@@ -13,7 +15,7 @@ import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.LogManager
 import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 import java.io.File
-import javax.imageio.ImageIO
+import java.nio.file.Files
 import kotlin.system.exitProcess
 
 /**
@@ -54,11 +56,15 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         help = "The length of the long side of an image in meters"
     ).float().default(2f)
 
-    lateinit var referenceExhibition: Exhibition
-    lateinit var exhibition: Exhibition
+    private lateinit var exhibition: Exhibition
+    private lateinit var storageRoot: File
+    private lateinit var importRoot: File
+    private lateinit var exhibitionStorageRoot: File
 
     companion object {
         private val LOGGER = LogManager.getLogger(ExhibitionFolderImporter::class.java)
+
+        // TODO Refactor the JSON builder into some util class (for all instances using it).
         private val json = Json {
             serializersModule = IdKotlinXSerializationModule
             encodeDefaults = true
@@ -71,15 +77,16 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         val (reader, writer) = APIEndpoint.getDAOs(config.database)
         val exhibitionFolder = File(exhibitionPath)
 
-        // Checks: Require exhibition folder to exist and no other exhibition with the same name to exist in the collection.
+        // Checks: Require exhibition folder to exist and no other exhibition with the same name to exist.
         if (!exhibitionFolder.exists() and !exhibitionFolder.isDirectory) {
-            LOGGER.error("--path argument has to point to an existing directory")
+            LOGGER.error("--path argument has to point to an existing directory!")
             exitProcess(-1)
         }
 
         if (reader.existsExhibition(name)) {
             if (!clean) {
-                LOGGER.error("An exhibition with $name already exists.")
+                // TODO Instead of enforcing unique names, consider using the name as ID.
+                LOGGER.error("An exhibition with name $name already exists!")
                 exitProcess(-2)
             }
 
@@ -90,55 +97,68 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
         // Create new exhibition.
         this.exhibition = Exhibition(name = name, description = exhibitionDescription)
-        val root = File(exhibitionPath)
-        LOGGER.info("Starting import exhibition at $root.")
+
+        // Roots for import and storage.
+        this.storageRoot = File(config.server.documentRoot)
+        this.importRoot = File(exhibitionPath)
+
+        // Determine path to copy media files to after importing.
+        val exhibitionRoot = File(exhibition.id.toString())
+        //val exhibitionRoot = File(exhibition.id.toString() + "_" + exhibition.name)
+        this.exhibitionStorageRoot = storageRoot.resolve(exhibitionRoot)
+
+        LOGGER.info("Starting import exhibition at ${this.importRoot}.")
 
         // Try to add every folder as a new room to the previously created exhibition object.
-        root.listFiles()?.filter { !it.nameWithoutExtension.startsWith(ignore) }
-            ?.forEach { exhibition.addRoom(importRoom(root.parentFile, it, exhibition.rooms)) }
+        this.importRoot.listFiles()?.filter { !it.nameWithoutExtension.startsWith(ignore) }
+            ?.forEach { exhibition.addRoom(importRoom(it, exhibition.rooms)) }
 
-        // Save.
+        LOGGER.info("Writing exhibition entry to MongoDB...")
+
+        // Create MongoDB entry.
         writer.saveExhibition(exhibition)
+
+        LOGGER.info("Copying media files...")
+
+        // Copy local files.
+        exhibition.obtainExhibits().forEach() {
+            // Paths to copy to/from.
+            val srcPath = importRoot.resolve(File(it.path).relativeTo(exhibitionRoot))
+            val targetPath = storageRoot.resolve(it.path)
+
+            // Create directories if they don't exist.
+            Files.createDirectories(targetPath.parentFile.toPath())
+
+            // Copy the files.
+            Files.copy(srcPath.toPath(), targetPath.toPath())
+        }
+
+        // TODO Handle any errors upon MongoDB import or file copy.
+
         LOGGER.info("Finished import.")
     }
 
     /**
      * Tries to import a single exhibit.
      *
-     * @param exhibitionRoot The root folder of the exhibition.
      * @param exhibitFile The exhibit file (e.g., an image).
      * @param siblings Sibling exhibits (in the same room).
      * @return The imported exhibit.
      */
-    private fun importExhibit(exhibitionRoot: File, exhibitFile: File, siblings: List<Exhibit>): Exhibit {
+    private fun importExhibit(exhibitFile: File, siblings: List<Exhibit>): Exhibit {
         LOGGER.trace("Importing exhibit $exhibitFile.")
-        val exhibit = readExhibitConfigOrCreateNew(exhibitionRoot, exhibitFile)
-        val image = ImageIO.read(exhibitFile)
-        val aspectRatio = image.height.toFloat() / image.width.toFloat()
-        var width = defaultLongSide
-        var height = defaultLongSide
 
-        if (image.width > image.height) {
-            height = (aspectRatio * (defaultLongSide * 100f)) / 100f // in cm for precision
-        } else {
-            width = ((defaultLongSide * 100f) / aspectRatio) / 100f // cm
-        }
+        // Try to import exhibit by reading image and, if available, its config.
+        val exhibit = readExhibitConfigOrCreateNew(exhibitFile)
 
+        // No valid size given: Calculate exhibit size.
         if (exhibit.size.isNaN() or (exhibit.size == Vector3f.ORIGIN)) {
-            exhibit.size = Vector3f(width, height)
+            calculateExhibitSize(exhibitFile, exhibit, defaultLongSide)
         }
 
+        // Calculate exhibit position if not given.
         if (exhibit.position.isNaN() or (exhibit.position == Vector3f.ORIGIN)) {
-            exhibit.position = ImportUtils.calculateWallExhibitPosition(exhibit, siblings)
-        }
-
-        // TODO ???
-        if (::referenceExhibition.isInitialized) {
-            val ref = ImportUtils.findExhibitForPath(exhibition, exhibit.path)
-            ref?.let {
-                ImportUtils.copyName(it, exhibit)
-                ImportUtils.copyDescription(it, exhibit)
-            }
+            exhibit.position = calculateWallExhibitPosition(exhibit, siblings)
         }
 
         return exhibit
@@ -147,21 +167,22 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
     /**
      * Imports a room.
      *
-     * @param root The root folder of the exhibition.
      * @param roomFile The path of the room.
      * @param siblings Sibling rooms, used to calculate a room's position.
      * @return The created room.
      */
-    private fun importRoom(root: File, roomFile: File, siblings: List<Room>): Room {
+    private fun importRoom(roomFile: File, siblings: List<Room>): Room {
         LOGGER.trace("Importing room $roomFile.")
+
         val room = readRoomConfigOrCreateNew(roomFile)
 
-        room.setNorth(importWall(Direction.NORTH, roomFile.resolve(ImportUtils.NORTH_WALL_NAME), root))
-        room.setEast(importWall(Direction.EAST, roomFile.resolve(ImportUtils.EAST_WALL_NAME), root))
-        room.setSouth(importWall(Direction.SOUTH, roomFile.resolve(ImportUtils.SOUTH_WALL_NAME), root))
-        room.setWest(importWall(Direction.WEST, roomFile.resolve(ImportUtils.WEST_WALL_NAME), root))
+        room.setNorth(importWall(Direction.NORTH, roomFile.resolve(ImportUtils.NORTH_WALL_NAME)))
+        room.setEast(importWall(Direction.EAST, roomFile.resolve(ImportUtils.EAST_WALL_NAME)))
+        room.setSouth(importWall(Direction.SOUTH, roomFile.resolve(ImportUtils.SOUTH_WALL_NAME)))
+        room.setWest(importWall(Direction.WEST, roomFile.resolve(ImportUtils.WEST_WALL_NAME)))
 
         room.position = ImportUtils.calculateRoomPosition(room, siblings)
+
         return room
     }
 
@@ -170,37 +191,42 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
      *
      * @param dir The direction the wall is facing when looking from the origin.
      * @param wallFolder The path of the wall to read the config for.
-     * @param root The root folder of the exhibition.
      * @return The wall (with the imported exhibits).
      */
-    private fun importWall(dir: Direction, wallFolder: File, root: File): Wall {
+    private fun importWall(dir: Direction, wallFolder: File): Wall {
         LOGGER.trace("Importing wall $wallFolder.")
+
         val wall = readWallConfigOrCreateNew(dir, wallFolder)
+
         wallFolder.listFiles()
             ?.filter { ImportUtils.IMAGE_FILE_EXTENSIONS.contains(it.extension) }
-            ?.forEach { wall.placeExhibit(importExhibit(root, it, wall.exhibits)) }
+            ?.forEach { wall.placeExhibit(importExhibit(it, wall.exhibits)) }
+
         return wall
     }
 
     /**
      * Reads an exhibit configuration, creating a new one with default settings if the file was not found.
      *
-     * @param exhibitionRoot The root folder of the exhibition (!).
      * @param exhibitFile The path of the exhibit to read the config for.
      * @return The exhibit as defined in the (potentially defaulted) configuration.
      */
-    private fun readExhibitConfigOrCreateNew(exhibitionRoot: File, exhibitFile: File): Exhibit {
+    private fun readExhibitConfigOrCreateNew(exhibitFile: File): Exhibit {
         val configFile =
             exhibitFile.parentFile.resolve("${exhibitFile.nameWithoutExtension}.${ImportUtils.JSON_EXTENSION}")
+
         LOGGER.trace("Looking for exhibit configuration at $configFile.")
-        val path = exhibitFile.relativeTo(exhibitionRoot).toString().replace('\\', '/') // In case its Windows.
+
+        val exhibitPath = exhibitFile.relativeTo(importRoot).toString().replace('\\', '/') // In case its Windows.
+        val path = exhibitionStorageRoot.resolve(exhibitPath).relativeTo(storageRoot)
+
         return if (configFile.exists()) {
-            val jsonString = configFile.readText()
-            val exhibit = json.decodeFromString(Exhibit.serializer(), jsonString)
-            exhibit.path = path
+            val exhibit = json.decodeFromString(Exhibit.serializer(), configFile.readText())
+
+            exhibit.path = path.toString()
             exhibit
         } else {
-            Exhibit(exhibitFile.nameWithoutExtension, path, CulturalHeritageObject.Companion.CHOType.IMAGE)
+            Exhibit(exhibitFile.nameWithoutExtension, path.toString(), CulturalHeritageObject.Companion.CHOType.IMAGE)
         }
     }
 
@@ -213,14 +239,16 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
      */
     private fun readWallConfigOrCreateNew(dir: Direction, wallFolder: File): Wall {
         val wallConfigFile = wallFolder.resolve(ImportUtils.WALL_CONFIG_FILE)
+
         LOGGER.trace("Looking for wall configuration at $wallConfigFile.")
+
         return if (wallConfigFile.exists()) {
-            val jsonString = wallConfigFile.readText()
-            val wall = json.decodeFromString(Wall.serializer(), jsonString)
+            val wall = json.decodeFromString(Wall.serializer(), wallConfigFile.readText())
+
             wall.direction = dir
             wall
         } else {
-            Wall(dir, "NONE")
+            Wall(dir)
         }
     }
 
@@ -231,13 +259,14 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
      * @return The room as defined in the (potentially defaulted) configuration.
      */
     private fun readRoomConfigOrCreateNew(room: File): Room {
-        val roomConfigFile = room.resolve(ImportUtils.ROOM_CONFIG_FILE)
         LOGGER.trace("Looking for room configuration at $room.")
+
+        val roomConfigFile = room.resolve(ImportUtils.ROOM_CONFIG_FILE)
+
         return if (roomConfigFile.exists()) {
-            val jsonString = roomConfigFile.readText()
-            json.decodeFromString(Room.serializer(), jsonString)
+            json.decodeFromString(Room.serializer(), roomConfigFile.readText())
         } else {
-            Room(room.name, "NONE", "NONE", Vector3f.ORIGIN, Room.DEFAULT_SIZE, Room.DEFAULT_ENTRYPOINT)
+            Room(room.name)
         }
     }
 

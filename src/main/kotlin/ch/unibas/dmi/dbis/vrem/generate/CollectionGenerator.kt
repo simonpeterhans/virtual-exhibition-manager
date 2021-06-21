@@ -15,6 +15,8 @@ import javax.imageio.ImageIO
  * Primitive collection generator.
  * Does currently not store or read any configuration files and is relatively independent of the import component.
  *
+ * TODO Fix this after refactoring collection storage handling.
+ *
  * @constructor
  */
 class CollectionGenerator {
@@ -36,7 +38,7 @@ class CollectionGenerator {
 
         private val DEFAULT_TYPE = CulturalHeritageObject.Companion.CHOType.IMAGE
         private const val DEFAULT_LONG_SIDE_METERS = 2.0
-        private const val DEFAULT_TEXT = "Randomized Room"
+        private const val RANDOMIZED_ROOM_TEXT = "Randomized Room"
         private const val DEFAULT_FLOOR = "WoodenDarkHParquetFloor"
         private const val DEFAULT_CEIL = "WhiteStucco"
 
@@ -61,12 +63,16 @@ class CollectionGenerator {
 
         // Load image as stream so we don't have to load the entire thing.
         val imageStream = ImageIO.createImageInputStream(exhibitFile)
+
         val reader = ImageIO.getImageReaders(imageStream).next()
         reader.input = imageStream
 
         // Get width and height.
         val imageHeight = reader.getWidth(0)
         val imageWidth = reader.getHeight(0)
+
+        // Close stream.
+        imageStream.close()
 
         val aspectRatio = imageHeight.toFloat() / imageWidth.toFloat()
         var width = DEFAULT_LONG_SIDE_METERS
@@ -170,14 +176,7 @@ class CollectionGenerator {
     private fun generateRooms(): MutableList<Room> {
         val rooms = mutableListOf<Room>()
 
-        val room = Room(
-            DEFAULT_TEXT,
-            DEFAULT_FLOOR,
-            DEFAULT_CEIL,
-            Room.DEFAULT_SIZE,
-            Vector3f.ORIGIN,
-            Room.DEFAULT_ENTRYPOINT
-        )
+        val room = Room(RANDOMIZED_ROOM_TEXT)
 
         room.walls.addAll(generateWalls())
         rooms.add(room)
@@ -191,7 +190,7 @@ class CollectionGenerator {
      * @param save Whether to store the randomly generated exhibition or not.
      * @return The newly created exhibition object.
      */
-    fun generateRandomExhibition(save: Boolean = false): Exhibition {
+    fun generateRandomExhibition(save: Boolean = true): Exhibition {
         val exhibition = Exhibition(name = "Randomized Collection")
 
         // Generate rooms.

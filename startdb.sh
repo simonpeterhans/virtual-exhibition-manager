@@ -1,19 +1,24 @@
 #!/usr/bin/env bash
-# Starts a mongo db docker container if not previously started.
+# Creates, if necessary, and starts a MongoDB Docker container.
 
-# List containers with vrem-container anywhere
+# List containers with vrem-container in the name.
 containers=$(docker ps -al | grep "vrem-container")
 
-# if this variable is empty, no such container exists and it has do be created
 if [ -z "$containers" ]; then
-	echo "No vrem-container found. Starting new one"
+    # Variable empty: Run new container.
+	echo "No vrem-container found, creating new one."
 	docker run --name vrem-container -d -p 27017:27017 mongo
-	echo "Freshly started new container."
+	echo "Started new container."
 else
-        if [[ $containers == *Exited* ]]; then
-		echo "Existing container was stopped. Restarting now"
+    # Container exists.
+    if [[ $containers == *Exited* ]]; then
+        # Stopped, restart.
+		echo "Existing container was stopped. Restarting."
 		docker start "vrem-container"
+	    echo "Restarted container."
 	else
+	    # Already running, do nothing.
 		echo "vrem-container already running."
 	fi
 fi
+

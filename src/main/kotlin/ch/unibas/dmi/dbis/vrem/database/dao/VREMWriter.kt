@@ -42,7 +42,7 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
      * Store a single exhibit in the exhibit corpus.
      * Creates the collection if it doesn't exist.
      *
-     * TODO Return value?
+     * TODO Fix this after refactoring collection storage handling.
      *
      * @param exhibitUploadRequest A request for the object to upload.
      * @return The path of the uploaded exhibit.

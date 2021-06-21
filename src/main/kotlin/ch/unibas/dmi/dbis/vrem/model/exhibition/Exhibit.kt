@@ -61,7 +61,7 @@ data class Exhibit(
                 e.type,
                 e.position,
                 e.size,
-                e.audio!!,
+                e.audio,
                 e.light
             )
         }

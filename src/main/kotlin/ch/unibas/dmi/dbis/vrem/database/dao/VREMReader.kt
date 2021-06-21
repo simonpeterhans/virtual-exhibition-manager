@@ -12,7 +12,7 @@ import org.litote.kmongo.*
  *
  * @constructor
  *
- * @param database The MongoDB object to create the reader for.
+ * @param database The MongoDatabase object to create the reader for.
  */
 class VREMReader(database: MongoDatabase) : VREMDao(database) {
 
