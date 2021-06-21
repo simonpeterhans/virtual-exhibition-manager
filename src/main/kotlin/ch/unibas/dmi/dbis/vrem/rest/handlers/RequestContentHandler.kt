@@ -1,7 +1,11 @@
 package ch.unibas.dmi.dbis.vrem.rest.handlers
 
+import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.result.Result
 import io.javalin.http.Context
 import org.apache.logging.log4j.LogManager
+import java.io.ByteArrayInputStream
+import java.net.URLConnection
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -14,12 +18,15 @@ import java.nio.file.Path
 class RequestContentHandler(private val docRoot: Path) {
 
     companion object {
-        private val LOGGER = LogManager.getLogger(RequestContentHandler::class.java)
         const val PARAM_KEY_PATH = ":path"
+        const val URL_ID_PREFIX = "id"
+        private val LOGGER = LogManager.getLogger(RequestContentHandler::class.java)
     }
 
     /**
      * Serves the requested content.
+     *
+     * TODO Clean this up!
      *
      * @param ctx The Javalin request context.
      */
@@ -32,20 +39,47 @@ class RequestContentHandler(private val docRoot: Path) {
             return
         }
 
-        val absolute = docRoot.resolve(path)
+        if (path.startsWith(URL_ID_PREFIX)) {
+            val id = path.substring(path.indexOf("_") + 1)
+            var resultBytes: ByteArray? = null
 
-        if (!Files.exists(absolute)) {
-            LOGGER.error("Cannot serve $absolute as it does not exist.")
-            ctx.status(404)
-            return
+            // TODO Define Cineast URL/port in config.
+            val (_, _, result) = "http://localhost:4567/objects/$id".httpGet().response()
+
+            when (result) {
+                is Result.Failure -> {
+                    val ex = result.getException()
+                    LOGGER.error("Cannot serve object with id $id: $ex.")
+                    ctx.status(404)
+                    return
+                }
+                is Result.Success -> {
+                    resultBytes = result.get()
+                }
+            }
+
+            ctx.contentType(URLConnection.guessContentTypeFromStream(ByteArrayInputStream(resultBytes)))
+            ctx.header("Transfer-Encoding", "identity")
+            ctx.header("Access-Control-Allow-Origin", "*")
+            ctx.header("Access-Control-Allow-Headers", "*")
+
+            ctx.result(resultBytes)
+        } else {
+            val absolute = docRoot.resolve(path)
+
+            if (!Files.exists(absolute)) {
+                LOGGER.error("Cannot serve $absolute as it does not exist.")
+                ctx.status(404)
+                return
+            }
+
+            ctx.contentType(Files.probeContentType(absolute))
+            ctx.header("Transfer-Encoding", "identity")
+            ctx.header("Access-Control-Allow-Origin", "*")
+            ctx.header("Access-Control-Allow-Headers", "*")
+
+            ctx.result(absolute.toFile().inputStream())
         }
-
-        ctx.contentType(Files.probeContentType(absolute))
-        ctx.header("Transfer-Encoding", "identity")
-        ctx.header("Access-Control-Allow-Origin", "*")
-        ctx.header("Access-Control-Allow-Headers", "*")
-
-        ctx.result(absolute.toFile().inputStream())
     }
 
 }

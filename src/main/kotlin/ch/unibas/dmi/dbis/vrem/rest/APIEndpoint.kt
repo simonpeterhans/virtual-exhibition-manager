@@ -140,6 +140,14 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
             path("/content/get/:path") {
                 get(contentHandler::serveContent)
             }
+            path("/generate") {
+                path("random") {
+
+                }
+                path("similar") {
+
+                }
+            }
             path("/exhibits") {
                 path("list") {
                     get(exhibitHandler::listExhibits)
