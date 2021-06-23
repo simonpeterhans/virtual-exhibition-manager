@@ -4,7 +4,7 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
-import java.io.File
+import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
 
 /**
@@ -71,22 +71,22 @@ object ImportUtils {
         }
     }
 
-    fun calculateExhibitSize(exhibitFile: File, exhibit: Exhibit, defaultLongSide: Float) {
+    fun calculateExhibitSize(exhibitFile: ByteArray, exhibit: Exhibit, defaultLongSide: Float) {
         // Load image as stream so we don't have to load the entire thing.
-        val imageStream = ImageIO.createImageInputStream(exhibitFile)
+        val imageStream = ImageIO.createImageInputStream(ByteArrayInputStream(exhibitFile))
 
         val reader = ImageIO.getImageReaders(imageStream).next()
         reader.input = imageStream
 
         // Get width and height.
-        val imageHeight = reader.getWidth(0)
-        val imageWidth = reader.getHeight(0)
+        val imageWidth = reader.getWidth(0)
+        val imageHeight = reader.getHeight(0)
 
         // Close stream.
         imageStream.close()
 
         // Calculate aspect ratio and adjust width/height accordingly.
-        val aspectRatio = imageHeight / imageWidth
+        val aspectRatio = imageHeight.toFloat() / imageWidth
 
         var width = defaultLongSide
         var height = defaultLongSide

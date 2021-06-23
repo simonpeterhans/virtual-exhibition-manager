@@ -1,10 +1,12 @@
 package ch.unibas.dmi.dbis.vrem.rest
 
+import ch.unibas.dmi.dbis.vrem.cineast.client.infrastructure.ApiClient
 import ch.unibas.dmi.dbis.vrem.config.Config
 import ch.unibas.dmi.dbis.vrem.config.DatabaseConfig
 import ch.unibas.dmi.dbis.vrem.database.dao.VREMReader
 import ch.unibas.dmi.dbis.vrem.database.dao.VREMWriter
-import ch.unibas.dmi.dbis.vrem.generate.CollectionGenerator
+import ch.unibas.dmi.dbis.vrem.generate.RandomCollectionGenerator
+import ch.unibas.dmi.dbis.vrem.generate.SimilarityGenerator
 import ch.unibas.dmi.dbis.vrem.model.api.response.ErrorResponse
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitionHandler
@@ -26,6 +28,7 @@ import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
+import java.time.Duration
 
 /**
  * VREM API endpoint class.
@@ -104,13 +107,18 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
             throw IOException("DocumentRoot $docRoot does not exist!")
         }
 
+        // Give Cineast enough time to process the request before timing out.
+        // TODO Let the user specify this value in the config.
+        ApiClient.builder.readTimeout(Duration.ofMillis(60_000))
+
         // Handlers.
         val exhibitionHandler = ExhibitionHandler(reader, writer)
         val contentHandler = RequestContentHandler(docRoot)
         val exhibitHandler = ExhibitHandler(reader, writer, docRoot)
 
         // Collection generator.
-        val collectionGenerator = CollectionGenerator()
+        val collectionGenerator = RandomCollectionGenerator()
+        val similarityGenerator = SimilarityGenerator()
 //        val collectionGenerator = CollectionGenerator(docRoot, writer)
 
         // API endpoint.
@@ -145,7 +153,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
                 }
                 path("similar") {
-
+                    post(similarityGenerator::generate)
                 }
             }
             path("/exhibits") {

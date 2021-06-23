@@ -12,6 +12,12 @@ import java.nio.file.Path
 /**
  * Handler for content requests made through the API.
  *
+ * TODO Refactor this together with VREP.
+ *  Options:
+ *  1. Add a "generated" bool field to Exhibition, then load content depending on that.
+ *  2. Add a "local" bool to Exhibit, then load content depending on that.
+ *  3. Think of something better than the above suggestions.
+ *
  * @property docRoot The document root of the exhibition.
  * @constructor
  */
@@ -19,7 +25,7 @@ class RequestContentHandler(private val docRoot: Path) {
 
     companion object {
         const val PARAM_KEY_PATH = ":path"
-        const val URL_ID_PREFIX = "id"
+        const val URL_ID_SUFFIX = ".remote"
         private val LOGGER = LogManager.getLogger(RequestContentHandler::class.java)
     }
 
@@ -39,9 +45,11 @@ class RequestContentHandler(private val docRoot: Path) {
             return
         }
 
-        if (path.startsWith(URL_ID_PREFIX)) {
-            val id = path.substring(path.indexOf("_") + 1)
+        if (path.endsWith(URL_ID_SUFFIX)) {
+            val id = path.substring(path.indexOf("/") + 1, path.indexOf(URL_ID_SUFFIX))
             var resultBytes: ByteArray? = null
+
+            LOGGER.info("Trying to serve $id.")
 
             // TODO Define Cineast URL/port in config.
             val (_, _, result) = "http://localhost:4567/objects/$id".httpGet().response()
@@ -77,6 +85,8 @@ class RequestContentHandler(private val docRoot: Path) {
             ctx.header("Transfer-Encoding", "identity")
             ctx.header("Access-Control-Allow-Origin", "*")
             ctx.header("Access-Control-Allow-Headers", "*")
+
+            LOGGER.info("Serving $absolute.")
 
             ctx.result(absolute.toFile().inputStream())
         }

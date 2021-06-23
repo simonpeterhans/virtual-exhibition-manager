@@ -12,18 +12,18 @@ import java.io.File
 import javax.imageio.ImageIO
 
 /**
- * Primitive collection generator.
+ * Primitive collection generator; to be refactored/removed.
  * Does currently not store or read any configuration files and is relatively independent of the import component.
  *
  * TODO Fix this after refactoring collection storage handling.
  *
  * @constructor
  */
-class CollectionGenerator {
+class RandomCollectionGenerator {
 
     // Static stuff.
     companion object {
-        private val LOGGER = LogManager.getLogger(CollectionGenerator::class.java)
+        private val LOGGER = LogManager.getLogger(RandomCollectionGenerator::class.java)
 
         /*
          * TODO Avoid redefining many of the parameters below (duplicates of the import package)
@@ -68,13 +68,13 @@ class CollectionGenerator {
         reader.input = imageStream
 
         // Get width and height.
-        val imageHeight = reader.getWidth(0)
-        val imageWidth = reader.getHeight(0)
+        val imageHeight = reader.getHeight(0)
+        val imageWidth = reader.getWidth(0)
 
         // Close stream.
         imageStream.close()
 
-        val aspectRatio = imageHeight.toFloat() / imageWidth.toFloat()
+        val aspectRatio = imageHeight.toFloat() / imageWidth
         var width = DEFAULT_LONG_SIDE_METERS
         var height = DEFAULT_LONG_SIDE_METERS
 

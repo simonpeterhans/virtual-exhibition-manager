@@ -103,13 +103,11 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         this.importRoot = File(exhibitionPath)
 
         // Determine path to copy media files to after importing.
-        val exhibitionRoot = File(exhibition.id.toString())
-        //val exhibitionRoot = File(exhibition.id.toString() + "_" + exhibition.name)
-        this.exhibitionStorageRoot = storageRoot.resolve(exhibitionRoot)
 
         LOGGER.info("Starting import exhibition at ${this.importRoot}.")
 
         // Try to add every folder as a new room to the previously created exhibition object.
+        // TODO Refactor this and arrange exhibits depending on the total number of exhibits on a wall.
         this.importRoot.listFiles()?.filter { !it.nameWithoutExtension.startsWith(ignore) }
             ?.forEach { exhibition.addRoom(importRoom(it, exhibition.rooms)) }
 
@@ -121,10 +119,10 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         LOGGER.info("Copying media files...")
 
         // Copy local files.
-        exhibition.obtainExhibits().forEach() {
+        exhibition.obtainExhibits().forEach {
             // Paths to copy to/from.
-            val srcPath = importRoot.resolve(File(it.path).relativeTo(exhibitionRoot))
-            val targetPath = storageRoot.resolve(it.path)
+            val srcPath = importRoot.resolve(File(it.path))
+            val targetPath = storageRoot.resolve(exhibition.id.toString()).resolve(it.path)
 
             // Create directories if they don't exist.
             Files.createDirectories(targetPath.parentFile.toPath())
@@ -153,7 +151,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
         // No valid size given: Calculate exhibit size.
         if (exhibit.size.isNaN() or (exhibit.size == Vector3f.ORIGIN)) {
-            calculateExhibitSize(exhibitFile, exhibit, defaultLongSide)
+            calculateExhibitSize(exhibitFile.readBytes(), exhibit, defaultLongSide)
         }
 
         // Calculate exhibit position if not given.
@@ -199,7 +197,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         val wall = readWallConfigOrCreateNew(dir, wallFolder)
 
         wallFolder.listFiles()
-            ?.filter { ImportUtils.IMAGE_FILE_EXTENSIONS.contains(it.extension) }
+            ?.filter { ImportUtils.IMAGE_FILE_EXTENSIONS.contains(it.extension.lowercase()) }
             ?.forEach { wall.placeExhibit(importExhibit(it, wall.exhibits)) }
 
         return wall
@@ -218,15 +216,14 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         LOGGER.trace("Looking for exhibit configuration at $configFile.")
 
         val exhibitPath = exhibitFile.relativeTo(importRoot).toString().replace('\\', '/') // In case its Windows.
-        val path = exhibitionStorageRoot.resolve(exhibitPath).relativeTo(storageRoot)
 
         return if (configFile.exists()) {
             val exhibit = json.decodeFromString(Exhibit.serializer(), configFile.readText())
 
-            exhibit.path = path.toString()
+            exhibit.path = exhibitPath
             exhibit
         } else {
-            Exhibit(exhibitFile.nameWithoutExtension, path.toString(), CulturalHeritageObject.Companion.CHOType.IMAGE)
+            Exhibit(exhibitFile.nameWithoutExtension, exhibitPath, CulturalHeritageObject.Companion.CHOType.IMAGE)
         }
     }
 
