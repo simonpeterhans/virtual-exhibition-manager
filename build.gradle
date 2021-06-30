@@ -1,33 +1,122 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.5.10'
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.10'
-    id "org.openapi.generator" version '5.1.1'
+    id 'org.openapi.generator' version '5.1.1'
     id 'java'
     id 'application'
     id 'idea'
 }
 
+// Allow custom specification of Cineast OpenAPI config via -PapiConfigPath=...
+def apiConfigPath = project.properties["apiConfigPath"] ?: "$rootDir/cineast.json"
+
+// Source/Target compatibility (currently used for source & target/JVM).
+def javaCompatibility = 11
+
+// Project settings.
 group 'ch.unibas.dmi.dbis'
 version '2.0.0-SNAPSHOT'
 
+// Main class.
 mainClassName = 'ch.unibas.dmi.dbis.vrem.VREMKt'
-applicationDefaultJvmArgs = ["-Xms2G", "-Xmx4G"]
-sourceCompatibility = 1.11
 
-compileKotlin {
-    kotlinOptions.jvmTarget = '1.8'
+// Java properties.
+java {
+    sourceCompatibility = javaCompatibility
+    targetCompatibility = javaCompatibility
 }
+
+// Application properties.
+application {
+    applicationDefaultJvmArgs = ["-Xms2G", "-Xmx4G"]
+}
+
+// Add generated code to sources.
+sourceSets {
+    main {
+        java {
+            srcDirs += "$buildDir/generated/src/main/kotlin/"
+        }
+    }
+}
+
+// Jar properties.
+jar {
+    manifest {
+        attributes 'Version': archiveVersion.get()
+        attributes 'Main-Class': mainClassName // Same as for the application plugin.
+        attributes 'Manifest-Version': '1.0'
+        attributes 'Multi-Release': true
+    }
+
+    // Gradle 7.0 requires a duplicate handling strategy or fails if duplicates occur.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from {
+        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+// Generate Cineast OpenAPI bindings.
+task generateOpenApi(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    generatorName = 'kotlin'
+    inputSpec = apiConfigPath
+    packageName = "ch.unibas.dmi.dbis.vrem.cineast.client"
+    outputDir = "$buildDir/generated"
+
+    skipValidateSpec = true
+
+    configOptions = [
+            enumPropertyNaming: "UPPERCASE"
+    ]
+}
+
+task copyResources {
+    doLast {
+        copy {
+            from "config.json"
+            into "$buildDir/libs/"
+        }
+    }
+}
+
+task deploy {
+    dependsOn clean, generateOpenApi, build, copyResources
+}
+
+// Regenerate OpenAPI code before building.
+compileKotlin {
+    mustRunAfter generateOpenApi
+    dependsOn generateOpenApi
+    kotlinOptions.jvmTarget = javaCompatibility
+}
+
 compileTestKotlin {
-    kotlinOptions.jvmTarget = '1.8'
+    mustRunAfter generateOpenApi
+    dependsOn generateOpenApi
+    kotlinOptions.jvmTarget = javaCompatibility
+}
+
+// Regenerate OpenAPI code upon cleaning.
+clean {
+    finalizedBy generateOpenApi
+}
+
+// IntelliJ properties.
+idea {
+    module {
+        // IntelliJ should download Javadoc.
+        downloadJavadoc = true
+
+        // Exclude directories from IntelliJ (indexing etc.).
+        excludeDirs += file("data")
+        excludeDirs += file("logs")
+    }
 }
 
 repositories {
     mavenCentral()
-}
-
-// Allow custom specification of Cineast OpenAPI config via -PapiConfigPath=...
-ext {
-    apiConfigPath = project.properties["apiConfigPath"] ?: "$rootDir/cineast.json"
 }
 
 dependencies {
@@ -55,9 +144,6 @@ dependencies {
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.0'
     implementation group: 'com.squareup.moshi', name: 'moshi-kotlin', version: '1.11.0'
 
-    // Javax.
-    implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
-
     // Logging.
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
     implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.1'
@@ -71,84 +157,4 @@ dependencies {
     // Kotlin test & JUnit library.
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
-}
-
-// Add generated code to sources.
-sourceSets {
-    main {
-        java {
-            srcDirs += "$projectDir/build/generated/src/main/kotlin/"
-        }
-    }
-}
-
-// Generate Cineast OpenAPI bindings.
-task generateOpenApi(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
-    // Make sure this always gets executed after cleaning.
-    //mustRunAfter(clean)
-
-    generatorName = 'kotlin'
-    inputSpec = apiConfigPath
-    packageName = "ch.unibas.dmi.dbis.vrem.cineast.client"
-    outputDir = "$buildDir/generated"
-
-    skipValidateSpec = true
-
-    configOptions = [
-            enumPropertyNaming: "UPPERCASE"
-    ]
-}
-
-jar {
-    manifest {
-        attributes 'Version': archiveVersion.get()
-        attributes 'Main-Class': mainClassName
-        attributes 'Manifest-Version': '1.0'
-        attributes 'Multi-Release': true
-    }
-
-    // Gradle 7.0 requires a duplicate handling strategy or fails if they occur.
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    from {
-        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-}
-
-application {
-    // Main class for the ./gradlew run command (and distributions of the application plugin).
-    mainClass = mainClassName
-}
-
-idea {
-    module {
-        // IntelliJ should download Javadoc.
-        downloadJavadoc = true
-
-        // Exclude directories from IntelliJ (indexing etc.).
-        excludeDirs += file("data")
-        excludeDirs += file("logs")
-    }
-}
-
-task copyResources {
-    doLast {
-        copy {
-            from "config.json"
-            into "$buildDir/libs/"
-        }
-    }
-}
-
-// Also enforces generic dependencies (generateOpenApi after clean etc.)!
-task deploy {
-    generateOpenApi.mustRunAfter clean
-    build.mustRunAfter generateOpenApi
-    copyResources.mustRunAfter build
-
-    dependsOn clean
-    dependsOn generateOpenApi
-    dependsOn build
-    dependsOn copyResources
 }
