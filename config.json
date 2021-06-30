@@ -6,6 +6,6 @@
   },
   "server": {
     "documentRoot": "data",
-    "port": 4568
+    "port": 4545
   }
 }
