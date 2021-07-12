@@ -1,10 +1,11 @@
 package ch.unibas.dmi.dbis.vrem.import
 
+import ch.unibas.dmi.dbis.vrem.config.Config
+import ch.unibas.dmi.dbis.vrem.database.dao.VREMDao
 import ch.unibas.dmi.dbis.vrem.import.ImportUtils.calculateExhibitSize
 import ch.unibas.dmi.dbis.vrem.import.ImportUtils.calculateWallExhibitPosition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
-import ch.unibas.dmi.dbis.vrem.rest.APIEndpoint
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -73,8 +74,8 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
     override fun run() {
         // Get config and a reader/writer for the database.
-        val config = APIEndpoint.readConfig(this.config)
-        val (reader, writer) = APIEndpoint.getDAOs(config.database)
+        val config = Config.readConfig(this.config)
+        val (reader, writer) = VREMDao.getDAOs(config.database)
         val exhibitionFolder = File(exhibitionPath)
 
         // Checks: Require exhibition folder to exist and no other exhibition with the same name to exist.
@@ -85,7 +86,6 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
         if (reader.existsExhibition(name)) {
             if (!clean) {
-                // TODO Instead of enforcing unique names, consider using the name as ID.
                 LOGGER.error("An exhibition with name $name already exists!")
                 exitProcess(-2)
             }
@@ -107,7 +107,6 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         LOGGER.info("Starting import exhibition at ${this.importRoot}.")
 
         // Try to add every folder as a new room to the previously created exhibition object.
-        // TODO Refactor this and arrange exhibits depending on the total number of exhibits on a wall.
         this.importRoot.listFiles()?.filter { !it.nameWithoutExtension.startsWith(ignore) }
             ?.forEach { exhibition.addRoom(importRoom(it, exhibition.rooms)) }
 

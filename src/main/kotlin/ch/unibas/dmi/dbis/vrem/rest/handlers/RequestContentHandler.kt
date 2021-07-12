@@ -1,5 +1,6 @@
 package ch.unibas.dmi.dbis.vrem.rest.handlers
 
+import ch.unibas.dmi.dbis.vrem.config.CineastConfig
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import io.javalin.http.Context
@@ -12,16 +13,10 @@ import java.nio.file.Path
 /**
  * Handler for content requests made through the API.
  *
- * TODO Refactor this together with VREP.
- *  Options:
- *  1. Add a "generated" bool field to Exhibition, then load content depending on that.
- *  2. Add a "local" bool to Exhibit, then load content depending on that.
- *  3. Think of something better than the above suggestions.
- *
  * @property docRoot The document root of the exhibition.
  * @constructor
  */
-class RequestContentHandler(private val docRoot: Path) {
+class RequestContentHandler(private val docRoot: Path, private val cineastConfig: CineastConfig) {
 
     companion object {
         const val PARAM_KEY_PATH = ":path"
@@ -51,8 +46,7 @@ class RequestContentHandler(private val docRoot: Path) {
 
             LOGGER.info("Trying to serve $id.")
 
-            // TODO Define Cineast URL/port in config.
-            val (_, _, result) = "http://localhost:4567/objects/$id".httpGet().response()
+            val (_, _, result) = cineastConfig.getCineastObjectUrlString(id).httpGet().response()
 
             when (result) {
                 is Result.Failure -> {

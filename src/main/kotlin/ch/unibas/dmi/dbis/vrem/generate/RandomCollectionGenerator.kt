@@ -1,11 +1,12 @@
 package ch.unibas.dmi.dbis.vrem.generate
 
+import ch.unibas.dmi.dbis.vrem.config.CineastConfig
 import ch.unibas.dmi.dbis.vrem.config.Config
 import ch.unibas.dmi.dbis.vrem.config.DatabaseConfig
 import ch.unibas.dmi.dbis.vrem.config.WebServerConfig
+import ch.unibas.dmi.dbis.vrem.database.dao.VREMDao
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
-import ch.unibas.dmi.dbis.vrem.rest.APIEndpoint
 import io.javalin.http.Context
 import org.apache.logging.log4j.LogManager
 import java.io.File
@@ -204,9 +205,10 @@ class RandomCollectionGenerator {
         if (save) {
             val config = Config(
                 DatabaseConfig("127.0.0.1", 27017, "vrem"),
-                WebServerConfig("../vre-random", 4567)
+                WebServerConfig("../vre-random", 4567),
+                CineastConfig("", 0, "", 0)
             )
-            val (_, writer) = APIEndpoint.getDAOs(config.database)
+            val (_, writer) = VREMDao.getDAOs(config.database)
 
             writer.saveExhibition(exhibition)
         }

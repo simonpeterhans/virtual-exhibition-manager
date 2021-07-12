@@ -2,10 +2,7 @@ package ch.unibas.dmi.dbis.vrem.rest
 
 import ch.unibas.dmi.dbis.vrem.cineast.client.infrastructure.ApiClient
 import ch.unibas.dmi.dbis.vrem.config.Config
-import ch.unibas.dmi.dbis.vrem.config.DatabaseConfig
-import ch.unibas.dmi.dbis.vrem.database.dao.VREMReader
-import ch.unibas.dmi.dbis.vrem.database.dao.VREMWriter
-import ch.unibas.dmi.dbis.vrem.generate.RandomCollectionGenerator
+import ch.unibas.dmi.dbis.vrem.database.dao.VREMDao
 import ch.unibas.dmi.dbis.vrem.generate.SimilarityGenerator
 import ch.unibas.dmi.dbis.vrem.model.api.response.ErrorResponse
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitHandler
@@ -19,11 +16,11 @@ import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.plugin.json.FromJsonMapper
 import io.javalin.plugin.json.JavalinJson
 import io.javalin.plugin.json.ToJsonMapper
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import org.apache.logging.log4j.LogManager
-import org.litote.kmongo.KMongo
 import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 import java.io.File
 import java.io.IOException
@@ -35,6 +32,7 @@ import java.time.Duration
  *
  * @constructor
  */
+@ExperimentalSerializationApi
 class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API endpoint") {
 
     private val config: String by option("-c", "--config", help = "Path to the config file").default("config.json")
@@ -68,39 +66,16 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
     companion object {
         private val LOGGER = LogManager.getLogger(APIEndpoint::class.java)
+
         private val json = Json {
             serializersModule = IdKotlinXSerializationModule
             encodeDefaults = true
         }
-
-        // TODO Refactor those out into a separate class (used by the importer as well).
-        /**
-         * Static method to create data access objects (reader & writer) to access the exhibition/exhibit collections.
-         *
-         * @param dbConfig The database configuration for the MongoDB instance.
-         * @return A pair of VREMReader and VREMWriter to access the database.
-         */
-        fun getDAOs(dbConfig: DatabaseConfig): Pair<VREMReader, VREMWriter> {
-            val dbClient = KMongo.createClient(dbConfig.getConnectionString())
-            val db = dbClient.getDatabase(dbConfig.database)
-            return VREMReader(db) to VREMWriter(db)
-        }
-
-        /**
-         * Parses the specified configuration file for the exhibition.
-         *
-         * @param config The name of the JSON configuration file (relative to the cwd).
-         * @return The parsed configuration file.
-         */
-        fun readConfig(config: String): Config {
-            val jsonString = File(config).readText()
-            return json.decodeFromString(Config.serializer(), jsonString)
-        }
     }
 
     override fun run() {
-        val config = readConfig(this.config)
-        val (reader, writer) = getDAOs(config.database)
+        val config = Config.readConfig(this.config)
+        val (reader, writer) = VREMDao.getDAOs(config.database)
 
         val docRoot = File(config.server.documentRoot).toPath()
         if (!Files.exists(docRoot)) {
@@ -108,18 +83,16 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         }
 
         // Give Cineast enough time to process the request before timing out.
-        // TODO Let the user specify this value in the config.
-        ApiClient.builder.readTimeout(Duration.ofMillis(60_000))
+        ApiClient.builder.readTimeout(Duration.ofSeconds(config.cineast.queryTimeoutSeconds))
 
         // Handlers.
         val exhibitionHandler = ExhibitionHandler(reader, writer)
-        val contentHandler = RequestContentHandler(docRoot)
+        val contentHandler = RequestContentHandler(docRoot, config.cineast)
         val exhibitHandler = ExhibitHandler(reader, writer, docRoot)
 
         // Collection generator.
-        val collectionGenerator = RandomCollectionGenerator()
         val similarityGenerator = SimilarityGenerator()
-//        val collectionGenerator = CollectionGenerator(docRoot, writer)
+//        val collectionGenerator = RandomCollectionGenerator()
 
         // API endpoint.
         val endpoint = Javalin.create { conf ->
