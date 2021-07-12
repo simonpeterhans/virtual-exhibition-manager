@@ -16,7 +16,6 @@ import java.util.*
  * @property reader The VREM MongoDB reader object.
  * @property writer The VREM MongoDB writer object.
  * @property docRoot The root folder of the exhibition. // TODO Fixme.
- * @constructor Create empty Exhibit handler
  */
 class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWriter, private val docRoot: Path) {
 

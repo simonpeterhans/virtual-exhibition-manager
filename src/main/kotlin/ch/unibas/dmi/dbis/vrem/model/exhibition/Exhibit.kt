@@ -21,7 +21,6 @@ import org.litote.kmongo.newId
  * @property audio The name of the audio for the exhibit as a string.
  * @property light Whether the exhibit has light or not.
  * @property metadata The mapping for the metadata attributed of the object.
- * @constructor
  */
 @Serializable
 data class Exhibit(

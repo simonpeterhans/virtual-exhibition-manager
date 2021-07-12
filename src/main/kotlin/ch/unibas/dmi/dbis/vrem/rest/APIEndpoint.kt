@@ -3,7 +3,7 @@ package ch.unibas.dmi.dbis.vrem.rest
 import ch.unibas.dmi.dbis.vrem.cineast.client.infrastructure.ApiClient
 import ch.unibas.dmi.dbis.vrem.config.Config
 import ch.unibas.dmi.dbis.vrem.database.dao.VREMDao
-import ch.unibas.dmi.dbis.vrem.generate.SimilarityGenerator
+import ch.unibas.dmi.dbis.vrem.generate.similarity.SimilarityGenerator
 import ch.unibas.dmi.dbis.vrem.model.api.response.ErrorResponse
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitionHandler
@@ -29,8 +29,6 @@ import java.time.Duration
 
 /**
  * VREM API endpoint class.
- *
- * @constructor
  */
 @ExperimentalSerializationApi
 class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API endpoint") {
@@ -76,8 +74,8 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
     override fun run() {
         val config = Config.readConfig(this.config)
         val (reader, writer) = VREMDao.getDAOs(config.database)
-
         val docRoot = File(config.server.documentRoot).toPath()
+
         if (!Files.exists(docRoot)) {
             throw IOException("DocumentRoot $docRoot does not exist!")
         }

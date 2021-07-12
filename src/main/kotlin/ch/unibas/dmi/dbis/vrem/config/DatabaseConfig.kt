@@ -9,7 +9,6 @@ import kotlinx.serialization.Serializable
  * @property host The host address of the MongoDB instance.
  * @property port The port of the MongoDB instance.
  * @property database The name of the database.
- * @constructor
  */
 @Serializable
 data class DatabaseConfig(

@@ -1,4 +1,4 @@
-package ch.unibas.dmi.dbis.vrem.generate
+package ch.unibas.dmi.dbis.vrem.generate.random
 
 import ch.unibas.dmi.dbis.vrem.config.CineastConfig
 import ch.unibas.dmi.dbis.vrem.config.Config
@@ -8,24 +8,22 @@ import ch.unibas.dmi.dbis.vrem.database.dao.VREMDao
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import io.javalin.http.Context
-import org.apache.logging.log4j.LogManager
+import mu.KotlinLogging
 import java.io.File
 import javax.imageio.ImageIO
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Primitive collection generator; to be refactored/removed.
  * Does currently not store or read any configuration files and is relatively independent of the import component.
  *
  * TODO Fix this after refactoring collection storage handling.
- *
- * @constructor
  */
 class RandomCollectionGenerator {
 
     // Static stuff.
     companion object {
-        private val LOGGER = LogManager.getLogger(RandomCollectionGenerator::class.java)
-
         /*
          * TODO Avoid redefining many of the parameters below (duplicates of the import package)
          *  when refactoring this once we have a clearer structure of the overall role of the generator.
@@ -103,7 +101,7 @@ class RandomCollectionGenerator {
 
         val root = File(EXHIBITION_PATH)
 
-        LOGGER.info("Generating random collection for images at $root.")
+        logger.info("Generating random collection for images at $root.")
 
         val files = root.listFiles()?.filter { IMAGE_FILE_EXTENSIONS.contains(it.extension) } ?: return exhibits
 
@@ -222,7 +220,7 @@ class RandomCollectionGenerator {
      * @param ctx The request context object.
      */
     fun generateRandomExhibitionForContext(ctx: Context) {
-        LOGGER.info("Generating random collection...")
+        logger.info("Generating random collection...")
 
         ctx.json(generateRandomExhibition())
     }

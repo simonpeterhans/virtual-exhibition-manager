@@ -7,7 +7,6 @@ import kotlinx.serialization.Serializable
  * Response for the action to list exhibitions (effectively wrapping them).
  *
  * @property exhibitions The list of exhibitions.
- * @constructor
  */
 @Serializable
 data class ListExhibitionsResponse(val exhibitions: List<ExhibitionSummary>)

@@ -23,8 +23,6 @@ import kotlin.system.exitProcess
  * Importer for exhibition folders.
  * To be used directly as CLI command; the exhibition should include everything as in the
  * [sample exhibition](git@github.com:VIRTUE-DBIS/vre-mixnhack19.git).
- *
- * @constructor
  */
 class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Imports a folder-based exhibition") {
 

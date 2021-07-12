@@ -12,7 +12,6 @@ import kotlinx.serialization.Serializable
  * @property texture The texture of the wall.
  * @property direction The direction the wall is facing.
  * @property exhibits The exhibits that are hanging on the wall.
- * @constructor
  */
 @Serializable
 data class Wall(

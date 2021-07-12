@@ -1,4 +1,4 @@
-package ch.unibas.dmi.dbis.vrem.generate
+package ch.unibas.dmi.dbis.vrem.generate.similarity
 
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.SegmentsApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.infrastructure.ApiClient
@@ -16,8 +16,6 @@ import java.util.*
 /**
  * Draft of a draft of the similarity generator.
  * Works, but is extremely static and a complete mess as of now.
- *
- * @constructor
  */
 class SimilarityGenerator {
 
@@ -59,7 +57,6 @@ class SimilarityGenerator {
 
         return candidates
     }
-
 
     fun generate(ctx: Context?) {
         val candidates = getCandidates(ctx)

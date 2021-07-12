@@ -13,7 +13,6 @@ import org.bson.types.ObjectId
  * @property name The name of the collection.
  * @property exhibits The exhibits present in the collection.
  * @property metadata Mapping of metadata attributes to descriptions for the collection.
- * @constructor
  */
 @Serializable
 data class ArtCollection(

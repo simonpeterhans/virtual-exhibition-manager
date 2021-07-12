@@ -18,7 +18,6 @@ import kotlinx.serialization.Serializable
  * @property exhibits A list of exhibits present in the room.
  * @property walls A list of walls present in the room.
  *                 Note that, usually, exhibits are part of walls and not of the exhibit list of a room object.
- * @constructor
  */
 @Serializable
 data class Room(

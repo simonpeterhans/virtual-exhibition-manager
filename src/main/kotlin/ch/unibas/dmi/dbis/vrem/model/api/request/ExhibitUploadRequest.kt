@@ -10,7 +10,6 @@ import kotlinx.serialization.Serializable
  * @property exhibit The exhibit object to upload.
  * @property file The file (path) of the exhibit.
  * @property fileExtension The file extension of the exhibit.
- * @constructor
  */
 @Serializable
 data class ExhibitUploadRequest(

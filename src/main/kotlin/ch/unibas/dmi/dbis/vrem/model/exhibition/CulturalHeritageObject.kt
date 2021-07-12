@@ -10,7 +10,6 @@ import kotlinx.serialization.Serializable
  * @property type The object type as described in the enum.
  * @property path The path to the object.
  * @property description The description of the object.
- * @constructor
  */
 @Serializable
 data class CulturalHeritageObject(
@@ -24,8 +23,6 @@ data class CulturalHeritageObject(
     companion object {
         /**
          * Types of Cultural Heritage Objects.
-         *
-         * @constructor
          */
         enum class CHOType {
             IMAGE, MODEL, VIDEO, MODEL_STRUCTURAL

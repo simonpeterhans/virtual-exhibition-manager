@@ -7,7 +7,6 @@ import kotlinx.serialization.Serializable
  *
  * @property documentRoot The document root path as a string.
  * @property port The port of the endpoint.
- * @constructor
  */
 @Serializable
 data class WebServerConfig(val documentRoot: String, val port: Short)

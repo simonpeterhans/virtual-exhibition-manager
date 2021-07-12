@@ -7,8 +7,7 @@ import kotlinx.serialization.Serializable
  *
  * @property x x value as float.
  * @property y y value as float.
- * @property z z value as float
- * @constructor
+ * @property z z value as float.
  */
 @Serializable
 data class Vector3f(val x: Float = 0f, val y: Float = 0f, val z: Float = 0f) {
@@ -23,6 +22,15 @@ data class Vector3f(val x: Float = 0f, val y: Float = 0f, val z: Float = 0f) {
         val ORIGIN = Vector3f(0f)
         val UNIT = Vector3f(1f)
         val NaN = Vector3f(Float.NaN)
+    }
+
+    /**
+     * Checks whether a vector is (NaN, NaN, NaN).
+     *
+     * @return True if the vector object is NaN, false otherwise.
+     */
+    fun isNaN(): Boolean {
+        return equals(NaN)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -43,15 +51,6 @@ data class Vector3f(val x: Float = 0f, val y: Float = 0f, val z: Float = 0f) {
         result = 31 * result + y.hashCode()
         result = 31 * result + z.hashCode()
         return result
-    }
-
-    /**
-     * Checks whether a vector is (NaN, NaN, NaN).
-     *
-     * @return True if the vector object is NaN, false otherwise.
-     */
-    fun isNaN(): Boolean {
-        return equals(NaN)
     }
 
     override fun toString(): String {

@@ -11,7 +11,6 @@ import java.io.File
  * @property database The MongoDB configuration object.
  * @property server The web server configuration object (i.e., VREM document root and port).
  * @property cineast The Cineast instance configuration object.
- * @constructor
  */
 @Serializable
 data class Config(val database: DatabaseConfig, val server: WebServerConfig, val cineast: CineastConfig) {

@@ -7,7 +7,6 @@ import kotlinx.serialization.Serializable
  *
  * @property id The ID of the exhibition.
  * @property name The name of the exhibition.
- * @constructor
  */
 @Serializable
 data class ExhibitionSummary(

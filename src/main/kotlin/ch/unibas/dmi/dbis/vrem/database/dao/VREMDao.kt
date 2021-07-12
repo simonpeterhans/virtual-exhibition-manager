@@ -12,14 +12,11 @@ import org.litote.kmongo.getCollection
  * Data Access Object (DAO) used for MongoDB access.
  *
  * @property database The MongoDB object to create the DAO for.
- * @constructor
  */
 open class VREMDao(protected val database: MongoDatabase) {
 
     /**
      * MongoDB collection name constants.
-     *
-     * @constructor
      */
     companion object {
         const val EXHIBITION_COLLECTION = "exhibitions"

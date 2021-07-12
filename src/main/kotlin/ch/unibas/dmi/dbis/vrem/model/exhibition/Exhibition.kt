@@ -15,7 +15,6 @@ import java.util.*
  * @property name The name of the exhibition.
  * @property description The description of the exhibition.
  * @property rooms A list of rooms that the exhibition consists of.
- * @constructor
  */
 
 @Serializable

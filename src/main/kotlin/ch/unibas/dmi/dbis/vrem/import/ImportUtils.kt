@@ -9,8 +9,6 @@ import javax.imageio.ImageIO
 
 /**
  * Utilities used for exhibition import.
- *
- * @constructor
  */
 object ImportUtils {
 

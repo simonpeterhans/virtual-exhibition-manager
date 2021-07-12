@@ -4,24 +4,24 @@ import ch.unibas.dmi.dbis.vrem.config.CineastConfig
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import io.javalin.http.Context
-import org.apache.logging.log4j.LogManager
+import mu.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.net.URLConnection
 import java.nio.file.Files
 import java.nio.file.Path
 
+private val logger = KotlinLogging.logger {}
+
 /**
  * Handler for content requests made through the API.
  *
  * @property docRoot The document root of the exhibition.
- * @constructor
  */
 class RequestContentHandler(private val docRoot: Path, private val cineastConfig: CineastConfig) {
 
     companion object {
         const val PARAM_KEY_PATH = ":path"
         const val URL_ID_SUFFIX = ".remote"
-        private val LOGGER = LogManager.getLogger(RequestContentHandler::class.java)
     }
 
     /**
@@ -35,23 +35,24 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
         val path = ctx.pathParam(PARAM_KEY_PATH)
 
         if (path.isBlank()) {
-            LOGGER.error("The requested path was blank - did you forget to send the actual content path?")
+            logger.error("The requested path was blank - did you forget to send the actual content path?")
             ctx.status(404)
             return
         }
 
         if (path.endsWith(URL_ID_SUFFIX)) {
+            // ID is composed as exhibitionID/imageID.remote.
             val id = path.substring(path.indexOf("/") + 1, path.indexOf(URL_ID_SUFFIX))
             var resultBytes: ByteArray? = null
 
-            LOGGER.info("Trying to serve $id.")
+            logger.info("Trying to serve $id.")
 
             val (_, _, result) = cineastConfig.getCineastObjectUrlString(id).httpGet().response()
 
             when (result) {
                 is Result.Failure -> {
                     val ex = result.getException()
-                    LOGGER.error("Cannot serve object with id $id: $ex.")
+                    logger.error("Cannot serve object with id $id: $ex.")
                     ctx.status(404)
                     return
                 }
@@ -70,7 +71,7 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
             val absolute = docRoot.resolve(path)
 
             if (!Files.exists(absolute)) {
-                LOGGER.error("Cannot serve $absolute as it does not exist.")
+                logger.error("Cannot serve $absolute as it does not exist.")
                 ctx.status(404)
                 return
             }
@@ -80,7 +81,7 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
             ctx.header("Access-Control-Allow-Origin", "*")
             ctx.header("Access-Control-Allow-Headers", "*")
 
-            LOGGER.info("Serving $absolute.")
+            logger.info("Serving $absolute.")
 
             ctx.result(absolute.toFile().inputStream())
         }

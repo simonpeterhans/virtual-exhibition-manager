@@ -5,23 +5,19 @@ import ch.unibas.dmi.dbis.vrem.model.collection.ArtCollection
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import com.mongodb.client.MongoDatabase
-import org.apache.logging.log4j.LogManager
+import mu.KotlinLogging
 import org.litote.kmongo.eq
 import org.litote.kmongo.push
 import org.litote.kmongo.replaceOneById
 
+private val logger = KotlinLogging.logger {}
+
 /**
  * MongoDB writer for VREM.
- *
- * @constructor
  *
  * @param database The MongoDB object to create the writer for.
  */
 class VREMWriter(database: MongoDatabase) : VREMDao(database) {
-
-    companion object {
-        private val LOGGER = LogManager.getLogger(VREMWriter::class.java)
-    }
 
     /**
      * Stores an exhibition in the exhibition collection.
@@ -54,19 +50,21 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
         toAdd.path = "${exhibitUploadRequest.artCollection}/${toAdd.id}.${exhibitUploadRequest.fileExtension}"
 
         if (collection.countDocuments() == 0L) {
-            LOGGER.debug("There is no previous document in ${CORPUS_COLLECTION}. We're adding one")
+            logger.debug("There is no previous document in ${CORPUS_COLLECTION}, creating default corpus document.")
+
             val artCollection = ArtCollection(name = "DefaultCorpus", exhibits = listOf(toAdd))
             collection.insertOne(artCollection)
-            LOGGER.info("Successfully created the default corpus 'DefaultCorpus' and added an exhibit to it")
+            logger.info("Successfully created the default corpus 'DefaultCorpus' and added the exhibit to it.")
         } else {
             val result = collection.updateOne(
                 ArtCollection::name eq exhibitUploadRequest.artCollection,
                 push(ArtCollection::exhibits, toAdd)
             )
+
             if (result.matchedCount == 0L) {
-                LOGGER.error("Could not update the corpus ${exhibitUploadRequest.artCollection}")
+                logger.error("Could not update corpus ${exhibitUploadRequest.artCollection}.")
             } else {
-                LOGGER.info("Updated the corpus ${exhibitUploadRequest.artCollection}")
+                logger.info("Updated corpus ${exhibitUploadRequest.artCollection}.")
             }
         }
         return toAdd.path

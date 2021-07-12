@@ -10,7 +10,6 @@ import kotlinx.serialization.Serializable
  * @property port The port of the Cineast instance.
  * @property objectPath The path to serve objects from (example: "/objects" for http://localhost:4567/objects/your_obj_id).
  * @property queryTimeoutSeconds The duration to wait for a query result from Cineast after a request.
- * @constructor
  */
 @Suppress("HttpUrlsUsage")
 @Serializable
