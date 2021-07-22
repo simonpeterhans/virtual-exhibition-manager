@@ -82,7 +82,7 @@ task copyResources {
 }
 
 task deploy {
-    dependsOn clean, generateOpenApi, build, copyResources
+    dependsOn generateOpenApi, build, copyResources
 }
 
 // Regenerate OpenAPI code before building.
