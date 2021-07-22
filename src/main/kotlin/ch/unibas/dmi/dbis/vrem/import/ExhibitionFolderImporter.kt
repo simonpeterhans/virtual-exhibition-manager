@@ -1,7 +1,7 @@
 package ch.unibas.dmi.dbis.vrem.import
 
 import ch.unibas.dmi.dbis.vrem.config.Config
-import ch.unibas.dmi.dbis.vrem.database.dao.VREMDao
+import ch.unibas.dmi.dbis.vrem.database.VREMDao
 import ch.unibas.dmi.dbis.vrem.import.ImportUtils.calculateExhibitSize
 import ch.unibas.dmi.dbis.vrem.import.ImportUtils.calculateWallExhibitPosition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*

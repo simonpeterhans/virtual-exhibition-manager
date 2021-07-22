@@ -2,7 +2,7 @@ package ch.unibas.dmi.dbis.vrem.rest
 
 import ch.unibas.dmi.dbis.vrem.cineast.client.infrastructure.ApiClient
 import ch.unibas.dmi.dbis.vrem.config.Config
-import ch.unibas.dmi.dbis.vrem.database.dao.VREMDao
+import ch.unibas.dmi.dbis.vrem.database.VREMDao
 import ch.unibas.dmi.dbis.vrem.model.api.response.ErrorResponse
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitionHandler

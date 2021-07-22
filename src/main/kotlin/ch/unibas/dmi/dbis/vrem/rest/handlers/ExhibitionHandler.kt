@@ -1,7 +1,7 @@
 package ch.unibas.dmi.dbis.vrem.rest.handlers
 
-import ch.unibas.dmi.dbis.vrem.database.dao.VREMReader
-import ch.unibas.dmi.dbis.vrem.database.dao.VREMWriter
+import ch.unibas.dmi.dbis.vrem.database.VREMReader
+import ch.unibas.dmi.dbis.vrem.database.VREMWriter
 import ch.unibas.dmi.dbis.vrem.model.api.response.ErrorResponse
 import ch.unibas.dmi.dbis.vrem.model.api.response.ListExhibitionsResponse
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
