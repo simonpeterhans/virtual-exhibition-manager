@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration name="CoreConfig" status="TRACE">
-  <Properties>
-    <Property name="loggingPattern">[%d{HH:mm:ss.SSS}][%-5level][%t] %c{2} - %msg%n</Property>
-  </Properties>
-  <Appenders>
-    <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="${loggingPattern}"/>
-    </Console>
-    <RollingFile name="File">
-      <FileName>logs/core.log</FileName>
-      <FilePattern>logs/%d{yyyy-MM-dd-hh}-%i.log.zip</FilePattern>
-      <PatternLayout pattern="${loggingPattern}"/>
-      <Policies>
-        <SizeBasedTriggeringPolicy size="3000 KB"/>
-      </Policies>
-      <DefaultRolloverStrategy max="5" />
-      <ThresholdFilter level="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
-    </RollingFile>
-  </Appenders>
-  <Loggers>
-    <Logger name="ch.unibas.dmi.dbis.vrem" level="TRACE" additivity="false">
-      <AppenderRef ref="Console"/>
-      <AppenderRef ref="File"/>
-    </Logger>
-    <Root level="TRACE">
-      <AppenderRef ref="Console"/>
-      <AppenderRef ref="File"/>
-    </Root>
-  </Loggers>
+<Configuration status="TRACE">
+    <Properties>
+        <Property name="loggingPattern">[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%t] %-5level %logger{36} - %msg%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout name="loggingPattern" pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+        <RollingFile name="File">
+            <FileName>logs/vrem.log</FileName>
+            <FilePattern>logs/%d{yyyy-MM-dd-HH-ss}_%i.log.zip</FilePattern>
+            <PatternLayout pattern="${loggingPattern}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="8192 KB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+            <ThresholdFilter level="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="ch.unibas.dmi.dbis.vrem" level="TRACE" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Logger>
+        <Root level="ERROR">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Root>
+    </Loggers>
 </Configuration>
