@@ -35,7 +35,7 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
         val path = ctx.pathParam(PARAM_KEY_PATH)
 
         if (path.isBlank()) {
-            logger.error("The requested path was blank - did you forget to send the actual content path?")
+            logger.error { "The requested path was blank - did you forget to send the actual content path?" }
             ctx.status(404)
             return
         }
@@ -45,14 +45,14 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
             val id = path.substring(path.indexOf("/") + 1, path.indexOf(URL_ID_SUFFIX))
             var resultBytes: ByteArray? = null
 
-            logger.info("Trying to serve $id.")
+            logger.info { "Trying to serve object with ID $id." }
 
             val (_, _, result) = cineastConfig.getCineastObjectUrlString(id).httpGet().response()
 
             when (result) {
                 is Result.Failure -> {
                     val ex = result.getException()
-                    logger.error("Cannot serve object with id $id: $ex.")
+                    logger.error { "Cannot serve object with ID $id from exhibition $ex." }
                     ctx.status(404)
                     return
                 }
@@ -71,7 +71,7 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
             val absolute = docRoot.resolve(path)
 
             if (!Files.exists(absolute)) {
-                logger.error("Cannot serve $absolute as it does not exist.")
+                logger.error { "Cannot serve $absolute as it does not exist." }
                 ctx.status(404)
                 return
             }
@@ -81,7 +81,7 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
             ctx.header("Access-Control-Allow-Origin", "*")
             ctx.header("Access-Control-Allow-Headers", "*")
 
-            logger.info("Serving $absolute.")
+            logger.info { "Serving $absolute." }
 
             ctx.result(absolute.toFile().inputStream())
         }

@@ -50,11 +50,11 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
         toAdd.path = "${exhibitUploadRequest.artCollection}/${toAdd.id}.${exhibitUploadRequest.fileExtension}"
 
         if (collection.countDocuments() == 0L) {
-            logger.debug("There is no previous document in ${CORPUS_COLLECTION}, creating default corpus document.")
+            logger.debug { "There is no previous document in ${CORPUS_COLLECTION}, creating default corpus document." }
 
             val artCollection = ArtCollection(name = "DefaultCorpus", exhibits = listOf(toAdd))
             collection.insertOne(artCollection)
-            logger.info("Successfully created the default corpus 'DefaultCorpus' and added the exhibit to it.")
+            logger.info { "Successfully created the default corpus 'DefaultCorpus' and added the exhibit to it." }
         } else {
             val result = collection.updateOne(
                 ArtCollection::name eq exhibitUploadRequest.artCollection,
@@ -62,9 +62,9 @@ class VREMWriter(database: MongoDatabase) : VREMDao(database) {
             )
 
             if (result.matchedCount == 0L) {
-                logger.error("Could not update corpus ${exhibitUploadRequest.artCollection}.")
+                logger.error { "Could not update corpus ${exhibitUploadRequest.artCollection}." }
             } else {
-                logger.info("Updated corpus ${exhibitUploadRequest.artCollection}.")
+                logger.info { "Updated corpus ${exhibitUploadRequest.artCollection}." }
             }
         }
         return toAdd.path

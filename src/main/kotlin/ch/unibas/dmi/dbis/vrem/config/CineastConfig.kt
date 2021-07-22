@@ -1,6 +1,5 @@
 package ch.unibas.dmi.dbis.vrem.config
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 /**
@@ -8,7 +7,7 @@ import kotlinx.serialization.Serializable
  *
  * @property host The host address of the Cineast instance.
  * @property port The port of the Cineast instance.
- * @property objectPath The path to serve objects from (example: "/objects" for http://localhost:4567/objects/your_obj_id).
+ * @property objectPath The path to serve objects from (example: "/objects" for http://host:port/objects/your_obj_id).
  * @property queryTimeoutSeconds The duration to wait for a query result from Cineast after a request.
  */
 @Suppress("HttpUrlsUsage")
@@ -20,11 +19,8 @@ data class CineastConfig(
     val queryTimeoutSeconds: Long
 ) {
 
-    @Contextual
-    val cineastUrl = "http://$host:$port"
-
-    @Contextual
-    val cineastObjectUrl = "$cineastUrl$objectPath"
+    private val cineastUrl = "http://$host:$port"
+    private val cineastObjectUrl = "$cineastUrl$objectPath"
 
     fun getCineastObjectUrlString(objectId: String): String {
         return "$cineastObjectUrl/$objectId"

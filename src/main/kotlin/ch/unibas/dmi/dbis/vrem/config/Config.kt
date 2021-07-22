@@ -2,7 +2,6 @@ package ch.unibas.dmi.dbis.vrem.config
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 import java.io.File
 
 /**
@@ -17,10 +16,7 @@ data class Config(val database: DatabaseConfig, val server: WebServerConfig, val
 
     companion object {
 
-        private val json = Json {
-            serializersModule = IdKotlinXSerializationModule
-            encodeDefaults = true
-        }
+        const val DEFAULT_CONFIG_FILE = "config.json"
 
         /**
          * Parses the specified configuration file for the exhibition.
@@ -28,9 +24,9 @@ data class Config(val database: DatabaseConfig, val server: WebServerConfig, val
          * @param config The name of the JSON configuration file (relative to the cwd).
          * @return The parsed configuration file.
          */
-        fun readConfig(config: String): Config {
+        fun readConfig(config: String = DEFAULT_CONFIG_FILE): Config {
             val jsonString = File(config).readText()
-            return json.decodeFromString(serializer(), jsonString)
+            return Json.decodeFromString(serializer(), jsonString)
         }
 
     }

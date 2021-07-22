@@ -5,10 +5,12 @@ import ch.unibas.dmi.dbis.vrem.database.dao.VREMWriter
 import ch.unibas.dmi.dbis.vrem.model.api.request.ExhibitUploadRequest
 import ch.unibas.dmi.dbis.vrem.model.api.response.ListExhibitsResponse
 import io.javalin.http.Context
-import org.apache.logging.log4j.LogManager
+import mu.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
+
+private val logger = KotlinLogging.logger {}
 
 /**
  *
@@ -19,17 +21,13 @@ import java.util.*
  */
 class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWriter, private val docRoot: Path) {
 
-    companion object {
-        private val LOGGER = LogManager.getLogger(ExhibitHandler::class.java)
-    }
-
     /**
      * Lists all exhibits currently stored.
      *
      * @param ctx The Javalin request context.
      */
     fun listExhibits(ctx: Context) {
-        LOGGER.debug("List exhibits request received.")
+        logger.debug { "List exhibits request received." }
         // Serialize object to JSON.
         ctx.json(ListExhibitsResponse(reader.listExhibits()))
 
@@ -42,12 +40,12 @@ class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWri
      * @param ctx The Javalin request context.
      */
     fun saveExhibit(ctx: Context) {
-        LOGGER.debug("Save exhibit request received.")
+        logger.debug { "Save exhibit request received." }
 
         // Map the JSON body to a Kotlin object.
         val exhibitUpload = ctx.body<ExhibitUploadRequest>()
 
-        LOGGER.debug("Save exhibit.id=${exhibitUpload.exhibit.id} and for corpus ${exhibitUpload.artCollection}.")
+        logger.debug { "Save exhibit.id=${exhibitUpload.exhibit.id} and for corpus ${exhibitUpload.artCollection}." }
         val path = writer.uploadExhibit(exhibitUpload)
 
         val base64Img = exhibitUpload.file.split(",")[1]
@@ -59,7 +57,7 @@ class ExhibitHandler(private val reader: VREMReader, private val writer: VREMWri
         }
         val contentFile = docRoot.resolve(path).toFile()
         contentFile.writeBytes(decodedImg)
-        LOGGER.debug("Stored exhibit and content to db and fs (${exhibitUpload.exhibit.id} / $contentFile.")
+        logger.debug { "Stored exhibit and content to db and fs (${exhibitUpload.exhibit.id} / $contentFile." }
         // return exhibitUpload
         // TODO What to return here?
     }

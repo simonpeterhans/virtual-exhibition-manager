@@ -13,11 +13,13 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.float
 import kotlinx.serialization.json.Json
-import org.apache.logging.log4j.LogManager
+import mu.KotlinLogging
 import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 import java.io.File
 import java.nio.file.Files
 import kotlin.system.exitProcess
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Importer for exhibition folders.
@@ -58,12 +60,8 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
     private lateinit var exhibition: Exhibition
     private lateinit var storageRoot: File
     private lateinit var importRoot: File
-    private lateinit var exhibitionStorageRoot: File
 
     companion object {
-        private val LOGGER = LogManager.getLogger(ExhibitionFolderImporter::class.java)
-
-        // TODO Refactor the JSON builder into some util class (for all instances using it).
         private val json = Json {
             serializersModule = IdKotlinXSerializationModule
             encodeDefaults = true
@@ -78,19 +76,19 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
         // Checks: Require exhibition folder to exist and no other exhibition with the same name to exist.
         if (!exhibitionFolder.exists() and !exhibitionFolder.isDirectory) {
-            LOGGER.error("--path argument has to point to an existing directory!")
+            logger.error { "--path argument has to point to an existing directory!" }
             exitProcess(-1)
         }
 
         if (reader.existsExhibition(name)) {
             if (!clean) {
-                LOGGER.error("An exhibition with name $name already exists!")
+                logger.error { "An exhibition with name $name already exists!" }
                 exitProcess(-2)
             }
 
             // If we made it here we can delete the exhibition from the collection.
             writer.deleteExhibition(name)
-            LOGGER.info("Successfully removed previously existing exhibition '$name'.")
+            logger.info { "Successfully removed previously existing exhibition '$name'." }
         }
 
         // Create new exhibition.
@@ -102,18 +100,18 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
         // Determine path to copy media files to after importing.
 
-        LOGGER.info("Starting import exhibition at ${this.importRoot}.")
+        logger.info { "Starting import exhibition at ${this.importRoot}." }
 
         // Try to add every folder as a new room to the previously created exhibition object.
         this.importRoot.listFiles()?.filter { !it.nameWithoutExtension.startsWith(ignore) }
             ?.forEach { exhibition.addRoom(importRoom(it, exhibition.rooms)) }
 
-        LOGGER.info("Writing exhibition entry to MongoDB...")
+        logger.info { "Writing exhibition entry to MongoDB..." }
 
         // Create MongoDB entry.
         writer.saveExhibition(exhibition)
 
-        LOGGER.info("Copying media files...")
+        logger.info { "Copying media files..." }
 
         // Copy local files.
         exhibition.obtainExhibits().forEach {
@@ -130,7 +128,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
         // TODO Handle any errors upon MongoDB import or file copy.
 
-        LOGGER.info("Finished import.")
+        logger.info { "Finished import." }
     }
 
     /**
@@ -141,7 +139,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
      * @return The imported exhibit.
      */
     private fun importExhibit(exhibitFile: File, siblings: List<Exhibit>): Exhibit {
-        LOGGER.trace("Importing exhibit $exhibitFile.")
+        logger.debug { "Importing exhibit $exhibitFile." }
 
         // Try to import exhibit by reading image and, if available, its config.
         val exhibit = readExhibitConfigOrCreateNew(exhibitFile)
@@ -167,7 +165,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
      * @return The created room.
      */
     private fun importRoom(roomFile: File, siblings: List<Room>): Room {
-        LOGGER.trace("Importing room $roomFile.")
+        logger.debug { "Importing room $roomFile." }
 
         val room = readRoomConfigOrCreateNew(roomFile)
 
@@ -189,7 +187,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
      * @return The wall (with the imported exhibits).
      */
     private fun importWall(dir: Direction, wallFolder: File): Wall {
-        LOGGER.trace("Importing wall $wallFolder.")
+        logger.debug { "Importing wall $wallFolder." }
 
         val wall = readWallConfigOrCreateNew(dir, wallFolder)
 
@@ -210,7 +208,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         val configFile =
             exhibitFile.parentFile.resolve("${exhibitFile.nameWithoutExtension}.${ImportUtils.JSON_EXTENSION}")
 
-        LOGGER.trace("Looking for exhibit configuration at $configFile.")
+        logger.debug { "Looking for exhibit configuration at $configFile." }
 
         val exhibitPath = exhibitFile.relativeTo(importRoot).toString().replace('\\', '/') // In case its Windows.
 
@@ -234,7 +232,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
     private fun readWallConfigOrCreateNew(dir: Direction, wallFolder: File): Wall {
         val wallConfigFile = wallFolder.resolve(ImportUtils.WALL_CONFIG_FILE)
 
-        LOGGER.trace("Looking for wall configuration at $wallConfigFile.")
+        logger.debug { "Looking for wall configuration at $wallConfigFile." }
 
         return if (wallConfigFile.exists()) {
             val wall = json.decodeFromString(Wall.serializer(), wallConfigFile.readText())
@@ -253,7 +251,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
      * @return The room as defined in the (potentially defaulted) configuration.
      */
     private fun readRoomConfigOrCreateNew(room: File): Room {
-        LOGGER.trace("Looking for room configuration at $room.")
+        logger.debug { "Looking for room configuration at $room." }
 
         val roomConfigFile = room.resolve(ImportUtils.ROOM_CONFIG_FILE)
 

@@ -31,7 +31,7 @@ class ExhibitionHandler(private val reader: VREMReader, private val writer: VREM
      * @param ctx The Javalin request context.
      */
     fun listExhibitions(ctx: Context) {
-        logger.debug("List exhibitions.")
+        logger.debug { "List exhibitions." }
         ctx.json(ListExhibitionsResponse(reader.listExhibitions()))
     }
 
@@ -42,7 +42,7 @@ class ExhibitionHandler(private val reader: VREMReader, private val writer: VREM
      */
     fun loadExhibitionById(ctx: Context) {
         val id = ctx.pathParam(PARAM_KEY_ID)
-        logger.debug("Load exhibition with ID $id.")
+        logger.debug { "Load exhibition with ID $id." }
         ctx.json(reader.getExhibition(ObjectId(id).toId()))
     }
 
@@ -53,7 +53,7 @@ class ExhibitionHandler(private val reader: VREMReader, private val writer: VREM
      */
     fun loadExhibitionByName(ctx: Context) {
         val name = ctx.pathParam(PARAM_KEY_NAME)
-        logger.debug("Load exhibition with name $name.")
+        logger.debug { "Load exhibition with name $name." }
         ctx.json(reader.getExhibition(name))
     }
 
@@ -63,14 +63,14 @@ class ExhibitionHandler(private val reader: VREMReader, private val writer: VREM
      * @param ctx The Javalin request context.
      */
     fun saveExhibition(ctx: Context) {
-        logger.debug("Save exhibition request.")
+        logger.debug { "Save exhibition request." }
         val exhibition = ctx.body<Exhibition>()
-        logger.debug("Save exhibition with ID ${exhibition.id}.")
+        logger.debug { "Save exhibition with ID ${exhibition.id}." }
         if (writer.saveExhibition(exhibition)) {
-            logger.debug("Successfully saved exhibition with ID ${exhibition.id}.")
+            logger.debug { "Successfully saved exhibition with ID ${exhibition.id}." }
             ctx.json(exhibition)
         } else {
-            logger.debug("Could not save exhibition.id=${exhibition.id} for unknown reasons.")
+            logger.debug { "Could not save exhibition.id=${exhibition.id} for unknown reasons." }
             ctx.status(500).json(ErrorResponse("Could not save exhibition (ID: ${exhibition.id})."))
         }
     }
