@@ -1,49 +1,75 @@
 plugins {
+    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+    id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlinVersion"
+    id 'org.openapi.generator' version "$openApiGenVersion"
     id 'java'
+    id 'application'
+    id 'idea'
 }
 
+// Allow custom specification of Cineast OpenAPI config via -PapiConfigPath=...
+def apiConfigPath = project.properties["apiConfigPath"] ?: "$rootDir/cineast.json"
+
+// Source/Target compatibility (currently used for source & target/JVM).
+def javaCompatibility = 11
+
+// Project settings.
 group 'ch.unibas.dmi.dbis'
-version '1.2'
+version '2.0.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
+// Main class.
+mainClassName = 'ch.unibas.dmi.dbis.vrem.VREMKt'
 
-repositories {
-    mavenCentral()
+// Java properties.
+java {
+    sourceCompatibility = javaCompatibility
+    targetCompatibility = javaCompatibility
 }
 
-dependencies {
-
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
-
-
-    implementation group: 'com.sparkjava', name: 'spark-core', version: '2.7.2'
-
-    ////// MongoDB
-    implementation group: 'org.mongodb', name: 'mongodb-driver', version: '3.8.2'
-
-    ////// CLI PARSING
-    implementation group: 'com.github.rvesse', name: 'airline', version: '2.5.0'
-
-    ////// LOGGING
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.+'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.+'
-
-
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+// Application properties.
+application {
+    applicationDefaultJvmArgs = ["-Xms2G", "-Xmx4G"]
 }
 
+// Add generated code to sources.
+sourceSets {
+    main {
+        java {
+            srcDirs += "$buildDir/generated/src/main/kotlin/"
+        }
+    }
+}
 
+// Jar properties.
 jar {
     manifest {
-        attributes "Version": "$version"
-        attributes "Manifest-Version": "1.0"
-        attributes 'Main-Class': 'ch.unibas.dmi.dbis.vrem.VREM'
+        attributes 'Version': archiveVersion.get()
+        attributes 'Main-Class': mainClassName // Same as for the application plugin.
+        attributes 'Manifest-Version': '1.0'
+        attributes 'Multi-Release': true
     }
+
+    // Gradle 7.0 requires a duplicate handling strategy or fails if duplicates occur.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     from {
         configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+}
+
+// Generate Cineast OpenAPI bindings.
+task generateOpenApi(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    generatorName = 'kotlin'
+    inputSpec = apiConfigPath
+    packageName = "ch.unibas.dmi.dbis.vrem.cineast.client"
+    outputDir = "$buildDir/generated"
+
+    skipValidateSpec = true
+
+    configOptions = [
+            enumPropertyNaming: "UPPERCASE"
+    ]
 }
 
 task copyResources {
@@ -55,4 +81,71 @@ task copyResources {
     }
 }
 
-task deploy(dependsOn: [build, jar, copyResources])
+task deploy {
+    dependsOn generateOpenApi, build, copyResources
+}
+
+// Regenerate OpenAPI code before building.
+compileKotlin {
+    mustRunAfter generateOpenApi
+    dependsOn generateOpenApi
+    kotlinOptions.jvmTarget = javaCompatibility
+}
+
+compileTestKotlin {
+    mustRunAfter generateOpenApi
+    dependsOn generateOpenApi
+    kotlinOptions.jvmTarget = javaCompatibility
+}
+
+// Regenerate OpenAPI code upon cleaning.
+clean {
+    finalizedBy generateOpenApi
+}
+
+// IntelliJ properties.
+idea {
+    module {
+        // IntelliJ should download Javadoc.
+        downloadJavadoc = true
+
+        // Exclude directories from IntelliJ (indexing etc.).
+        excludeDirs += file("data")
+        excludeDirs += file("logs")
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // CLI.
+    implementation group: 'com.github.ajalt', name: 'clikt', version: "$cliktVersion"
+
+    // Kotlinx Serialization.
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-json', version: "$kotlinxSerializationVersion"
+
+    // KMongo.
+    implementation group: 'org.litote.kmongo', name: 'kmongo-serialization', version: "$kmongoVersion"
+    implementation group: 'org.litote.kmongo', name: 'kmongo-id-serialization', version: "$kmongoVersion"
+
+    // Javalin.
+    implementation group: 'io.javalin', name: 'javalin', version: "$javalinVersion"
+
+    // Fuel.
+    implementation group: 'com.github.kittinunf.fuel', name: 'fuel', version: "$fuelVersion"
+    implementation group: 'com.github.kittinunf.fuel', name: 'fuel-kotlinx-serialization', version: "$fuelVersion"
+
+    // OpenAPI Dependencies (OkHttp3 and Moshi Serialization).
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: "$okhttpVersion"
+    implementation group: 'com.squareup.moshi', name: 'moshi-kotlin', version: "$moshiVersion"
+
+    // Logging.
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: "$log4jslf4jVersion"
+    implementation group: 'io.github.microutils', name: 'kotlin-logging-jvm', version: "$kotlinLoggingVersion"
+
+    // Kotlin test & JUnit library.
+    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: "$kotlinVersion"
+    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version: "$kotlinVersion"
+}
