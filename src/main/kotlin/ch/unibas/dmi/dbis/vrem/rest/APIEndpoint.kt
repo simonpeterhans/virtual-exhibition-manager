@@ -3,6 +3,8 @@ package ch.unibas.dmi.dbis.vrem.rest
 import ch.unibas.dmi.dbis.vrem.cineast.client.infrastructure.ApiClient
 import ch.unibas.dmi.dbis.vrem.config.Config
 import ch.unibas.dmi.dbis.vrem.database.VREMDao
+import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
+import ch.unibas.dmi.dbis.vrem.generation.som.SG
 import ch.unibas.dmi.dbis.vrem.model.api.response.ErrorResponse
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitionHandler
@@ -73,6 +75,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         val exhibitionHandler = ExhibitionHandler(reader, writer)
         val contentHandler = RequestContentHandler(docRoot, config.cineast)
         val exhibitHandler = ExhibitHandler(reader, writer, docRoot)
+        val sgHandler = SG(CineastHttp(config.cineast))
 
         // API endpoint.
         val endpoint = Javalin.create { conf ->
@@ -100,6 +103,12 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
             }
             path("/content/get/:path") {
                 get(contentHandler::serveContent)
+            }
+            path("/generate") {
+                path("som/:type") { // TODO Add more parameters here for configuration.
+                    // Type corresponds to either semantic or visual features to use.
+                    get(sgHandler::generateSom)
+                }
             }
             path("/exhibits") {
                 path("list") {
