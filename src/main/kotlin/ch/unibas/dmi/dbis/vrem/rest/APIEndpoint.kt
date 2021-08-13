@@ -105,9 +105,8 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
                 get(contentHandler::serveContent)
             }
             path("/generate") {
-                path("som/:type") { // TODO Add more parameters here for configuration.
-                    // Type corresponds to either semantic or visual features to use.
-                    get(sgHandler::generateSom)
+                path("som") {
+                    post(sgHandler::generateSom)
                 }
             }
             path("/exhibits") {

@@ -11,6 +11,7 @@ import ch.unibas.dmi.dbis.vrem.cineast.client.apis.MetadataApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.ObjectApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.models.AllFeaturesByCategoryQueryResult
 import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
+import ch.unibas.dmi.dbis.vrem.generation.GenerationConfig
 import ch.unibas.dmi.dbis.vrem.generation.NodeMap
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
@@ -31,10 +32,6 @@ class SG(
         private const val SEGMENT_SUFFIX = "_1"
         private const val CINEAST_FEATURE_LABEL = "feature"
         private const val CINEAST_ID_LABEL = "id"
-
-        // TODO Add features that make sense for SOM/similarity search, but potentially read table names from file.
-        private const val TABLE_NAME_VISUAL_TEXT_CO = "features_visualtextcoembedding"
-        private const val TABLE_NAME_AVERAGE_COLOR = "features_AverageColor"
     }
 
     fun getAllIds(): List<String> {
@@ -86,12 +83,14 @@ class SG(
     }
 
     fun getInitSigma2D(width: Int, height: Int): Double {
+        // Choosing sigma based on the grid size is a good practice.
         return 2.0 * (sqrt(width.toDouble() * width.toDouble() + height.toDouble() * height.toDouble()))
     }
 
     fun trainSom(features: Array<DoubleArray>): SOM {
-        val height = 2
-        val width = 12
+        // TODO Set properties via deserialized JSON object from the request.
+        val height = 1
+        val width = 16
         val depth = features[0].size
         val epochs = 100
         val seed = Random(0)
@@ -144,12 +143,13 @@ class SG(
         return nodeMap
     }
 
-    fun createExhibition(dims: IntArray, nodeMap: NodeMap): Exhibition {
+    fun createWalls(dims: IntArray, nodeMap: NodeMap): MutableList<Wall> {
         val ex = Exhibition(name = "Generated Exhibition ${Random.nextInt()}") // TODO Proper naming.
 
         val exhibits = mutableListOf<Exhibit>()
 
-        // Pick top image for every node and add it. // TODO Handle case for empty lists.
+        // Pick top image for every node and add it.
+        // TODO Handle case for empty lists (can this even happen if we have more (distinct) samples than nodes?).
         for (idDistanceList in nodeMap.values) { // Linked hash map, ordered according to node ID.
             val c = idDistanceList[0].first
 
@@ -184,20 +184,39 @@ class SG(
             }
         }
 
+        return walls
+    }
+
+    fun createRoomFromWalls(walls: List<Wall>): Room {
+        // TODO Parametrize this so we can dynamically add the room to where it actually belongs.
         val room = Room("room01", size = Vector3f(15.5, 15.5, 15.5))
+
         room.walls.addAll(walls)
 
-        ex.addRoom(room)
+        return room
+    }
+
+    fun createExhibitionFromRooms(rooms: List<Room>): Exhibition {
+        val ex = Exhibition(name = "Generated Exhibition ${Random.nextInt()}")
+
+        ex.rooms.addAll(rooms)
 
         return ex
     }
 
-    fun genSom(): Exhibition {
-        // TODO Since we only use 1 feature type (corresponding to the category), we could use an enum and link the table name to the category name.
-        val allFeatures = getFeatureDataFromCategory(CINEAST_SOM_CATEGORY) // Get all features for category.
+    fun genSom(config: GenerationConfig): Exhibition {
+        // Check if we have to use all ids or only a sub-selection.
+        val allFeatures = if (config.idList.isEmpty()) {
+            // Get all features.
+            getFeatureDataFromCategory(config.genType.cineastCategory) // Get all features for category.
+        } else {
+            // Only get features for specific IDs.
+            // TODO Implement API call to obtain features for specified IDs.
+            getFeatureDataFromCategory(config.genType.cineastCategory)
+        }
 
         // Pick the feature type we actually want.
-        val features = allFeatures[TABLE_NAME_VISUAL_TEXT_CO] ?: return Exhibition(name = "Empty Exhibition")
+        val features = allFeatures[config.genType.tableName] ?: return Exhibition(name = "Empty Exhibition")
 
         // Get all values as 2D array.
         val data = features.valuesTo2DArray() // Same order as the IDs.
@@ -216,11 +235,23 @@ class SG(
 
         // Create exhibitions depending on settings (we could create the sub-rooms right away as well).
         // TODO Create a model for generated exhibitions.
-        return createExhibition(som.grid.dims, nodeMap)
+        // TODO Allow to return just a room instead of an entire exhibition.
+        val walls = createWalls(som.grid.dims, nodeMap)
+
+        val rooms = createRoomFromWalls(walls)
+
+        val ex = createExhibitionFromRooms(arrayListOf(rooms))
+
+        return ex
     }
 
     fun generateSom(ctx: Context) {
-        ctx.json(genSom())
+        // TODO Extract this function into a separate class (GenHandler) that creates instances of this class.
+        val config = ctx.body<GenerationConfig>()
+
+        val ex = genSom(config)
+
+        ctx.json(ex)
     }
 
 }
