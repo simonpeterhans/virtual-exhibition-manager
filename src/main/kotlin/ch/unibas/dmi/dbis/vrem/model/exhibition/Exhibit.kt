@@ -5,7 +5,6 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
-import org.litote.kmongo.Id
 import org.litote.kmongo.newId
 
 /**
@@ -27,7 +26,7 @@ data class Exhibit(
     @Contextual
     @SerialName("_id")
     @JsonNames("id", "_id")
-    val id: Id<Exhibit> = newId(),
+    val id: String = newId<Exhibit>().toString(),
     var name: String,
     var description: String = "",
     var path: String = "",
@@ -53,7 +52,7 @@ data class Exhibit(
          */
         fun copy(e: Exhibit): Exhibit {
             return Exhibit(
-                newId(),
+                newId<Exhibit>().toString(),
                 e.name,
                 e.description,
                 e.path,

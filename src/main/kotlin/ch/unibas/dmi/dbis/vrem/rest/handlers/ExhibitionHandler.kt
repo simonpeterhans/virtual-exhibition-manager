@@ -7,8 +7,6 @@ import ch.unibas.dmi.dbis.vrem.model.api.response.ListExhibitionsResponse
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import io.javalin.http.Context
 import mu.KotlinLogging
-import org.bson.types.ObjectId
-import org.litote.kmongo.id.toId
 
 private val logger = KotlinLogging.logger {}
 
@@ -43,7 +41,7 @@ class ExhibitionHandler(private val reader: VREMReader, private val writer: VREM
     fun loadExhibitionById(ctx: Context) {
         val id = ctx.pathParam(PARAM_KEY_ID)
         logger.debug { "Load exhibition with ID $id." }
-        ctx.json(reader.getExhibition(ObjectId(id).toId()))
+        ctx.json(reader.getExhibitionById(id))
     }
 
     /**
@@ -54,7 +52,7 @@ class ExhibitionHandler(private val reader: VREMReader, private val writer: VREM
     fun loadExhibitionByName(ctx: Context) {
         val name = ctx.pathParam(PARAM_KEY_NAME)
         logger.debug { "Load exhibition with name $name." }
-        ctx.json(reader.getExhibition(name))
+        ctx.json(reader.getExhibitionByName(name))
     }
 
     /**

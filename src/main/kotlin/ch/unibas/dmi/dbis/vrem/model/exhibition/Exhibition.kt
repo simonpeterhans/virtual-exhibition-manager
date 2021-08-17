@@ -4,7 +4,6 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
-import org.litote.kmongo.Id
 import org.litote.kmongo.newId
 import java.util.*
 
@@ -20,9 +19,9 @@ import java.util.*
 @Serializable
 data class Exhibition(
     @Contextual
-    @SerialName("_id")
-    @JsonNames("id", "_id")
-    val id: Id<Exhibition> = newId(),
+    @SerialName("_id") // KMongo.
+    @JsonNames("id", "_id") // JSON deserialization (Kotlinx).
+    val id: String = newId<Exhibition>().toString(),
     val name: String,
     val description: String = "",
     val rooms: MutableList<Room> = mutableListOf()

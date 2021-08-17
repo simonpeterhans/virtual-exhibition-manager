@@ -31,7 +31,7 @@ class VREMReader(database: MongoDatabase) : VREMDao(database) {
      * @param name The name of the exhibition.
      * @return The exhibition as an object.
      */
-    fun getExhibition(name: String): Exhibition {
+    fun getExhibitionByName(name: String): Exhibition {
         val col = getExhibitionCollection()
         return col.findOne(Exhibition::name eq name)!!
     }
@@ -42,7 +42,7 @@ class VREMReader(database: MongoDatabase) : VREMDao(database) {
      * @param id The ID of the exhibition.
      * @return The exhibition as an object.
      */
-    fun getExhibition(id: Id<Exhibition>): Exhibition {
+    fun getExhibitionById(id: String): Exhibition {
         val col = getExhibitionCollection()
         return col.findOne { Exhibition::id eq id }!!
     }
