@@ -1,9 +1,12 @@
 package ch.unibas.dmi.dbis.vrem.generation
 
+import ch.unibas.dmi.dbis.vrem.config.CineastConfig
 import ch.unibas.dmi.dbis.vrem.generation.som.SomExhibitionGenerator
 import io.javalin.http.Context
 
-class GenerationHandler(val cineastHttp: CineastHttp) {
+class GenerationHandler(cineastConfig: CineastConfig) {
+
+    val cineastHttp = CineastHttp(cineastConfig)
 
     fun generate(ctx: Context): Context {
         val config = ctx.body<GenerationConfig>()

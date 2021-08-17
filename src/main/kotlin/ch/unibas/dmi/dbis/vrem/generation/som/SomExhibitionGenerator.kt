@@ -7,9 +7,6 @@ import ch.unibas.dmi.dbis.som.grids.Grid2DSquare
 import ch.unibas.dmi.dbis.som.util.DistanceFunction
 import ch.unibas.dmi.dbis.som.util.DistanceScalingFunction
 import ch.unibas.dmi.dbis.som.util.TimeFunction
-import ch.unibas.dmi.dbis.vrem.cineast.client.apis.MetadataApi
-import ch.unibas.dmi.dbis.vrem.cineast.client.apis.ObjectApi
-import ch.unibas.dmi.dbis.vrem.cineast.client.models.AllFeaturesByCategoryQueryResult
 import ch.unibas.dmi.dbis.vrem.generation.*
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
@@ -24,58 +21,6 @@ class SomExhibitionGenerator(
     val genConfig: GenerationConfig,
     val cineastHttp: CineastHttp
 ) {
-
-    companion object {
-        private const val SEGMENT_SUFFIX = "_1"
-        private const val CINEAST_FEATURE_LABEL = "feature"
-        private const val CINEAST_ID_LABEL = "id"
-    }
-
-    fun getAllIds(): List<String> {
-        val ids = ObjectApi().findObjectsAll()
-
-        if (ids.content == null) {
-            return arrayListOf()
-        }
-
-        return ids.content.map { o -> o.objectId + SEGMENT_SUFFIX }.toCollection(ArrayList())
-    }
-
-    fun getAllFeatures(category: String): Map<String, List<Map<String, Any>>> {
-        val features: AllFeaturesByCategoryQueryResult = MetadataApi().findAllFeatByCat(category)
-
-        if (features.featureMap == null) {
-            return mapOf()
-        }
-
-        return features.featureMap
-    }
-
-    fun featureListToFeatureData(featureName: String, featureList: List<Map<String, Any>>): DoubleFeatureData {
-        val featureData = DoubleFeatureData(featureName)
-
-        for (e in featureList) {
-            @Suppress("UNCHECKED_CAST")
-            featureData.addSample(
-                (e[CINEAST_ID_LABEL] as String).substringBeforeLast(SEGMENT_SUFFIX),
-                e[CINEAST_FEATURE_LABEL] as ArrayList<Double>
-            )
-        }
-
-        return featureData
-    }
-
-    fun getFeatureDataFromCategory(category: String): MutableMap<String, DoubleFeatureData> {
-        val allFeatures = getAllFeatures(category)
-
-        val featureDataList = mutableMapOf<String, DoubleFeatureData>()
-
-        for (e in allFeatures.entries) {
-            featureDataList[e.key] = featureListToFeatureData(e.key, e.value)
-        }
-
-        return featureDataList
-    }
 
     fun getInitSigma2D(width: Int, height: Int): Double {
         // Choosing sigma based on the grid size is a good practice.
@@ -199,18 +144,15 @@ class SomExhibitionGenerator(
     }
 
     fun genSomEx(): Exhibition {
-        // Check if we have to use all ids or only a sub-selection.
-        val allFeatures = if (genConfig.idList.isEmpty()) {
-            // Get all features.
-            getFeatureDataFromCategory(genConfig.genType.cineastCategory) // Get all features for category.
-        } else {
-            // Only get features for specific IDs.
-            // TODO Only use features for specified IDs.
-            getFeatureDataFromCategory(genConfig.genType.cineastCategory)
-        }
+        val allFeatures =
+            CineastRest.getFeatureDataFromCategory(genConfig.genType.cineastCategory) // Get all features for category.
 
         // Pick the feature type we actually want.
         val features = allFeatures[genConfig.genType.tableName] ?: return Exhibition(name = "Empty Exhibition")
+
+        // Remove IDs if we're filtering by ID list.
+        // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
+        features.removeNonListedIds(genConfig.idList)
 
         // Get all values as 2D array.
         val data = features.valuesTo2DArray() // Same order as the IDs.

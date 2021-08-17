@@ -24,4 +24,8 @@ data class DoubleFeatureData(val featureName: String) {
         return arr
     }
 
+    fun removeNonListedIds(ids: ArrayList<String>) {
+        ids.forEach(idMap::remove)
+    }
+
 }

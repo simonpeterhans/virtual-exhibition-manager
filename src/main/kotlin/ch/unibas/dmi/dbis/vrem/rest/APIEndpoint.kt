@@ -75,7 +75,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         val exhibitionHandler = ExhibitionHandler(reader, writer)
         val contentHandler = RequestContentHandler(docRoot, config.cineast)
         val exhibitHandler = ExhibitHandler(reader, writer, docRoot)
-        val genHandler = GenerationHandler(CineastHttp(config.cineast))
+        val genHandler = GenerationHandler(config.cineast)
 
         // API endpoint.
         val endpoint = Javalin.create { conf ->
