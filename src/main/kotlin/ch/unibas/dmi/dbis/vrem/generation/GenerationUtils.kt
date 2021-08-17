@@ -1,11 +1,11 @@
-package ch.unibas.dmi.dbis.vrem.generation.som
+package ch.unibas.dmi.dbis.vrem.generation
 
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
 
-class ExGenUtils {
+class GenerationUtils {
 
     companion object {
 

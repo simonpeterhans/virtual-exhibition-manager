@@ -1,4 +1,4 @@
-package ch.unibas.dmi.dbis.vrem.generation.som
+package ch.unibas.dmi.dbis.vrem.generation
 
 data class DoubleFeatureData(val featureName: String) {
 

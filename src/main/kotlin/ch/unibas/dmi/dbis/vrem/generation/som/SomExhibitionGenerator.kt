@@ -10,25 +10,22 @@ import ch.unibas.dmi.dbis.som.util.TimeFunction
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.MetadataApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.ObjectApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.models.AllFeaturesByCategoryQueryResult
-import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
-import ch.unibas.dmi.dbis.vrem.generation.GenerationConfig
-import ch.unibas.dmi.dbis.vrem.generation.NodeMap
+import ch.unibas.dmi.dbis.vrem.generation.*
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import ch.unibas.dmi.dbis.vrem.rest.handlers.RequestContentHandler
-import io.javalin.http.Context
 import mu.KotlinLogging
 import kotlin.math.sqrt
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
-class SG(
-    val cineastHttp: CineastHttp,
+class SomExhibitionGenerator(
+    val genConfig: GenerationConfig,
+    val cineastHttp: CineastHttp
 ) {
 
     companion object {
-        private const val CINEAST_SOM_CATEGORY = "som" // TODO Make this a parameter (som_semantic and som_visual).
         private const val SEGMENT_SUFFIX = "_1"
         private const val CINEAST_FEATURE_LABEL = "feature"
         private const val CINEAST_ID_LABEL = "id"
@@ -68,9 +65,7 @@ class SG(
         return featureData
     }
 
-    fun getFeatureDataFromTableName(tableName: String) {}
-
-    fun getFeatureDataFromCategory(category: String = CINEAST_SOM_CATEGORY): MutableMap<String, DoubleFeatureData> {
+    fun getFeatureDataFromCategory(category: String): MutableMap<String, DoubleFeatureData> {
         val allFeatures = getAllFeatures(category)
 
         val featureDataList = mutableMapOf<String, DoubleFeatureData>()
@@ -88,12 +83,11 @@ class SG(
     }
 
     fun trainSom(features: Array<DoubleArray>): SOM {
-        // TODO Set properties via deserialized JSON object from the request.
-        val height = 1
-        val width = 16
+        val height = genConfig.height
+        val width = genConfig.width
         val depth = features[0].size
-        val epochs = 100
-        val seed = Random(0)
+        val epochs = 100 // TODO Calculate this dynamically?
+        val seed = Random(genConfig.seed)
         val initAlpha = 1.0
         val initSigma = getInitSigma2D(width, height)
 
@@ -104,7 +98,8 @@ class SG(
             DistanceFunction.euclideanNorm2DTorus(
                 intArrayOf(height, width),
                 booleanArrayOf(false, true) // Wrap around width, but do not wrap around height.
-            ), // Only wrap X.
+            ),
+
             rand = seed
         )
 
@@ -144,8 +139,6 @@ class SG(
     }
 
     fun createWalls(dims: IntArray, nodeMap: NodeMap): MutableList<Wall> {
-        val ex = Exhibition(name = "Generated Exhibition ${Random.nextInt()}") // TODO Proper naming.
-
         val exhibits = mutableListOf<Exhibit>()
 
         // Pick top image for every node and add it.
@@ -157,7 +150,7 @@ class SG(
 
             val imageBytes = cineastHttp.objectRequest(c)
 
-            ExGenUtils.calculateExhibitSize(imageBytes, e, 2f)
+            GenerationUtils.calculateExhibitSize(imageBytes, e, 2f)
 
             exhibits.add(e)
         }
@@ -177,7 +170,7 @@ class SG(
                 for (j in 0 until dims[1] / walls.size) {
                     val exhibit = exhibits.removeFirst()
 
-                    exhibit.position = ExGenUtils.getWallPositionByCoords(i, j)
+                    exhibit.position = GenerationUtils.getWallPositionByCoords(i, j)
 
                     walls[w].exhibits.add(exhibit)
                 }
@@ -197,6 +190,7 @@ class SG(
     }
 
     fun createExhibitionFromRooms(rooms: List<Room>): Exhibition {
+        // TODO Decide on some way to set a (non-random) exhibition name.
         val ex = Exhibition(name = "Generated Exhibition ${Random.nextInt()}")
 
         ex.rooms.addAll(rooms)
@@ -204,19 +198,19 @@ class SG(
         return ex
     }
 
-    fun genSom(config: GenerationConfig): Exhibition {
+    fun genSomEx(): Exhibition {
         // Check if we have to use all ids or only a sub-selection.
-        val allFeatures = if (config.idList.isEmpty()) {
+        val allFeatures = if (genConfig.idList.isEmpty()) {
             // Get all features.
-            getFeatureDataFromCategory(config.genType.cineastCategory) // Get all features for category.
+            getFeatureDataFromCategory(genConfig.genType.cineastCategory) // Get all features for category.
         } else {
             // Only get features for specific IDs.
-            // TODO Implement API call to obtain features for specified IDs.
-            getFeatureDataFromCategory(config.genType.cineastCategory)
+            // TODO Only use features for specified IDs.
+            getFeatureDataFromCategory(genConfig.genType.cineastCategory)
         }
 
         // Pick the feature type we actually want.
-        val features = allFeatures[config.genType.tableName] ?: return Exhibition(name = "Empty Exhibition")
+        val features = allFeatures[genConfig.genType.tableName] ?: return Exhibition(name = "Empty Exhibition")
 
         // Get all values as 2D array.
         val data = features.valuesTo2DArray() // Same order as the IDs.
@@ -240,18 +234,7 @@ class SG(
 
         val rooms = createRoomFromWalls(walls)
 
-        val ex = createExhibitionFromRooms(arrayListOf(rooms))
-
-        return ex
-    }
-
-    fun generateSom(ctx: Context) {
-        // TODO Extract this function into a separate class (GenHandler) that creates instances of this class.
-        val config = ctx.body<GenerationConfig>()
-
-        val ex = genSom(config)
-
-        ctx.json(ex)
+        return createExhibitionFromRooms(arrayListOf(rooms))
     }
 
 }
