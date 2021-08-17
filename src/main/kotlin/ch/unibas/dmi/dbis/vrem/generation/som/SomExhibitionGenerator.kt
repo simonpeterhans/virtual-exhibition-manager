@@ -12,7 +12,6 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import ch.unibas.dmi.dbis.vrem.rest.handlers.RequestContentHandler
 import mu.KotlinLogging
-import kotlin.math.sqrt
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
@@ -22,37 +21,28 @@ class SomExhibitionGenerator(
     val cineastHttp: CineastHttp
 ) {
 
-    fun getInitSigma2D(width: Int, height: Int): Double {
-        // Choosing sigma based on the grid size is a good practice.
-        return 2.0 * (sqrt(width.toDouble() * width.toDouble() + height.toDouble() * height.toDouble()))
-    }
-
     fun trainSom(features: Array<DoubleArray>): SOM {
         val height = genConfig.height
         val width = genConfig.width
-        val depth = features[0].size
         val epochs = 100 // TODO Calculate this dynamically?
         val seed = Random(genConfig.seed)
-        val initAlpha = 1.0
-        val initSigma = getInitSigma2D(width, height)
 
         val g = Grid2DSquare(
             height,
             width,
-            depth,
-            DistanceFunction.euclideanNorm2DTorus(
+            featureDepth = features[0].size,
+            distanceFunction = DistanceFunction.euclideanNorm2DTorus(
                 intArrayOf(height, width),
                 booleanArrayOf(false, true) // Wrap around width, but do not wrap around height.
             ),
-
             rand = seed
         )
 
         val s = SOM(
             g,
-            DistanceScalingFunction.exponentialDecreasing(),
-            alpha = TimeFunction.linearDecreasingFactorScaled(initAlpha),
-            sigma = TimeFunction.linearDecreasingFactorScaled(initSigma),
+            distanceScaling = DistanceScalingFunction.exponentialDecreasing(),
+            alpha = TimeFunction.linearDecreasingFactorScaled(1.0),
+            sigma = TimeFunction.defaultSigmaFunction(intArrayOf(height, width), 2.0),
             rand = seed
         )
 
