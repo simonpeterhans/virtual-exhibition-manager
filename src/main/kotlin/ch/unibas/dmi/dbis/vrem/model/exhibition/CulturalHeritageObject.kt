@@ -1,6 +1,8 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 /**
  * Cultural heritage object.
@@ -12,13 +14,15 @@ import kotlinx.serialization.Serializable
  * @property description The description of the object.
  */
 @Serializable
-data class CulturalHeritageObject(
-    val id: String,
-    val name: String,
-    val type: CHOType,
-    var path: String,
-    val description: String
-) {
+abstract class CulturalHeritageObject {
+
+    @SerialName("_id")
+    @JsonNames("id", "_id")
+    abstract val id: String
+    abstract var name: String
+    abstract var type: CHOType
+    abstract var path: String
+    abstract var description: String
 
     companion object {
         /**

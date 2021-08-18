@@ -54,7 +54,7 @@ data class Vector3f(val x: Float = 0f, val y: Float = 0f, val z: Float = 0f) {
     }
 
     override fun toString(): String {
-        return "Vector3f(x=$x, y=$y, z=$z)"
+        return "Vector3f($x, $y, $z)"
     }
 
 }

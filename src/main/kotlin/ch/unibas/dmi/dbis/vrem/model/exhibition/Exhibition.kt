@@ -1,6 +1,5 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
@@ -18,13 +17,13 @@ import java.util.*
 
 @Serializable
 data class Exhibition(
-    @Contextual
     @SerialName("_id") // KMongo.
     @JsonNames("id", "_id") // JSON deserialization (Kotlinx).
     val id: String = newId<Exhibition>().toString(),
     val name: String,
     val description: String = "",
-    val rooms: MutableList<Room> = mutableListOf()
+    val rooms: MutableList<Room> = mutableListOf(),
+    val metadata: MutableMap<String, String> = mutableMapOf()
 ) {
 
     /**

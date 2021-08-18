@@ -3,8 +3,6 @@ package ch.unibas.dmi.dbis.vrem.model.exhibition
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import kotlinx.serialization.Serializable
 
-// TODO Potentially add path here.
-
 /**
  * Object representation of exhibition rooms.
  *
@@ -14,7 +12,7 @@ import kotlinx.serialization.Serializable
  * @property position The position of the room.
  * @property size The size of the room.
  * @property entryPoint The spawning/entry point of the room.
- * @property ambient The ambient of the room.
+ * @property ambient The ambient sound of the room.
  * @property exhibits A list of exhibits present in the room.
  * @property walls A list of walls present in the room.
  *                 Note that, usually, exhibits are part of walls and not of the exhibit list of a room object.
@@ -29,7 +27,8 @@ data class Room(
     val entryPoint: Vector3f = DEFAULT_ENTRYPOINT,
     val ambient: String? = null,
     val exhibits: MutableList<Exhibit> = mutableListOf(),
-    val walls: MutableList<Wall> = mutableListOf()
+    val walls: MutableList<Wall> = mutableListOf(),
+    val metadata: MutableMap<String, String> = mutableMapOf()
 ) {
 
     companion object {
@@ -65,7 +64,7 @@ data class Room(
      */
     private fun setWall(dir: Direction, w: Wall) {
         if (w.direction != dir) {
-            throw IllegalArgumentException("Wall direction not matching. Expected $dir but got ${w.direction}")
+            throw IllegalArgumentException("Wall direction not matching, expected $dir but got ${w.direction} instead.")
         }
         walls.add(w)
     }
@@ -80,7 +79,7 @@ data class Room(
         try {
             return walls.first { w -> w.direction == dir }
         } catch (e: NoSuchElementException) {
-            throw IllegalStateException("The room is corrupt. It does not have a wall with dir=$dir")
+            throw IllegalStateException("Corrupt room, missing direction $dir.")
         }
     }
 
@@ -114,42 +113,6 @@ data class Room(
 
     fun setWest(wall: Wall) {
         setWall(Direction.WEST, wall)
-    }
-
-    override fun toString(): String {
-        return "Room(text='$text', floor='$floor', ceiling='$ceiling', position=$position, size=$size, entrypoint=$entryPoint, ambient=$ambient, exhibits=$exhibits, walls=$walls)"
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Room
-
-        if (text != other.text) return false
-        if (floor != other.floor) return false
-        if (ceiling != other.ceiling) return false
-        if (position != other.position) return false
-        if (size != other.size) return false
-        if (entryPoint != other.entryPoint) return false
-        if (ambient != other.ambient) return false
-        if (exhibits != other.exhibits) return false
-        if (walls != other.walls) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = text.hashCode()
-        result = 31 * result + floor.hashCode()
-        result = 31 * result + ceiling.hashCode()
-        result = 31 * result + position.hashCode()
-        result = 31 * result + size.hashCode()
-        result = 31 * result + entryPoint.hashCode()
-        result = 31 * result + (ambient?.hashCode() ?: 0)
-        result = 31 * result + exhibits.hashCode()
-        result = 31 * result + walls.hashCode()
-        return result
     }
 
 }
