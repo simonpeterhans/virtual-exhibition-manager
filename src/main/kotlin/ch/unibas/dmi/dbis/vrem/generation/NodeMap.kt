@@ -1,20 +1,23 @@
 package ch.unibas.dmi.dbis.vrem.generation
 
 import ch.unibas.dmi.dbis.som.PredictionResult
+import kotlinx.serialization.Serializable
 
-// TODO Replace MutableList<Pair<String, Double>> with IdDistanceList.
-class NodeMap : LinkedHashMap<Int, MutableList<Pair<String, Double>>>() {
+@Serializable
+class NodeMap {
+
+    val map = LinkedHashMap<Int, MutableList<Pair<String, Double>>>()
 
     fun addEmptyNode(i: Int) {
-        this[i] = ArrayList()
+        map[i] = ArrayList()
     }
 
     fun addClassifiedSample(sampleId: String, res: PredictionResult) {
-        if (this[res.nodeId] == null) {
+        if (map[res.nodeId] == null) {
             addEmptyNode(res.nodeId)
         }
 
-        this[res.nodeId]!!.add(Pair(sampleId, res.distance))
+        map[res.nodeId]!!.add(Pair(sampleId, res.distance))
     }
 
 }

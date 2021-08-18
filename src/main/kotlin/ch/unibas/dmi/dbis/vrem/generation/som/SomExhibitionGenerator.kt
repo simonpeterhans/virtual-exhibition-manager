@@ -2,7 +2,6 @@ package ch.unibas.dmi.dbis.vrem.generation.som
 
 import ch.unibas.dmi.dbis.som.PredictionResult
 import ch.unibas.dmi.dbis.som.SOM
-import ch.unibas.dmi.dbis.som.grids.Grid
 import ch.unibas.dmi.dbis.som.grids.Grid2DSquare
 import ch.unibas.dmi.dbis.som.util.DistanceFunction
 import ch.unibas.dmi.dbis.som.util.DistanceScalingFunction
@@ -11,7 +10,9 @@ import ch.unibas.dmi.dbis.vrem.generation.*
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import ch.unibas.dmi.dbis.vrem.rest.handlers.RequestContentHandler
+import kotlinx.serialization.json.Json
 import mu.KotlinLogging
+import kotlin.math.*
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
@@ -51,11 +52,11 @@ class SomExhibitionGenerator(
         return s
     }
 
-    fun predictionsToNodeMap(grid: Grid, predictions: ArrayList<PredictionResult>, ids: ArrayList<String>): NodeMap {
+    fun predictionsToNodeMap(numNodes: Int, predictions: ArrayList<PredictionResult>, ids: ArrayList<String>): NodeMap {
         val nodeMap = NodeMap()
 
         // Add all nodes to the map.
-        for (i in grid.nodes.indices) {
+        for (i in 0 until numNodes) {
             nodeMap.addEmptyNode(i)
         }
 
@@ -65,9 +66,9 @@ class SomExhibitionGenerator(
         }
 
         // Sort lists.
-        for ((k, v) in nodeMap.entries) {
+        for ((k, v) in nodeMap.map.entries) {
             // Sort ascending which is what we want (smaller distance = more similar).
-            nodeMap[k] = v.sortedWith(compareBy(Pair<String, Double>::second)).toCollection(ArrayList())
+            nodeMap.map[k] = v.sortedWith(compareBy(Pair<String, Double>::second)).toCollection(ArrayList())
         }
 
         return nodeMap
@@ -77,8 +78,8 @@ class SomExhibitionGenerator(
         val exhibits = mutableListOf<Exhibit>()
 
         // Pick top image for every node and add it.
-        // TODO Handle case for empty lists (can this even happen if we have more (distinct) samples than nodes?).
-        for (idDistanceList in nodeMap.values) { // Linked hash map, ordered according to node ID.
+        for (idDistanceList in nodeMap.map.values) { // Linked hash map, ordered according to node ID.
+            // TODO Handle case for empty lists (add empty exhibit).
             val c = idDistanceList[0].first
 
             val e = Exhibit(name = c, path = c + RequestContentHandler.URL_ID_SUFFIX)
@@ -98,8 +99,7 @@ class SomExhibitionGenerator(
             walls.add(Wall(e, "CONCRETE"))
         }
 
-        // Place exhibits on walls.
-        // TODO Explicitly check for 2D/3D.
+        // Place exhibits on walls (this will only work for 2D setups with 4 walls).
         for (i in 0 until dims[0]) {
             for (w in 0 until walls.size) {
                 for (j in 0 until dims[1] / walls.size) {
@@ -133,12 +133,12 @@ class SomExhibitionGenerator(
         return ex
     }
 
-    fun genSomEx(): Exhibition {
+    fun genSomRoom(): Room {
         val allFeatures =
             CineastRest.getFeatureDataFromCategory(genConfig.genType.cineastCategory) // Get all features for category.
 
         // Pick the feature type we actually want.
-        val features = allFeatures[genConfig.genType.tableName] ?: return Exhibition(name = "Empty Exhibition")
+        val features = allFeatures[genConfig.genType.tableName] ?: return Room("Empty Room")
 
         // Remove IDs if we're filtering by ID list.
         // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
@@ -151,22 +151,47 @@ class SomExhibitionGenerator(
         // TODO Normalize data if necessary.
 
         // Train SOM.
-        val som = trainSom(data) // TODO Add parameters from request (deserialize from JSON to object).
+        val som = trainSom(data)
 
         // Predict data.
         val predictions = som.predict(data)
 
         // Create node map.
-        val nodeMap = predictionsToNodeMap(som.grid, predictions, ids)
+        val nodeMap = predictionsToNodeMap(som.grid.nodes.size, predictions, ids)
 
         // Create exhibitions depending on settings (we could create the sub-rooms right away as well).
-        // TODO Create a model for generated exhibitions.
-        // TODO Allow to return just a room instead of an entire exhibition.
         val walls = createWalls(som.grid.dims, nodeMap)
 
-        val rooms = createRoomFromWalls(walls)
+        val room = createRoomFromWalls(walls)
 
-        return createExhibitionFromRooms(arrayListOf(rooms))
+        // Encode node map to JSON to add as metadata.
+        room.metadata[MetadataType.SOM_IDS.key] = Json.encodeToString(NodeMap.serializer(), nodeMap)
+
+        return room
+    }
+
+    fun printAnglesForEx(ex: Exhibition) {
+        // TODO If we're in the original (center) room, use the angle of the exhibit, otherwise, use the angle of the center of the room.
+        for (r in ex.rooms) {
+            for (w in r.walls) {
+                for (e in w.exhibits) {
+                    val offsetAngle = 0.25 * Math.PI
+                    val newX = cos(offsetAngle) * 0.5 * r.size.x - sin(offsetAngle) * (e.position.x - 0.5 * r.size.x)
+                    val newZ = cos(offsetAngle) * (e.position.x - 0.5 * r.size.x) + sin(offsetAngle) * 0.5 * r.size.x
+                    println(Math.toDegrees(0.5 * Math.PI * w.direction.ordinal + (0.5 * PI - atan(newZ / newX))))
+                }
+            }
+        }
+    }
+
+    fun genSomEx(): Exhibition {
+        val room = genSomRoom()
+
+        val ex = createExhibitionFromRooms(arrayListOf(room))
+
+        printAnglesForEx(ex)
+
+        return ex
     }
 
 }
