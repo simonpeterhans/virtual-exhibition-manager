@@ -2,10 +2,12 @@ package ch.unibas.dmi.dbis.vrem.model.exhibition
 
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import kotlinx.serialization.Serializable
+import org.litote.kmongo.newId
 
 /**
  * Object representation of exhibition rooms.
  *
+ * @property id The ID of the room.
  * @property text The title/description of the room.
  * @property floor The floor texture of the room.
  * @property ceiling The ceiling texture of the room.
@@ -16,10 +18,12 @@ import kotlinx.serialization.Serializable
  * @property exhibits A list of exhibits present in the room.
  * @property walls A list of walls present in the room.
  *                 Note that, usually, exhibits are part of walls and not of the exhibit list of a room object.
+ * @property metadata Miscellaneous metadata for the room for various purposes.
  */
 @Serializable
 data class Room(
-    val text: String,
+    val id: String = newId<Exhibition>().toString(),
+    val text: String = "",
     val floor: String = DEFAULT_FLOOR,
     val ceiling: String = DEFAULT_CEILING,
     var position: Vector3f = DEFAULT_POSITION,

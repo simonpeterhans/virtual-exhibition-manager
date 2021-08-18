@@ -258,7 +258,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         return if (roomConfigFile.exists()) {
             json.decodeFromString(Room.serializer(), roomConfigFile.readText())
         } else {
-            Room(room.name)
+            Room(text = room.name)
         }
     }
 
