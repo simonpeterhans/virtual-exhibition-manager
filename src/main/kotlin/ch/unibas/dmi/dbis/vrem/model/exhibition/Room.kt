@@ -23,16 +23,16 @@ import org.litote.kmongo.newId
 @Serializable
 data class Room(
     val id: String = newId<Exhibition>().toString(),
-    val text: String = "",
-    val floor: String = DEFAULT_FLOOR,
-    val ceiling: String = DEFAULT_CEILING,
+    var text: String = "",
+    var floor: String = DEFAULT_FLOOR,
+    var ceiling: String = DEFAULT_CEILING,
     var position: Vector3f = DEFAULT_POSITION,
-    val size: Vector3f = DEFAULT_SIZE,
-    val entryPoint: Vector3f = DEFAULT_ENTRYPOINT,
-    val ambient: String? = null,
-    val exhibits: MutableList<Exhibit> = mutableListOf(),
-    val walls: MutableList<Wall> = mutableListOf(),
-    val metadata: MutableMap<String, String> = mutableMapOf()
+    var size: Vector3f = DEFAULT_SIZE,
+    var entryPoint: Vector3f = DEFAULT_ENTRYPOINT,
+    var ambient: String? = null,
+    var exhibits: MutableList<Exhibit> = mutableListOf(),
+    var walls: MutableList<Wall> = mutableListOf(),
+    var metadata: MutableMap<String, String> = mutableMapOf()
 ) {
 
     companion object {

@@ -6,22 +6,26 @@ import io.javalin.http.Context
 
 class GenerationHandler(cineastConfig: CineastConfig) {
 
-    val cineastHttp = CineastHttp(cineastConfig)
+    private val cineastHttp = CineastHttp(cineastConfig)
 
     fun generate(ctx: Context): Context {
         val config = ctx.body<GenerationConfig>()
 
         // TODO Refactor this to return an exhibition or a room depending on what was requested in the config.
-        return when (config.genType) {
+        val gen = when (config.genType) {
             GenerationType.SEMANTIC_SOM -> {
-                val somGen = SomGenerator(config, cineastHttp)
-                ctx.json(somGen.genExhibition())
+                SomGenerator(config, cineastHttp)
             }
 
             GenerationType.VISUAL_SOM -> TODO()
             GenerationType.SEMANTIC_SIMILARITY -> TODO()
             GenerationType.VISUAL_SIMILARITY -> TODO()
             GenerationType.RANDOM -> TODO()
+        }
+
+        return when (config.genObj) {
+            GenerationObject.EXHIBITION -> ctx.json(gen.genExhibition())
+            GenerationObject.ROOM -> ctx.json(gen.genRoom())
         }
     }
 

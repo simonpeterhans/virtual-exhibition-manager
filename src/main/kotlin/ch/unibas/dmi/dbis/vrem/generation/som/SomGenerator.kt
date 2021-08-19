@@ -12,14 +12,20 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
+import java.util.*
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
 class SomGenerator(
-    val genConfig: GenerationConfig,
+    genConfig: GenerationConfig,
     cineastHttp: CineastHttp
-) : Generator(cineastHttp) {
+) : Generator(genConfig, cineastHttp) {
+
+    companion object {
+        const val EX_TEXT = "Generated Exhibition (SOM)"
+        const val ROOM_TEXT = "Generated Room (SOM)"
+    }
 
     private fun trainSom(features: Array<DoubleArray>): SOM {
         val height = genConfig.height
@@ -82,7 +88,6 @@ class SomGenerator(
 
         // Pick top image for every node and add it.
         for (idDistanceList in nodeMap.map.values) { // Linked hash map, ordered according to node ID.
-            // TODO Handle case for empty lists (add empty ID/null).
             if (idDistanceList.isEmpty()) {
                 idList.add(null)
             } else {
@@ -101,8 +106,10 @@ class SomGenerator(
         // Get all features for category.
         val allFeatures = CineastRest.getFeatureDataFromCategory(genConfig.genType.cineastCategory)
 
+        val room = Room(text = ROOM_TEXT + " " + getTextSuffix())
+
         // Pick the feature type we actually want.
-        val features = allFeatures[genConfig.genType.tableName] ?: return Room(text = "Empty Room")
+        val features = allFeatures[genConfig.genType.tableName] ?: return room
 
         // Remove IDs if we're filtering by ID list.
         // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
@@ -126,7 +133,8 @@ class SomGenerator(
         // Create exhibitions depending on settings (we could create the sub-rooms right away as well).
         val walls = createWallsFromNodeMap(som.grid.dims, nodeMap)
 
-        val room = Room(text = "room01", size = roomSizeFromWalls(walls))
+        // Set room size and add walls.
+        room.size = roomSizeFromWalls(walls)
         room.walls.addAll(walls)
 
         // Encode node map to JSON to add as metadata.
@@ -138,7 +146,7 @@ class SomGenerator(
     override fun genExhibition(): Exhibition {
         val room = genRoom()
 
-        val ex = Exhibition(name = "Generated Exhibition ${Random.nextInt()}")
+        val ex = Exhibition(name = EX_TEXT + " " + getTextSuffix())
 
         ex.rooms.add(room)
 

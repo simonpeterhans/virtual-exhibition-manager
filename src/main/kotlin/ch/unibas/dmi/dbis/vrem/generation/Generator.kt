@@ -4,14 +4,22 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import ch.unibas.dmi.dbis.vrem.rest.handlers.RequestContentHandler
 import java.io.ByteArrayInputStream
+import java.time.LocalDateTime
 import javax.imageio.ImageIO
 import kotlin.math.*
 
-abstract class Generator(val cineastHttp: CineastHttp) {
+abstract class Generator(
+    val genConfig: GenerationConfig,
+    val cineastHttp: CineastHttp
+) {
 
     abstract fun genRoom(): Room
 
     abstract fun genExhibition(): Exhibition
+
+    fun getTextSuffix(): LocalDateTime? {
+        return LocalDateTime.now()
+    }
 
     fun roomSizeFromWalls(
         walls: List<Wall>,
