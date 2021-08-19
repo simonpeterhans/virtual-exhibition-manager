@@ -3,6 +3,7 @@ package ch.unibas.dmi.dbis.vrem.generation
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.MetadataApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.ObjectApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.models.AllFeaturesByCategoryQueryResult
+import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 
 object CineastRest {
 

@@ -1,6 +1,9 @@
 package ch.unibas.dmi.dbis.vrem.generation
 
 import ch.unibas.dmi.dbis.vrem.config.CineastConfig
+import ch.unibas.dmi.dbis.vrem.generation.model.GenerationConfig
+import ch.unibas.dmi.dbis.vrem.generation.model.GenerationObject
+import ch.unibas.dmi.dbis.vrem.generation.model.GenerationType
 import ch.unibas.dmi.dbis.vrem.generation.som.SomGenerator
 import io.javalin.http.Context
 

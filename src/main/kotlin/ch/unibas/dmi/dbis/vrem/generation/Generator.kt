@@ -1,5 +1,6 @@
 package ch.unibas.dmi.dbis.vrem.generation
 
+import ch.unibas.dmi.dbis.vrem.generation.model.GenerationConfig
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import ch.unibas.dmi.dbis.vrem.rest.handlers.RequestContentHandler

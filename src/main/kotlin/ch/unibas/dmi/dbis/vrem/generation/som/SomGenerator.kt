@@ -6,13 +6,18 @@ import ch.unibas.dmi.dbis.som.grids.Grid2DSquare
 import ch.unibas.dmi.dbis.som.util.DistanceFunction
 import ch.unibas.dmi.dbis.som.util.DistanceScalingFunction
 import ch.unibas.dmi.dbis.som.util.TimeFunction
-import ch.unibas.dmi.dbis.vrem.generation.*
+import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
+import ch.unibas.dmi.dbis.vrem.generation.CineastRest
+import ch.unibas.dmi.dbis.vrem.generation.Generator
+import ch.unibas.dmi.dbis.vrem.generation.model.GenerationConfig
+import ch.unibas.dmi.dbis.vrem.generation.model.IdDoublePair
+import ch.unibas.dmi.dbis.vrem.generation.model.MetadataType
+import ch.unibas.dmi.dbis.vrem.generation.model.NodeMap
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import java.util.*
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
@@ -77,7 +82,7 @@ class SomGenerator(
         // Sort lists.
         for ((k, v) in nodeMap.map.entries) {
             // Sort ascending which is what we want (smaller distance = more similar).
-            nodeMap.map[k] = v.sortedWith(compareBy(Pair<String, Double>::second)).toCollection(ArrayList())
+            nodeMap.map[k] = v.sortedWith(compareBy(IdDoublePair::value)).toCollection(ArrayList())
         }
 
         return nodeMap
@@ -91,7 +96,7 @@ class SomGenerator(
             if (idDistanceList.isEmpty()) {
                 idList.add(null)
             } else {
-                idList.add(idDistanceList[0].first)
+                idList.add(idDistanceList[0].id)
             }
         }
 
@@ -113,13 +118,13 @@ class SomGenerator(
 
         // Remove IDs if we're filtering by ID list.
         // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
-        features.removeNonListedIds(genConfig.idList)
+        features.filterByList(genConfig.idList)
 
         // Get all values as 2D array.
         val data = features.valuesTo2DArray() // Same order as the IDs.
         val ids = features.getSortedIds()
 
-        // TODO Normalize data if necessary.
+        // TODO Normalize data (e.g., for color features).
 
         // Train SOM.
         val som = trainSom(data)

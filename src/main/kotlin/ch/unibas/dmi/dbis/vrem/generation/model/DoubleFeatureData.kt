@@ -1,4 +1,4 @@
-package ch.unibas.dmi.dbis.vrem.generation
+package ch.unibas.dmi.dbis.vrem.generation.model
 
 data class DoubleFeatureData(val featureName: String) {
 
@@ -24,8 +24,10 @@ data class DoubleFeatureData(val featureName: String) {
         return arr
     }
 
-    fun removeNonListedIds(ids: ArrayList<String>) {
-        ids.forEach(idMap::remove)
+    fun filterByList(ids: ArrayList<String>) {
+        if (ids.isNotEmpty()) {
+            idMap.keys.retainAll(ids)
+        }
     }
 
 }

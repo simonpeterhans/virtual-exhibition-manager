@@ -1,4 +1,4 @@
-package ch.unibas.dmi.dbis.vrem.generation
+package ch.unibas.dmi.dbis.vrem.generation.model
 
 import ch.unibas.dmi.dbis.som.PredictionResult
 import kotlinx.serialization.Serializable
@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 class NodeMap {
 
-    val map = LinkedHashMap<Int, MutableList<Pair<String, Double>>>()
+    val map = LinkedHashMap<Int, MutableList<IdDoublePair>>()
 
     fun addEmptyNode(i: Int) {
         map[i] = ArrayList()
@@ -17,7 +17,7 @@ class NodeMap {
             addEmptyNode(res.nodeId)
         }
 
-        map[res.nodeId]!!.add(Pair(sampleId, res.distance))
+        map[res.nodeId]!!.add(IdDoublePair(sampleId, res.distance))
     }
 
 }
