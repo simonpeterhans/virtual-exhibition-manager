@@ -2,6 +2,13 @@ package ch.unibas.dmi.dbis.vrem.generation
 
 import kotlinx.serialization.Serializable
 
+enum class GenerationObject {
+
+    EXHIBITION,
+    ROOM
+
+}
+
 enum class GenerationType(val cineastCategory: String = "", val tableName: String = "") {
 
     SEMANTIC_SOM("som_semantic", "features_visualtextcoembedding"),
@@ -20,6 +27,7 @@ enum class MetadataType(val key: String) {
 
 @Serializable
 data class GenerationConfig(
+    val genObj: GenerationObject,
     val genType: GenerationType,
     val idList: ArrayList<String>,
     val height: Int,
