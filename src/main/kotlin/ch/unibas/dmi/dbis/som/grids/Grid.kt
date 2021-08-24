@@ -74,7 +74,10 @@ abstract class Grid(
         upperBound: Double = 1.0,
         altRand: Random = rand
     ): Grid {
-        initializeWeights(depth, doubleArrayOf(lowerBound), doubleArrayOf(upperBound), altRand)
+        for (n in nodes) {
+            n.initWeights(depth, lowerBound, upperBound, altRand)
+        }
+
         return this
     }
 
