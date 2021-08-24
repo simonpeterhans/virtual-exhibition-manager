@@ -14,6 +14,10 @@ abstract class Generator(
     val cineastHttp: CineastHttp
 ) {
 
+    abstract val exhibitionText: String
+
+    abstract val roomText: String
+
     abstract fun genRoom(): Room
 
     abstract fun genExhibition(): Exhibition

@@ -3,8 +3,6 @@ package ch.unibas.dmi.dbis.som.grids
 import ch.unibas.dmi.dbis.som.Node
 import ch.unibas.dmi.dbis.som.PredictionResult
 import ch.unibas.dmi.dbis.som.util.DistanceFunction
-import ch.unibas.dmi.dbis.som.util.minus
-import ch.unibas.dmi.dbis.som.util.squaredSum
 import kotlin.random.Random
 
 /**
@@ -15,12 +13,14 @@ import kotlin.random.Random
  * with the first index moving down and the second index moving right.
  *
  * @property dims An int array describing the size of every dimension of this grid.
- * @property distanceFunction A distance function to calculate the neighborhood of a node.
+ * @property distanceFunction A distance function to calculate the distance between the sample and the best matching node.
+ * @property neighborhoodFunction A distance function to calculate the neighborhood of a node.
  * @property rand The random seed to use.
  */
 abstract class Grid(
     val dims: IntArray,
     val distanceFunction: DistanceFunction,
+    val neighborhoodFunction: DistanceFunction,
     val rand: Random,
 ) {
 
@@ -38,6 +38,47 @@ abstract class Grid(
     abstract fun node(vararg idx: Int): Node
 
     /**
+     * Initializes weights for all nodes randomly within a specified range for every dimension of the feature.
+     *
+     * @param depth The feature depth (i.e., the dimension of the weight vector).
+     * @param lowerBoundArray An array of minimum values in the range to randomize from for every index.
+     * @param upperBoundArray An array of maximum values in the range to randomize from for every index.
+     * @param altRand An alternative random seed to use (the random seed of this object will be used if not provided).
+     * @return This Grid object for chaining.
+     */
+    fun initializeWeights(
+        depth: Int,
+        lowerBoundArray: DoubleArray,
+        upperBoundArray: DoubleArray,
+        altRand: Random = rand
+    ): Grid {
+        for (n in nodes) {
+            n.initWeights(depth, lowerBoundArray, upperBoundArray, altRand)
+        }
+
+        return this
+    }
+
+    /**
+     * Initializes weights for all nodes randomly within a range (defaults to [0.0, 1.0]).
+     *
+     * @param depth The feature depth (i.e., the dimension of the weight vector).
+     * @param lowerBound The minimum value of the range to randomize from.
+     * @param upperBound The maximum value of the range to randomize from
+     * @param altRand An alternative random seed to use (the random seed of this object will be used if not provided).
+     * @return This Grid object for chaining.
+     */
+    fun initializeWeights(
+        depth: Int,
+        lowerBound: Double = 0.0,
+        upperBound: Double = 1.0,
+        altRand: Random = rand
+    ): Grid {
+        initializeWeights(depth, doubleArrayOf(lowerBound), doubleArrayOf(upperBound), altRand)
+        return this
+    }
+
+    /**
      * Finds the id and distance of the best (i.e., closest/smallest sum of squares) node for a given sample.
      *
      * @param sample The sample to find the closest node index for.
@@ -48,7 +89,7 @@ abstract class Grid(
         var currBestVal = Double.MAX_VALUE
 
         for (i in nodes.indices) {
-            val currVal = (nodes[i].weights - sample).squaredSum()
+            val currVal = distanceFunction.apply(nodes[i].weights, sample)
 
             if (currVal < currBestVal) {
                 currBestVal = currVal
@@ -85,7 +126,7 @@ abstract class Grid(
         val distances = DoubleArray(nodes.size) { 0.0 }
 
         for (i in nodes.indices) {
-            distances[i] = distanceFunction.apply(nodes[i].coords, point)
+            distances[i] = neighborhoodFunction.apply(nodes[i].coords, point)
         }
 
         return distances

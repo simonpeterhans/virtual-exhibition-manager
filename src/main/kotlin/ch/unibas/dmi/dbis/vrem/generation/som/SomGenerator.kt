@@ -9,15 +9,14 @@ import ch.unibas.dmi.dbis.som.util.TimeFunction
 import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
 import ch.unibas.dmi.dbis.vrem.generation.CineastRest
 import ch.unibas.dmi.dbis.vrem.generation.Generator
-import ch.unibas.dmi.dbis.vrem.generation.model.GenerationConfig
-import ch.unibas.dmi.dbis.vrem.generation.model.IdDoublePair
-import ch.unibas.dmi.dbis.vrem.generation.model.MetadataType
-import ch.unibas.dmi.dbis.vrem.generation.model.NodeMap
+import ch.unibas.dmi.dbis.vrem.generation.model.*
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
+import java.lang.Double.max
+import java.lang.Double.min
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
@@ -27,12 +26,32 @@ class SomGenerator(
     cineastHttp: CineastHttp
 ) : Generator(genConfig, cineastHttp) {
 
-    companion object {
-        const val EX_TEXT = "Generated Exhibition (SOM)"
-        const val ROOM_TEXT = "Generated Room (SOM)"
+    override val exhibitionText = "Generated Exhibition (SOM)"
+    override val roomText = "Generated Room (SOM)"
+
+    private fun getFeatureRanges(features: Array<DoubleArray>): Pair<DoubleArray, DoubleArray> {
+        val len = features[0].size
+        val ranges = Pair(DoubleArray(len), DoubleArray(len))
+
+        for (j in 0 until len) {
+            var minVal = Double.MAX_VALUE
+            var maxVal = Double.MIN_VALUE
+
+            for (i in features.indices) {
+                minVal = min(features[i][j], minVal)
+                maxVal = max(features[i][j], minVal)
+            }
+
+            ranges.first[j] = minVal
+            ranges.second[j] = (maxVal)
+        }
+
+        return ranges
     }
 
     private fun trainSom(features: Array<DoubleArray>): SOM {
+        val ranges = getFeatureRanges(features)
+
         val height = genConfig.height
         val width = genConfig.width
         val epochs = 100 // TODO Calculate this dynamically?
@@ -41,13 +60,12 @@ class SomGenerator(
         val g = Grid2DSquare(
             height,
             width,
-            featureDepth = features[0].size,
-            distanceFunction = DistanceFunction.euclideanNorm2DTorus(
+            neighborhoodFunction = DistanceFunction.euclideanNorm2DTorus(
                 intArrayOf(height, width),
                 booleanArrayOf(false, true) // Wrap around width, but do not wrap around height.
             ),
             rand = seed
-        )
+        ).initializeWeights(features[0].size, ranges.first, ranges.second)
 
         val s = SOM(
             g,
@@ -108,23 +126,27 @@ class SomGenerator(
     }
 
     override fun genRoom(): Room {
-        // Get all features for category.
-        val allFeatures = CineastRest.getFeatureDataFromCategory(genConfig.genType.cineastCategory)
+        val featureDataList = arrayListOf<DoubleFeatureData>()
 
-        val room = Room(text = ROOM_TEXT + " " + getTextSuffix())
+        for (tablePair in genConfig.genType.featureList) {
+            val featureData = CineastRest.getFeatureDataFromTableName(tablePair.first)
 
-        // Pick the feature type we actually want.
-        val features = allFeatures[genConfig.genType.tableName] ?: return room
+            // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
+            featureData.filterByList(genConfig.idList)
 
-        // Remove IDs if we're filtering by ID list.
-        // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
-        features.filterByList(genConfig.idList)
+            // Normalize data.
+            featureData.normalize(tablePair.second)
+
+            featureDataList.add(featureData)
+        }
+
+        val features = DoubleFeatureData.concatenate(featureDataList)
+
+        val room = Room(text = roomText + " " + getTextSuffix())
 
         // Get all values as 2D array.
         val data = features.valuesTo2DArray() // Same order as the IDs.
         val ids = features.getSortedIds()
-
-        // TODO Normalize data (e.g., for color features).
 
         // Train SOM.
         val som = trainSom(data)
@@ -154,7 +176,7 @@ class SomGenerator(
     override fun genExhibition(): Exhibition {
         val room = genRoom()
 
-        val ex = Exhibition(name = EX_TEXT + " " + getTextSuffix())
+        val ex = Exhibition(name = exhibitionText + " " + getTextSuffix())
 
         ex.rooms.add(room)
 

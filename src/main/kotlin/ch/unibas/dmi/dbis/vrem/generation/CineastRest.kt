@@ -3,6 +3,7 @@ package ch.unibas.dmi.dbis.vrem.generation
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.MetadataApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.ObjectApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.models.AllFeaturesByCategoryQueryResult
+import ch.unibas.dmi.dbis.vrem.cineast.client.models.AllFeaturesByTableNameQueryResult
 import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 
 object CineastRest {
@@ -31,6 +32,17 @@ object CineastRest {
         return features.featureMap
     }
 
+    fun getFeatureDataByTableName(tableName: String): List<Map<String, Any>> {
+        println(tableName)
+        val feature: AllFeaturesByTableNameQueryResult = MetadataApi().findAllFeatByTableName(tableName)
+
+        if (feature.featureMap == null) {
+            return listOf()
+        }
+
+        return feature.featureMap
+    }
+
     fun featureListToFeatureData(featureName: String, featureList: List<Map<String, Any>>): DoubleFeatureData {
         val featureData = DoubleFeatureData(featureName)
 
@@ -55,6 +67,10 @@ object CineastRest {
         }
 
         return featureDataList
+    }
+
+    fun getFeatureDataFromTableName(tableName: String): DoubleFeatureData {
+        return featureListToFeatureData(tableName, getFeatureDataByTableName(tableName))
     }
 
 }

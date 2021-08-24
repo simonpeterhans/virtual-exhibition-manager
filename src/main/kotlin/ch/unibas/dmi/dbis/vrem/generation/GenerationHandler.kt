@@ -14,13 +14,15 @@ class GenerationHandler(cineastConfig: CineastConfig) {
     fun generate(ctx: Context): Context {
         val config = ctx.body<GenerationConfig>()
 
-        // TODO Refactor this to return an exhibition or a room depending on what was requested in the config.
         val gen = when (config.genType) {
             GenerationType.SEMANTIC_SOM -> {
                 SomGenerator(config, cineastHttp)
             }
 
-            GenerationType.VISUAL_SOM -> TODO()
+            GenerationType.VISUAL_SOM -> {
+                SomGenerator(config, cineastHttp)
+            }
+
             GenerationType.SEMANTIC_SIMILARITY -> TODO()
             GenerationType.VISUAL_SIMILARITY -> TODO()
             GenerationType.RANDOM -> TODO()
