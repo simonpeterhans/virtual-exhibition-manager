@@ -50,8 +50,6 @@ class SomGenerator(
     }
 
     private fun trainSom(features: Array<DoubleArray>): SOM {
-        val ranges = getFeatureRanges(features)
-
         val height = genConfig.height
         val width = genConfig.width
         val epochs = 100 // TODO Calculate this dynamically?
@@ -65,7 +63,11 @@ class SomGenerator(
                 booleanArrayOf(false, true) // Wrap around width, but do not wrap around height.
             ),
             rand = seed
-        ).initializeWeights(features[0].size, ranges.first, ranges.second)
+        )
+
+        // Initialize weights based on the feature ranges we have.
+        val ranges = getFeatureRanges(features)
+        g.initializeWeights(features[0].size, ranges.first, ranges.second)
 
         val s = SOM(
             g,
@@ -126,16 +128,17 @@ class SomGenerator(
     }
 
     override fun genRoom(): Room {
+        // TODO Move this to the generic Generator.
         val featureDataList = arrayListOf<DoubleFeatureData>()
 
         for (tablePair in genConfig.genType.featureList) {
-            val featureData = CineastRest.getFeatureDataFromTableName(tablePair.first)
+            val featureData = CineastRest.getFeatureDataFromTableName(tablePair.id)
 
             // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
             featureData.filterByList(genConfig.idList)
 
             // Normalize data.
-            featureData.normalize(tablePair.second)
+            featureData.normalize(tablePair.value)
 
             featureDataList.add(featureData)
         }
@@ -155,13 +158,13 @@ class SomGenerator(
         val predictions = som.predict(data)
 
         // Create node map.
-        val nodeMap = predictionsToNodeMap(som.grid.nodes.size, predictions, ids)
+        val nodeMap = predictionsToNodeMap(som.grid.getSize(), predictions, ids)
 
         // Create exhibitions depending on settings (we could create the sub-rooms right away as well).
         val walls = createWallsFromNodeMap(som.grid.dims, nodeMap)
 
         // Set room size and add walls.
-        room.size = roomSizeFromWalls(walls)
+        room.size = getRoomDimFromWalls(walls)
         room.walls.addAll(walls)
 
         // Encode node map to JSON to add as metadata.

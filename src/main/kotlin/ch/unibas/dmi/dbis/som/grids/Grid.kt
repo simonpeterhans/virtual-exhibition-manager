@@ -38,6 +38,13 @@ abstract class Grid(
     abstract fun node(vararg idx: Int): Node
 
     /**
+     * Returns the number of nodes in the grid.
+     *
+     * @return The number of nodes in the grid.
+     */
+    fun getSize(): Int = nodes.size
+
+    /**
      * Initializes weights for all nodes randomly within a specified range for every dimension of the feature.
      *
      * @param depth The feature depth (i.e., the dimension of the weight vector).

@@ -9,8 +9,10 @@ data class DoubleFeatureData(val featureName: String) {
 
     companion object {
 
+        const val CONCAT_NAME = "concat"
+
         fun concatenate(data: ArrayList<DoubleFeatureData>): DoubleFeatureData {
-            val dfd = DoubleFeatureData("concat")
+            val dfd = DoubleFeatureData(CONCAT_NAME)
 
             if (data.isEmpty()) {
                 return dfd

@@ -2,7 +2,6 @@ package ch.unibas.dmi.dbis.vrem.generation.model
 
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class GenerationConfig(
     val genObj: GenerationObject,

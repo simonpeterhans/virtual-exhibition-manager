@@ -15,11 +15,7 @@ class GenerationHandler(cineastConfig: CineastConfig) {
         val config = ctx.body<GenerationConfig>()
 
         val gen = when (config.genType) {
-            GenerationType.SEMANTIC_SOM -> {
-                SomGenerator(config, cineastHttp)
-            }
-
-            GenerationType.VISUAL_SOM -> {
+            GenerationType.SEMANTIC_SOM, GenerationType.VISUAL_SOM -> {
                 SomGenerator(config, cineastHttp)
             }
 

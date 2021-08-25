@@ -22,34 +22,7 @@ abstract class Generator(
 
     abstract fun genExhibition(): Exhibition
 
-    fun getTextSuffix(): LocalDateTime? {
-        return LocalDateTime.now()
-    }
-
-    fun roomSizeFromWalls(
-        walls: List<Wall>,
-        padding: Double = 1.5,
-        baseHeight: Double = 2.0
-    ): Vector3f {
-        var xDimLen = 0.0
-        var yDimLen = 6.0 // Minimum height.
-        var zDimLen = 0.0
-
-        for (w in walls) {
-            val lastPos = w.exhibits.last().position
-
-            // Use exhibit x coordinate for both dimensions since it's relative to the wall, and not the world.
-            if (w.direction.axis == Direction.Coordinate.X) {
-                xDimLen = max(xDimLen, lastPos.x + padding)
-                yDimLen = max(yDimLen, lastPos.y.toDouble() + baseHeight)
-            } else if (w.direction.axis == Direction.Coordinate.Z) {
-                zDimLen = max(zDimLen, lastPos.x + padding)
-                yDimLen = max(yDimLen, lastPos.y.toDouble() + baseHeight)
-            }
-        }
-
-        return Vector3f(xDimLen, yDimLen, zDimLen)
-    }
+    fun getTextSuffix(): LocalDateTime? = LocalDateTime.now()
 
     fun idListToExhibits(ids: List<String?>): MutableList<Exhibit> {
         val exhibits = mutableListOf<Exhibit>()
@@ -142,6 +115,7 @@ abstract class Generator(
         exhibit.size = Vector3f(width, height)
     }
 
+    // TODO Let the user define the padding/base height/longer side length and put it in a config.
     fun getWallPositionByCoords(
         row: Int,
         column: Int,
@@ -154,6 +128,31 @@ abstract class Generator(
             (longerSideLength + padding) * row + baseHeight,
             0.0
         )
+    }
+
+    fun getRoomDimFromWalls(
+        walls: List<Wall>,
+        padding: Double = 1.5,
+        baseHeight: Double = 2.0
+    ): Vector3f {
+        var xDimLen = 0.0
+        var yDimLen = 0.0
+        var zDimLen = 0.0
+
+        for (w in walls) {
+            val lastPos = w.exhibits.last().position
+
+            // Use exhibit x coordinate for both dimensions since it's relative to the wall, and not to the world.
+            if (w.direction.axis == Direction.Coordinate.X) {
+                xDimLen = max(xDimLen, lastPos.x + padding)
+            } else if (w.direction.axis == Direction.Coordinate.Z) {
+                zDimLen = max(zDimLen, lastPos.x + padding)
+            }
+
+            yDimLen = max(yDimLen, lastPos.y.toDouble() + baseHeight)
+        }
+
+        return Vector3f(xDimLen, yDimLen, zDimLen)
     }
 
 }
