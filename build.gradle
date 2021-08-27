@@ -117,6 +117,7 @@ idea {
 
 repositories {
     mavenCentral()
+    maven { url "https://kotlin.bintray.com/kotlinx" }
 }
 
 dependencies {
@@ -132,6 +133,12 @@ dependencies {
 
     // Javalin.
     implementation group: 'io.javalin', name: 'javalin', version: "$javalinVersion"
+
+    //jetty
+    implementation group: 'org.eclipse.jetty.http2', name: 'http2-server', version: "$jettyVersion"
+    implementation group: 'org.eclipse.jetty', name: 'jetty-alpn-conscrypt-server', version: "$jettyVersion"
+    implementation group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: "$alpnApiVersion"
+    implementation group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: "$alpnBootVersion"
 
     // Fuel.
     implementation group: 'com.github.kittinunf.fuel', name: 'fuel', version: "$fuelVersion"
