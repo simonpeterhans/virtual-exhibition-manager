@@ -27,7 +27,10 @@ import org.eclipse.jetty.util.ssl.SslContextFactory
 import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 import java.io.File
 import java.time.Duration
-import java.util.function.Supplier
+import org.eclipse.jetty.util.thread.QueuedThreadPool
+
+
+
 
 private val logger = KotlinLogging.logger {}
 
@@ -127,7 +130,7 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
             ctx.header("Access-Control-Allow-Origin", "*")
             ctx.header("Access-Control-Allow-Headers", "*")
         }
-        endpoint.start(config.server.port)
+        endpoint.start(config.server.httpPort)
 
         println("Started the server.")
         println("Ctrl+C to stop the server.")
@@ -137,12 +140,15 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
     private fun setupHttpServer(config: Config): Server {
 
+        val threadPool = QueuedThreadPool()
+        threadPool.name = "server"
+
         val httpConfig = HttpConfiguration().apply {
             sendServerVersion = false
             sendXPoweredBy = false
             if (config.server.enableSsl) {
                 secureScheme = "https"
-                securePort = config.server.port
+                securePort = config.server.httpsPort
             }
         }
 
@@ -171,20 +177,21 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
 
             val http2 = HTTP2ServerConnectionFactory(httpsConfig)
 
-            return Server().apply {
-                /*//HTTP Connector
+            return Server(threadPool).apply {
+                //HTTP Connector
                 addConnector(ServerConnector(server, HttpConnectionFactory(httpConfig), HTTP2ServerConnectionFactory(httpConfig)).apply {
-                    port = config.server.port
-                })*/
+                    port = config.server.httpPort
+                })
+                // HTTPS Connector
                 addConnector(ServerConnector(server, ssl, alpn, http2, fallback).apply {
-                    port = config.server.port
+                    port = config.server.httpsPort
                 })
             }
         } else {
-            return Server().apply {
+            return Server(threadPool).apply {
                 //HTTP Connector
                 addConnector(ServerConnector(server, HttpConnectionFactory(httpConfig), HTTP2ServerConnectionFactory(httpConfig)).apply {
-                    port = config.server.port
+                    port = config.server.httpPort
                 })
 
             }
