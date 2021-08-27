@@ -87,11 +87,12 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
             }
             val content = Files.probeContentType(absolute)
             ctx.contentType(content)
+            ctx.header("Content-Type", content);
             ctx.header("Transfer-Encoding", "identity")
             ctx.header("Access-Control-Allow-Origin", "*")
             ctx.header("Access-Control-Allow-Headers", "*")
 
-            logger.info { "Serving $absolute. as $content" }
+            logger.info { "Serving $absolute as $content" }
 
             ctx.result(absolute.toFile().inputStream())
         }
