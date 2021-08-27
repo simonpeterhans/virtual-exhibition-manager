@@ -24,7 +24,7 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
         const val URL_ID_SUFFIX = ".remote"
     }
 
-    fun serveContentBody(ctx:Context){
+    fun serveContentBody(ctx: Context) {
         val path = ctx.queryParam("path", "")!!
         serve(ctx, path)
     }
@@ -39,7 +39,7 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
      */
     fun serveContent(ctx: Context) {
         val path = ctx.pathParam(PARAM_KEY_PATH)
-        serve(ctx,path)
+        serve(ctx, path)
     }
 
     private fun serve(ctx: Context, path: String) {
@@ -77,20 +77,21 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
             ctx.header("Access-Control-Allow-Headers", "*")
 
             ctx.result(resultBytes)
-        } else { val absolute = docRoot.resolve(path)
+        } else {
+            val absolute = docRoot.resolve(path)
 
             if (!Files.exists(absolute)) {
                 logger.error { "Cannot serve $absolute as it does not exist." }
                 ctx.status(404)
                 return
             }
-
-            ctx.contentType(Files.probeContentType(absolute))
+            val content = Files.probeContentType(absolute)
+            ctx.contentType(content)
             ctx.header("Transfer-Encoding", "identity")
             ctx.header("Access-Control-Allow-Origin", "*")
             ctx.header("Access-Control-Allow-Headers", "*")
 
-            logger.info { "Serving $absolute." }
+            logger.info { "Serving $absolute. as $content" }
 
             ctx.result(absolute.toFile().inputStream())
         }
