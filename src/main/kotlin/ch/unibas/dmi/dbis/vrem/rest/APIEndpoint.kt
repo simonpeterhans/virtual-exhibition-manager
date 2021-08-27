@@ -12,6 +12,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
+import io.javalin.http.staticfiles.Location
 import io.javalin.plugin.json.FromJsonMapper
 import io.javalin.plugin.json.JavalinJson
 import io.javalin.plugin.json.ToJsonMapper
@@ -86,6 +87,8 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
             conf.enableCorsForAllOrigins()
             conf.server { setupHttpServer(config) }
             conf.enforceSsl = config.server.enableSsl
+
+            conf.addStaticFiles("./data", Location.EXTERNAL)
 
             // Logger.
             /*conf.requestLogger { ctx, ms ->
