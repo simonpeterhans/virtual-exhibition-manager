@@ -28,10 +28,9 @@ the [setup guide](https://github.com/VIRTUE-DBIS/virtual-exhibition-presenter/wi
 VREM can be built using [Gradle](http://gradle.org/). Building and running it is as simple as:
 
 ```
- ./gradlew clean deploy
- cd build/libs
- java -jar virtual-exhibition-manager-2.0.0-SNAPSHOT.jar
- java -jar virtual-exhibition-manager-2.0.0-SNAPSHOT.jar <command>
+ ./gradlew clean distZip
+ unzip build/distributions/virtual-exhibition-manager-$
+ virtual-exhibition-manager-$/bin/virtual-exhibition-manager <command>
  ```
 
 Make sure you have the correct working directory set so VREM can properly import exhibitions and serve content.
@@ -42,7 +41,7 @@ Before starting, you should adapt the configurations in your config.json file (s
 After doing so, you may serve stored exhibitions by running VREM with the following command:
 
 ```
- java -jar virtual-exhibition-manager-2.0.0-SNAPSHOT.jar server -c /path/to/your/config.json
+ virtual-exhibition-manager-$/bin/virtual-exhibition-manager server -c /path/to/your/config.json
 ```
 
 ## Importing an exhibition
