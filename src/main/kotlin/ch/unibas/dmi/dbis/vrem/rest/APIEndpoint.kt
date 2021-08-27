@@ -30,8 +30,6 @@ import java.time.Duration
 import org.eclipse.jetty.util.thread.QueuedThreadPool
 
 
-
-
 private val logger = KotlinLogging.logger {}
 
 /**
@@ -108,8 +106,13 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
                     post(exhibitionHandler::saveExhibition)
                 }
             }
-            path("/content/get/:path") {
-                get(contentHandler::serveContent)
+            path("/content/") {
+                path("get/:path") {
+                    get(contentHandler::serveContent)
+                }
+                path("get/"){
+                    get(contentHandler::serveContentBody)
+                }
             }
             path("/exhibits") {
                 path("list") {

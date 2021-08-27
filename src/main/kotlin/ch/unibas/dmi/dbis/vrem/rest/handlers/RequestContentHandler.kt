@@ -24,6 +24,12 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
         const val URL_ID_SUFFIX = ".remote"
     }
 
+    fun serveContentBody(ctx:Context){
+        val path = ctx.queryParam("path", "")!!
+        serve(ctx, path)
+    }
+
+
     /**
      * Serves the requested content.
      *
@@ -33,6 +39,10 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
      */
     fun serveContent(ctx: Context) {
         val path = ctx.pathParam(PARAM_KEY_PATH)
+        serve(ctx,path)
+    }
+
+    private fun serve(ctx: Context, path: String) {
 
         if (path.isBlank()) {
             logger.error { "The requested path was blank - did you forget to send the actual content path?" }
@@ -41,7 +51,7 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
         }
 
         if (path.endsWith(URL_ID_SUFFIX)) {
-            // ID is composed as exhibitionID/imageID.remote.
+            // ID is composed as exhibitionID/imageID.remote for cineast
             val id = path.substring(path.indexOf("/") + 1, path.indexOf(URL_ID_SUFFIX))
             var resultBytes: ByteArray? = null
 
@@ -67,8 +77,7 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
             ctx.header("Access-Control-Allow-Headers", "*")
 
             ctx.result(resultBytes)
-        } else {
-            val absolute = docRoot.resolve(path)
+        } else { val absolute = docRoot.resolve(path)
 
             if (!Files.exists(absolute)) {
                 logger.error { "Cannot serve $absolute as it does not exist." }
@@ -86,5 +95,6 @@ class RequestContentHandler(private val docRoot: Path, private val cineastConfig
             ctx.result(absolute.toFile().inputStream())
         }
     }
+
 
 }

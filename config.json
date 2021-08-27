@@ -8,7 +8,7 @@
     "documentRoot": "data",
     "httpPort": 4544,
     "httpsPort": 4545,
-    "enableSsl": false,
+    "enableSsl": true,
     "keystorePath": "keystore.jks",
     "keystorePassword": "password"
   },
