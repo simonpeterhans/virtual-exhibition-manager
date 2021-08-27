@@ -131,7 +131,7 @@ dependencies {
     implementation group: 'org.litote.kmongo', name: 'kmongo-id-serialization', version: "$kmongoVersion"
 
     // Javalin.
-    implementation group: 'io.javalin', name: 'javalin', version: "$javalinVersion"
+    implementation group: 'io.javalin', name: 'javalin-bundle', version: "$javalinVersion"
 
     // Fuel.
     implementation group: 'com.github.kittinunf.fuel', name: 'fuel', version: "$fuelVersion"

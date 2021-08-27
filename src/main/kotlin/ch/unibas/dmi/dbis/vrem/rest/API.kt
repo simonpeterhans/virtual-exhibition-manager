@@ -3,11 +3,19 @@ package ch.unibas.dmi.dbis.vrem.rest
 import ch.unibas.dmi.dbis.vrem.cineast.client.infrastructure.ApiClient
 import ch.unibas.dmi.dbis.vrem.config.Config
 import ch.unibas.dmi.dbis.vrem.database.VREMDao
-import ch.unibas.dmi.dbis.vrem.generation.GenerationHandler
-import ch.unibas.dmi.dbis.vrem.model.api.response.ErrorResponse
-import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitHandler
-import ch.unibas.dmi.dbis.vrem.rest.handlers.ExhibitionHandler
-import ch.unibas.dmi.dbis.vrem.rest.handlers.RequestContentHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.DeleteRestHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.GetRestHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.PostRestHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.PutRestHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.content.ContentHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibit.ListExhibitsHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibit.SaveExhibitHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibition.ListExhibitionsHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibition.LoadExhibitionByIdHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibition.LoadExhibitionByNameHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibition.SaveExhibitionHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.ExhibitionGenerationHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.RoomGenerationHandler
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -16,6 +24,12 @@ import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.plugin.json.FromJsonMapper
 import io.javalin.plugin.json.JavalinJson
 import io.javalin.plugin.json.ToJsonMapper
+import io.javalin.plugin.openapi.OpenApiOptions
+import io.javalin.plugin.openapi.OpenApiPlugin
+import io.javalin.plugin.openapi.jackson.JacksonToJsonMapper
+import io.javalin.plugin.openapi.ui.ReDocOptions
+import io.javalin.plugin.openapi.ui.SwaggerOptions
+import io.swagger.v3.oas.models.info.Info
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -30,9 +44,16 @@ private val logger = KotlinLogging.logger {}
  * VREM API endpoint class.
  */
 @ExperimentalSerializationApi
-class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API endpoint") {
+class API : CliktCommand(name = "server", help = "Start the REST API endpoint") {
 
     private val config: String by option("-c", "--config", help = "Path to the config file").default("config.json")
+
+    // TODO Consider replacing KotlinX with Jackson.
+    private val openApiSerializer = object : ToJsonMapper {
+        override fun map(obj: Any): String {
+            return JacksonToJsonMapper(JacksonToJsonMapper.defaultObjectMapper).map(obj)
+        }
+    }
 
     init {
         // Overwrites the default mapper (Jackson) of Javalin for serialization to make sure we're using Kotlinx.
@@ -71,13 +92,38 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
         ApiClient.builder.readTimeout(Duration.ofSeconds(config.cineast.queryTimeoutSeconds))
 
         // Handlers.
-        val exhibitionHandler = ExhibitionHandler(reader, writer)
-        val contentHandler = RequestContentHandler(docRoot, config.cineast)
-        val exhibitHandler = ExhibitHandler(reader, writer, docRoot)
-        val genHandler = GenerationHandler(config.cineast)
+        val apiRestHandlers = listOf(
+            ContentHandler(docRoot, config.cineast),
+            ListExhibitsHandler(reader),
+            SaveExhibitHandler(writer, docRoot),
+            ListExhibitionsHandler(reader),
+            LoadExhibitionByIdHandler(reader),
+            LoadExhibitionByNameHandler(reader),
+            SaveExhibitionHandler(writer),
+            RoomGenerationHandler(config.cineast),
+            ExhibitionGenerationHandler(config.cineast)
+        )
 
         // API endpoint.
         val endpoint = Javalin.create { conf ->
+            conf.registerPlugin(
+                OpenApiPlugin(
+                    OpenApiOptions(
+                        Info().apply {
+                            version("1.0")
+                            description("")
+                        }
+                    ).apply {
+                        path("/swagger-docs")
+                        swagger(SwaggerOptions("/swagger-ui"))
+                        reDoc(ReDocOptions("/redoc"))
+                        activateAnnotationScanningFor("ch.unibas.dmi.dbis.vrem.rest.handlers")
+//                        toJsonMapper(JavalinJson.toJsonMapper)
+                        toJsonMapper(openApiSerializer)
+                    }
+                )
+            )
+
             conf.defaultContentType = "application/json"
             conf.enableCorsForAllOrigins()
 
@@ -86,45 +132,38 @@ class APIEndpoint : CliktCommand(name = "server", help = "Start the REST API end
                 logger.info { "Request received: ${ctx.req.requestURI}" }
             }*/
         }.routes {
-            path("/exhibitions") {
-                path("list") {
-                    get(exhibitionHandler::listExhibitions)
-                }
-                path("load/:id") {
-                    get(exhibitionHandler::loadExhibitionById)
-                }
-                path("loadbyname/:name") {
-                    get(exhibitionHandler::loadExhibitionByName)
-                }
-                path("save") {
-                    post(exhibitionHandler::saveExhibition)
-                }
-            }
-            path("/content/get/:path") {
-                get(contentHandler::serveContent)
-            }
-            path("/generate") {
-                post(genHandler::generate)
-            }
-            path("/exhibits") {
-                path("list") {
-                    get(exhibitHandler::listExhibits)
-                }
-                path("upload") {
-                    post(exhibitHandler::saveExhibit)
+            path("api") {
+                apiRestHandlers.forEach { handler ->
+
+                    path(handler.route) {
+
+                        if (handler is GetRestHandler<*>) {
+                            get(handler::get)
+                        }
+
+                        if (handler is PostRestHandler<*>) {
+                            post(handler::post)
+                        }
+
+                        if (handler is PutRestHandler<*>) {
+                            put(handler::put)
+                        }
+
+                        if (handler is DeleteRestHandler<*>) {
+                            delete(handler::delete)
+                        }
+
+                    }
+
                 }
             }
         }
 
-        endpoint.exception(Exception::class.java) { e, ctx ->
-            logger.error(e) { "Exception occurred, sending 500 and exception name." }
-            ctx.status(500)
-                .json(ErrorResponse("Error of type ${e.javaClass.simpleName} occurred. Check server log for additional information."))
-        }
         endpoint.after { ctx ->
             ctx.header("Access-Control-Allow-Origin", "*")
             ctx.header("Access-Control-Allow-Headers", "*")
         }
+
         endpoint.start(config.server.port.toInt())
 
         println("Started the server.")

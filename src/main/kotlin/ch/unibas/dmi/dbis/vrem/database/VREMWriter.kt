@@ -1,9 +1,9 @@
 package ch.unibas.dmi.dbis.vrem.database
 
-import ch.unibas.dmi.dbis.vrem.model.api.request.ExhibitUploadRequest
 import ch.unibas.dmi.dbis.vrem.model.collection.ArtCollection
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
+import ch.unibas.dmi.dbis.vrem.rest.requests.ExhibitUploadRequest
 import com.mongodb.client.MongoDatabase
 import mu.KotlinLogging
 import org.litote.kmongo.eq

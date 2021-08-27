@@ -6,13 +6,17 @@ import ch.unibas.dmi.dbis.som.grids.Grid2DSquare
 import ch.unibas.dmi.dbis.som.util.DistanceFunction
 import ch.unibas.dmi.dbis.som.util.DistanceScalingFunction
 import ch.unibas.dmi.dbis.som.util.TimeFunction
+import ch.unibas.dmi.dbis.vrem.generation.CineastClient
 import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
-import ch.unibas.dmi.dbis.vrem.generation.CineastRest
 import ch.unibas.dmi.dbis.vrem.generation.Generator
-import ch.unibas.dmi.dbis.vrem.generation.model.*
+import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
+import ch.unibas.dmi.dbis.vrem.generation.model.IdDoublePair
+import ch.unibas.dmi.dbis.vrem.generation.model.MetadataType
+import ch.unibas.dmi.dbis.vrem.generation.model.NodeMap
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
+import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.lang.Double.max
@@ -22,7 +26,7 @@ import kotlin.random.Random
 private val logger = KotlinLogging.logger {}
 
 class SomGenerator(
-    genConfig: GenerationConfig,
+    genConfig: GenerationRequest,
     cineastHttp: CineastHttp
 ) : Generator(genConfig, cineastHttp) {
 
@@ -52,7 +56,7 @@ class SomGenerator(
     private fun trainSom(features: Array<DoubleArray>): SOM {
         val height = genConfig.height
         val width = genConfig.width
-        val epochs = 100 // TODO Calculate this dynamically?
+        val epochs = 1 // TODO Calculate this dynamically?
         val seed = Random(genConfig.seed)
 
         val g = Grid2DSquare(
@@ -132,7 +136,7 @@ class SomGenerator(
         val featureDataList = arrayListOf<DoubleFeatureData>()
 
         for (tablePair in genConfig.genType.featureList) {
-            val featureData = CineastRest.getFeatureDataFromTableName(tablePair.id)
+            val featureData = CineastClient.getFeatureDataFromTableName(tablePair.id)
 
             // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
             featureData.filterByList(genConfig.idList)

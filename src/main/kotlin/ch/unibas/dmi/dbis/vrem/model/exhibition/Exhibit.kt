@@ -43,6 +43,8 @@ data class Exhibit(
     )
 
     companion object {
+        const val URL_ID_SUFFIX = ".remote"
+
         val DEFAULT_SIZE = Vector3f.UNIT
         val DEFAULT_POSITION = Vector3f.ORIGIN
         val DEFAULT_TYPE = CulturalHeritageObject.Companion.CHOType.IMAGE

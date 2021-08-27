@@ -1,16 +1,16 @@
 package ch.unibas.dmi.dbis.vrem.generation
 
-import ch.unibas.dmi.dbis.vrem.generation.model.GenerationConfig
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
+import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit.Companion.URL_ID_SUFFIX
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
-import ch.unibas.dmi.dbis.vrem.rest.handlers.RequestContentHandler
+import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
 import java.io.ByteArrayInputStream
 import java.time.LocalDateTime
 import javax.imageio.ImageIO
 import kotlin.math.*
 
 abstract class Generator(
-    val genConfig: GenerationConfig,
+    val genConfig: GenerationRequest,
     val cineastHttp: CineastHttp
 ) {
 
@@ -34,7 +34,7 @@ abstract class Generator(
                 e = Exhibit(name = "Empty Exhibit", path = "")
                 e.size = Vector3f(1.0, 1.0)
             } else {
-                e = Exhibit(name = id, path = id + RequestContentHandler.URL_ID_SUFFIX)
+                e = Exhibit(name = id, path = id + URL_ID_SUFFIX)
 
                 val imageBytes = cineastHttp.objectRequest(id)
 

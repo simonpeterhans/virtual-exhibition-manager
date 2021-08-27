@@ -6,7 +6,7 @@ import ch.unibas.dmi.dbis.vrem.cineast.client.models.AllFeaturesByCategoryQueryR
 import ch.unibas.dmi.dbis.vrem.cineast.client.models.AllFeaturesByTableNameQueryResult
 import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 
-object CineastRest {
+object CineastClient {
 
     private const val SEGMENT_SUFFIX = "_1"
     private const val CINEAST_FEATURE_LABEL = "feature"
@@ -33,7 +33,6 @@ object CineastRest {
     }
 
     fun getFeatureDataByTableName(tableName: String): List<Map<String, Any>> {
-        println(tableName)
         val feature: AllFeaturesByTableNameQueryResult = MetadataApi().findAllFeatByTableName(tableName)
 
         if (feature.featureMap == null) {
