@@ -55,6 +55,8 @@ jar {
     from {
         configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }{
+        exclude 'META-INF', 'META-INF/**'
     }
 }
 
@@ -132,8 +134,9 @@ dependencies {
     implementation group: 'org.litote.kmongo', name: 'kmongo-id-serialization', version: "$kmongoVersion"
 
     // Javalin.
-    implementation group: 'io.javalin', name: 'javalin', version: "$javalinVersion"
-
+        implementation("io.javalin:javalin-bundle:$javalinVersion"){
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+    }
     //jetty
     implementation group: 'org.eclipse.jetty.http2', name: 'http2-server', version: "$jettyVersion"
     implementation group: 'org.eclipse.jetty', name: 'jetty-alpn-conscrypt-server', version: "$jettyVersion"
