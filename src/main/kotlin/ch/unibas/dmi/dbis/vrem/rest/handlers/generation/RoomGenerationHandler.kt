@@ -7,13 +7,10 @@ import ch.unibas.dmi.dbis.vrem.generation.som.SomGenerator
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.rest.handlers.PostRestHandler
 import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
-import ch.unibas.dmi.dbis.vrem.rest.status.StatusCode.NOT_FOUND
-import ch.unibas.dmi.dbis.vrem.rest.status.StatusCode.OK
+import ch.unibas.dmi.dbis.vrem.rest.responses.ResponseMessage
+import ch.unibas.dmi.dbis.vrem.rest.status.StatusCode
 import io.javalin.http.Context
-import io.javalin.plugin.openapi.annotations.HttpMethod
-import io.javalin.plugin.openapi.annotations.OpenApi
-import io.javalin.plugin.openapi.annotations.OpenApiFormParam
-import io.javalin.plugin.openapi.annotations.OpenApiResponse
+import io.javalin.plugin.openapi.annotations.*
 
 class RoomGenerationHandler(cineastConfig: CineastConfig) : PostRestHandler<Room> {
 
@@ -25,15 +22,17 @@ class RoomGenerationHandler(cineastConfig: CineastConfig) : PostRestHandler<Room
         method = HttpMethod.POST,
         summary = "Generates a new room with the specified parameters.",
         path = "/api/generate/room",
-        formParams = [
-            OpenApiFormParam("genType", GenerationType::class, true),
-        ],
         tags = ["Generation"],
+        requestBody = OpenApiRequestBody(
+            content = [OpenApiContent(GenerationRequest::class)],
+            required = true,
+            description = "The generation configuration object as JSON string."
+        ),
         responses = [
-            OpenApiResponse(OK.toString()),
-            OpenApiResponse(NOT_FOUND.toString())
-        ],
-        ignore = false
+            OpenApiResponse(StatusCode.OK.toString(), [OpenApiContent(ResponseMessage::class)]),
+            OpenApiResponse(StatusCode.FORBIDDEN.toString(), [OpenApiContent(ResponseMessage::class)]),
+            OpenApiResponse(StatusCode.BAD_REQUEST.toString(), [OpenApiContent(ResponseMessage::class)]),
+        ]
     )
     override fun doPost(ctx: Context): Room {
         val config = ctx.body<GenerationRequest>()

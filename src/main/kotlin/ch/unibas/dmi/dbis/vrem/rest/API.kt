@@ -27,7 +27,6 @@ import io.javalin.plugin.json.ToJsonMapper
 import io.javalin.plugin.openapi.OpenApiOptions
 import io.javalin.plugin.openapi.OpenApiPlugin
 import io.javalin.plugin.openapi.jackson.JacksonToJsonMapper
-import io.javalin.plugin.openapi.ui.ReDocOptions
 import io.javalin.plugin.openapi.ui.SwaggerOptions
 import io.swagger.v3.oas.models.info.Info
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -116,7 +115,7 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
                     ).apply {
                         path("/swagger-docs")
                         swagger(SwaggerOptions("/swagger-ui"))
-                        reDoc(ReDocOptions("/redoc"))
+//                        reDoc(ReDocOptions("/redoc"))
                         activateAnnotationScanningFor("ch.unibas.dmi.dbis.vrem.rest.handlers")
 //                        toJsonMapper(JavalinJson.toJsonMapper)
                         toJsonMapper(openApiSerializer)
