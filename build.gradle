@@ -2,23 +2,38 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
     id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlinVersion"
     id 'org.openapi.generator' version "$openApiGenVersion"
+    id 'com.github.johnrengelman.shadow' version "$shadowJarVersion"
+    id 'de.undercouch.download' version "$downloadPluginVersion"
     id 'java'
     id 'application'
     id 'idea'
 }
 
-// Allow custom specification of Cineast OpenAPI config via -PapiConfigPath=...
-def apiConfigPath = project.properties["apiConfigPath"] ?: "$rootDir/cineast.json"
+// OpenAPI specifications (VREM & Cineast).
+def specPath = "$rootDir/oas"
+
+// Path for generated Cineast client sources.
+def generatedPath = "$buildDir/generated"
+
+// Path for Cineast OpenAPI specification.
+def cineastOasPath = "$specPath/cineast-oas.json"
+
+// VREM OpenAPI specification URL and local file.
+def vremOasUrl = "http://localhost:4545/swagger-docs"
+def vremOasPath = "$specPath/vrem-oas.json"
 
 // Source/Target compatibility (currently used for source & target/JVM).
 def javaCompatibility = 11
 
 // Project settings.
 group 'ch.unibas.dmi.dbis'
-version '2.0.0-SNAPSHOT'
+version '3.0.0-SNAPSHOT'
 
 // Main class.
 mainClassName = 'ch.unibas.dmi.dbis.vrem.VREMKt'
+
+// Only build the shadow jar.
+jar.enabled = false
 
 // Java properties.
 java {
@@ -35,41 +50,35 @@ application {
 sourceSets {
     main {
         java {
-            srcDirs += "$buildDir/generated/src/main/kotlin/"
+            srcDirs += "$generatedPath/src/main/kotlin/"
         }
     }
 }
 
-// Jar properties.
-jar {
-    manifest {
-        attributes 'Version': archiveVersion.get()
-        attributes 'Main-Class': mainClassName // Same as for the application plugin.
-        attributes 'Manifest-Version': '1.0'
-        attributes 'Multi-Release': true
-    }
-
-    // Gradle 7.0 requires a duplicate handling strategy or fails if duplicates occur.
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    from {
-        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+shadowJar {
+    mergeServiceFiles()
+    archiveClassifier.set('') // Remove "-all" suffix.
 }
 
 // Generate Cineast OpenAPI bindings.
-task generateOpenApi(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+task generateCineastClient(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
     generatorName = 'kotlin'
-    inputSpec = apiConfigPath
+    inputSpec = cineastOasPath
     packageName = "ch.unibas.dmi.dbis.vrem.cineast.client"
-    outputDir = "$buildDir/generated"
+    outputDir = "$generatedPath"
 
     skipValidateSpec = true
 
     configOptions = [
             enumPropertyNaming: "UPPERCASE"
     ]
+}
+
+// Requires a VREM server running on port 4545.
+task downloadVremOas(type: Download) {
+    def f = new File(vremOasPath)
+    src vremOasUrl
+    dest f
 }
 
 task copyResources {
@@ -82,25 +91,25 @@ task copyResources {
 }
 
 task deploy {
-    dependsOn generateOpenApi, build, copyResources
+    dependsOn generateCineastClient, build, copyResources
 }
 
 // Regenerate OpenAPI code before building.
 compileKotlin {
-    mustRunAfter generateOpenApi
-    dependsOn generateOpenApi
+    mustRunAfter generateCineastClient
+    dependsOn generateCineastClient
     kotlinOptions.jvmTarget = javaCompatibility
 }
 
 compileTestKotlin {
-    mustRunAfter generateOpenApi
-    dependsOn generateOpenApi
+    mustRunAfter generateCineastClient
+    dependsOn generateCineastClient
     kotlinOptions.jvmTarget = javaCompatibility
 }
 
 // Regenerate OpenAPI code upon cleaning.
 clean {
-    finalizedBy generateOpenApi
+    finalizedBy generateCineastClient
 }
 
 // IntelliJ properties.
