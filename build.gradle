@@ -15,7 +15,7 @@ def javaCompatibility = 11
 
 // Project settings.
 group 'ch.unibas.dmi.dbis'
-version '2.0.0-SNAPSHOT'
+version '2.1.0'
 
 // Main class.
 mainClassName = 'ch.unibas.dmi.dbis.vrem.VREMKt'
@@ -41,7 +41,7 @@ sourceSets {
 }
 
 // Jar properties.
-jar {
+tasks.named('jar') {
     manifest {
         attributes 'Version': archiveVersion.get()
         attributes 'Main-Class': mainClassName // Same as for the application plugin.
@@ -56,6 +56,8 @@ jar {
         configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+
+    exclude 'META-INF', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
 
 // Generate Cineast OpenAPI bindings.
@@ -117,6 +119,7 @@ idea {
 
 repositories {
     mavenCentral()
+    maven { url "https://kotlin.bintray.com/kotlinx" }
 }
 
 dependencies {
@@ -132,6 +135,12 @@ dependencies {
 
     // Javalin.
     implementation group: 'io.javalin', name: 'javalin', version: "$javalinVersion"
+
+    //jetty
+    implementation group: 'org.eclipse.jetty.http2', name: 'http2-server', version: "$jettyVersion"
+    implementation group: 'org.eclipse.jetty', name: 'jetty-alpn-conscrypt-server', version: "$jettyVersion"
+    implementation group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: "$alpnApiVersion"
+    implementation group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: "$alpnBootVersion"
 
     // Fuel.
     implementation group: 'com.github.kittinunf.fuel', name: 'fuel', version: "$fuelVersion"

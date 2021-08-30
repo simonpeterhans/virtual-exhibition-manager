@@ -6,7 +6,11 @@
   },
   "server": {
     "documentRoot": "data",
-    "port": 4545
+    "httpPort": 4544,
+    "httpsPort": 4545,
+    "enableSsl": true,
+    "keystorePath": "keystore.jks",
+    "keystorePassword": "password"
   },
   "cineast": {
     "host": "127.0.0.1",
