@@ -11,9 +11,9 @@ import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
 import ch.unibas.dmi.dbis.vrem.generation.Generator
 import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 import ch.unibas.dmi.dbis.vrem.generation.model.IdDoublePair
-import ch.unibas.dmi.dbis.vrem.generation.model.MetadataType
 import ch.unibas.dmi.dbis.vrem.generation.model.NodeMap
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
+import ch.unibas.dmi.dbis.vrem.model.exhibition.MetadataType
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
 import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
@@ -172,10 +172,10 @@ class SomGenerator(
         room.walls.addAll(walls)
 
         // Encode node map to JSON to add as metadata.
-        room.metadata[MetadataType.SOM_IDS.key] = Json.encodeToString(NodeMap.serializer(), nodeMap)
+        room.metadata[MetadataType.SOM_IDS.name] = Json.encodeToString(NodeMap.serializer(), nodeMap)
 
         // Add seed information to room.
-        room.metadata[MetadataType.SEED.key] = genConfig.seed.toString()
+        room.metadata[MetadataType.SEED.name] = genConfig.seed.toString()
 
         return room
     }

@@ -66,7 +66,7 @@ data class Room(
      * @param dir The direction of the wall.
      * @param w The wall to add.
      */
-    private fun setWall(dir: Direction, w: Wall) {
+    fun setWall(dir: Direction, w: Wall) {
         if (w.direction != dir) {
             throw IllegalArgumentException("Wall direction not matching, expected $dir but got ${w.direction} instead.")
         }
@@ -79,44 +79,12 @@ data class Room(
      * @param dir The direction of the wall.
      * @return The wall facing the provided direction in the room.
      */
-    private fun getWall(dir: Direction): Wall {
+    fun getWall(dir: Direction): Wall {
         try {
             return walls.first { w -> w.direction == dir }
         } catch (e: NoSuchElementException) {
             throw IllegalStateException("Corrupt room, missing direction $dir.")
         }
-    }
-
-    fun getNorth(): Wall {
-        return getWall(Direction.NORTH)
-    }
-
-    fun setNorth(wall: Wall) {
-        setWall(Direction.NORTH, wall)
-    }
-
-    fun getEast(): Wall {
-        return getWall(Direction.EAST)
-    }
-
-    fun setEast(wall: Wall) {
-        setWall(Direction.EAST, wall)
-    }
-
-    fun getSouth(): Wall {
-        return getWall(Direction.SOUTH)
-    }
-
-    fun setSouth(wall: Wall) {
-        setWall(Direction.SOUTH, wall)
-    }
-
-    fun getWest(): Wall {
-        return getWall(Direction.WEST)
-    }
-
-    fun setWest(wall: Wall) {
-        setWall(Direction.WEST, wall)
     }
 
 }

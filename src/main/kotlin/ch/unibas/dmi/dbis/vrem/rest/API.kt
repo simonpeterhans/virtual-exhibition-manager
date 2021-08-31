@@ -47,7 +47,6 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
 
     private val config: String by option("-c", "--config", help = "Path to the config file").default("config.json")
 
-    // TODO Consider replacing KotlinX with Jackson.
     private val openApiSerializer = object : ToJsonMapper {
         override fun map(obj: Any): String {
             return JacksonToJsonMapper(JacksonToJsonMapper.defaultObjectMapper).map(obj)
@@ -115,9 +114,7 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
                     ).apply {
                         path("/swagger-docs")
                         swagger(SwaggerOptions("/swagger-ui"))
-//                        reDoc(ReDocOptions("/redoc"))
-                        activateAnnotationScanningFor("ch.unibas.dmi.dbis.vrem.rest.handlers")
-//                        toJsonMapper(JavalinJson.toJsonMapper)
+                        activateAnnotationScanningFor("ch.unibas.dmi.dbis.vrem")
                         toJsonMapper(openApiSerializer)
                     }
                 )
@@ -127,9 +124,9 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
             conf.enableCorsForAllOrigins()
 
             // Logger.
-            /*conf.requestLogger { ctx, ms ->
+            conf.requestLogger { ctx, ms ->
                 logger.info { "Request received: ${ctx.req.requestURI}" }
-            }*/
+            }
         }.routes {
             path("api") {
                 apiRestHandlers.forEach { handler ->

@@ -15,11 +15,6 @@ object ImportUtils {
     const val WALL_CONFIG_FILE = "wall-config.json"
     const val ROOM_CONFIG_FILE = "room-config.json"
 
-    const val NORTH_WALL_NAME = "north"
-    const val EAST_WALL_NAME = "east"
-    const val SOUTH_WALL_NAME = "south"
-    const val WEST_WALL_NAME = "west"
-
     const val JSON_EXTENSION = "json"
     const val JPG_EXTENSION = "jpg"
     const val JPEG_EXTENSION = "jpeg"

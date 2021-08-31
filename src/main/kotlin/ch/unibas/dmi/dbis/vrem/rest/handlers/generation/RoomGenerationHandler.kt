@@ -29,7 +29,7 @@ class RoomGenerationHandler(cineastConfig: CineastConfig) : PostRestHandler<Room
             description = "The generation configuration object as JSON string."
         ),
         responses = [
-            OpenApiResponse(StatusCode.OK.toString(), [OpenApiContent(ResponseMessage::class)]),
+            OpenApiResponse(StatusCode.OK.toString(), [OpenApiContent(Room::class)]),
             OpenApiResponse(StatusCode.FORBIDDEN.toString(), [OpenApiContent(ResponseMessage::class)]),
             OpenApiResponse(StatusCode.BAD_REQUEST.toString(), [OpenApiContent(ResponseMessage::class)]),
         ]

@@ -51,10 +51,10 @@ data class Exhibition(
 
         rooms.forEach { r ->
             exhibits.addAll(r.exhibits)
-            exhibits.addAll(r.getNorth().exhibits)
-            exhibits.addAll(r.getEast().exhibits)
-            exhibits.addAll(r.getSouth().exhibits)
-            exhibits.addAll(r.getWest().exhibits)
+
+            r.walls.forEach { w ->
+                exhibits.addAll(w.exhibits)
+            }
         }
 
         return Collections.unmodifiableList(exhibits)

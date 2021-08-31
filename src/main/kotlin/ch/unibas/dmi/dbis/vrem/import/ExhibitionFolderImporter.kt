@@ -169,10 +169,9 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
         val room = readRoomConfigOrCreateNew(roomFile)
 
-        room.setNorth(importWall(Direction.NORTH, roomFile.resolve(ImportUtils.NORTH_WALL_NAME)))
-        room.setEast(importWall(Direction.EAST, roomFile.resolve(ImportUtils.EAST_WALL_NAME)))
-        room.setSouth(importWall(Direction.SOUTH, roomFile.resolve(ImportUtils.SOUTH_WALL_NAME)))
-        room.setWest(importWall(Direction.WEST, roomFile.resolve(ImportUtils.WEST_WALL_NAME)))
+        for (dir in Direction.values()) {
+            room.setWall(dir, importWall(dir, roomFile.resolve(dir.toString().lowercase())))
+        }
 
         room.position = ImportUtils.calculateRoomPosition(room, siblings)
 
