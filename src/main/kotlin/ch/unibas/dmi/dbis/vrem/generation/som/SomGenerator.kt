@@ -17,6 +17,7 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.MetadataType
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
 import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.lang.Double.max
@@ -128,7 +129,14 @@ class SomGenerator(
          * The height dimension of the SOM grid is inverted here but that doesn't matter for the visualization
          * since we do not have any preset weights for specific SOM nodes when generating the SOM.
          */
-        return exhibitListToWalls(dims, idListToExhibits(idList))
+        val exhibits = idListToExhibits(idList)
+
+        for (i in exhibits.indices) {
+            exhibits[i].metadata[MetadataType.SOM_IDS.key] =
+                Json.encodeToString(ListSerializer(IdDoublePair.serializer()), nodeMap.map[i]!!)
+        }
+
+        return exhibitListToWalls(dims, exhibits)
     }
 
     override fun genRoom(): Room {
@@ -172,7 +180,7 @@ class SomGenerator(
         room.walls.addAll(walls)
 
         // Encode node map to JSON to add as metadata.
-        room.metadata[MetadataType.SOM_IDS.key] = Json.encodeToString(NodeMap.serializer(), nodeMap)
+//        room.metadata[MetadataType.SOM_IDS.key] = Json.encodeToString(NodeMap.serializer(), nodeMap)
 
         // Add seed information to room.
         room.metadata[MetadataType.SEED.key] = genConfig.seed.toString()
@@ -186,8 +194,6 @@ class SomGenerator(
         val ex = Exhibition(name = exhibitionText + " " + getTextSuffix())
 
         ex.rooms.add(room)
-
-        printAnglesForEx(ex)
 
         return ex
     }

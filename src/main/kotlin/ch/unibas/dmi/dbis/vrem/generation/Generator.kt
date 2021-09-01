@@ -7,7 +7,7 @@ import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
 import java.io.ByteArrayInputStream
 import java.time.LocalDateTime
 import javax.imageio.ImageIO
-import kotlin.math.*
+import kotlin.math.max
 
 abstract class Generator(
     val genConfig: GenerationRequest,
@@ -39,6 +39,9 @@ abstract class Generator(
                 val imageBytes = cineastHttp.objectRequest(id)
 
                 calculateExhibitSize(imageBytes, e, 2.0)
+
+                // Set generation metadata.
+                e.metadata[MetadataType.GENERATED.key] = "true"
             }
 
             exhibits.add(e)
@@ -69,20 +72,6 @@ abstract class Generator(
         }
 
         return walls
-    }
-
-    fun printAnglesForEx(ex: Exhibition) {
-        // TODO If we're in the original (center) room, use the angle of the exhibit, otherwise, use the angle of the center of the room.
-        for (r in ex.rooms) {
-            for (w in r.walls) {
-                for (e in w.exhibits) {
-                    val offsetAngle = 0.25 * Math.PI
-                    val newX = cos(offsetAngle) * 0.5 * r.size.x - sin(offsetAngle) * (e.position.x - 0.5 * r.size.x)
-                    val newZ = cos(offsetAngle) * (e.position.x - 0.5 * r.size.x) + sin(offsetAngle) * 0.5 * r.size.x
-                    println(Math.toDegrees(0.5 * Math.PI * w.direction.ordinal + (0.5 * PI - atan(newZ / newX))))
-                }
-            }
-        }
     }
 
     fun calculateExhibitSize(exhibitFile: ByteArray, exhibit: Exhibit, defaultLongSide: Double) {
