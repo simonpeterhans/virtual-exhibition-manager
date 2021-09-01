@@ -172,10 +172,10 @@ class SomGenerator(
         room.walls.addAll(walls)
 
         // Encode node map to JSON to add as metadata.
-        room.metadata[MetadataType.SOM_IDS.name] = Json.encodeToString(NodeMap.serializer(), nodeMap)
+        room.metadata[MetadataType.SOM_IDS.key] = Json.encodeToString(NodeMap.serializer(), nodeMap)
 
         // Add seed information to room.
-        room.metadata[MetadataType.SEED.name] = genConfig.seed.toString()
+        room.metadata[MetadataType.SEED.key] = genConfig.seed.toString()
 
         return room
     }

@@ -1,8 +1,8 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
-enum class MetadataType {
+enum class MetadataType(val key: String = "") {
 
-    SEED,
-    SOM_IDS;
+    SEED("seed"),
+    SOM_IDS("somIds");
 
 }
