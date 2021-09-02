@@ -14,9 +14,13 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.float
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
+import java.util.stream.Stream
+import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
+import kotlin.io.path.relativeTo
 import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
@@ -33,7 +37,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         "-c",
         "--config",
         help = "Relative of full path to the config file to be used"
-    ).required()
+    ).default("config.json")
     val clean by option("--clean", help = "Remove old exhibitions with the same name").flag(
         "--keep",
         default = false
@@ -58,12 +62,12 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
     ).float().default(2f)
 
     private lateinit var exhibition: Exhibition
-    private lateinit var storageRoot: File
     private lateinit var importRoot: File
+    private lateinit var storageRoot: File
 
     companion object {
         private val json = Json {
-            serializersModule = IdKotlinXSerializationModule
+//            serializersModule = IdKotlinXSerializationModule
             encodeDefaults = true
         }
     }
@@ -72,10 +76,10 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         // Get config and a reader/writer for the database.
         val config = Config.readConfig(this.config)
         val (reader, writer) = VREMDao.getDAOs(config.database)
-        val exhibitionFolder = File(exhibitionPath)
+        this.importRoot = File(exhibitionPath)
 
         // Checks: Require exhibition folder to exist and no other exhibition with the same name to exist.
-        if (!exhibitionFolder.exists() and !exhibitionFolder.isDirectory) {
+        if (!importRoot.exists() and !importRoot.isDirectory) {
             logger.error { "--path argument has to point to an existing directory!" }
             exitProcess(-1)
         }
@@ -95,40 +99,45 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
         this.exhibition = Exhibition(name = name, description = exhibitionDescription)
 
         // Roots for import and storage.
-        this.storageRoot = File(config.server.documentRoot)
-        this.importRoot = File(exhibitionPath)
+        this.storageRoot = File(config.server.documentRoot).resolve(this.exhibition.id)
+
+        val validFolders = this.importRoot.listFiles()!!.filter { !it.nameWithoutExtension.startsWith(ignore) }
 
         // Determine path to copy media files to after importing.
 
         logger.info { "Starting import exhibition at ${this.importRoot}." }
 
         // Try to add every folder as a new room to the previously created exhibition object.
-        this.importRoot.listFiles()?.filter { !it.nameWithoutExtension.startsWith(ignore) }
-            ?.forEach { exhibition.addRoom(importRoom(it, exhibition.rooms)) }
+        validFolders.forEach { exhibition.addRoom(importRoom(it, exhibition.rooms)) }
 
         logger.info { "Writing exhibition entry to MongoDB..." }
 
         // Create MongoDB entry.
         writer.saveExhibition(exhibition)
 
-        logger.info { "Copying media files..." }
+        logger.info { "Copying files..." }
 
-        // Copy local files.
-        exhibition.obtainExhibits().forEach {
-            // Paths to copy to/from.
-            val srcPath = importRoot.resolve(File(it.path))
-            val targetPath = storageRoot.resolve(exhibition.id.toString()).resolve(it.path)
-
-            // Create directories if they don't exist.
-            Files.createDirectories(targetPath.parentFile.toPath())
-
-            // Copy the files.
-            Files.copy(srcPath.toPath(), targetPath.toPath())
-        }
+        validFolders.forEach { copyRoomFolder(it.toPath()) }
 
         // TODO Handle any errors upon MongoDB import or file copy.
 
         logger.info { "Finished import." }
+    }
+
+    private fun copyRoomFolder(folder: Path) {
+        // Get everything that's not JSON
+        val files: Stream<Path> =
+            Files.walk(folder).filter { !it.isDirectory() && it.extension != ImportUtils.JSON_EXTENSION }
+
+        for (f in files) {
+            val targetPath = storageRoot.toPath().resolve(f.relativeTo(importRoot.toPath()))
+
+            // Create directories if they don't exist.
+            Files.createDirectories(targetPath.parent)
+
+            // Copy the files.
+            Files.copy(f, targetPath)
+        }
     }
 
     /**
@@ -209,12 +218,18 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
         logger.debug { "Looking for exhibit configuration at $configFile." }
 
-        val exhibitPath = exhibitFile.relativeTo(importRoot).toString().replace('\\', '/') // In case its Windows.
+        val exhibitPath =
+            this.exhibition.id + "/" + exhibitFile.relativeTo(importRoot).toString().replace('\\', '/')
 
         return if (configFile.exists()) {
             val exhibit = json.decodeFromString(Exhibit.serializer(), configFile.readText())
 
             exhibit.path = exhibitPath
+
+            if (exhibit.audio != null) {
+                exhibit.audio = this.exhibition.id + "/" + exhibit.audio
+            }
+
             exhibit
         } else {
             Exhibit(exhibitFile.nameWithoutExtension, exhibitPath, CulturalHeritageObject.Companion.CHOType.IMAGE)
