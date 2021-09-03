@@ -132,7 +132,7 @@ class SomGenerator(
         val exhibits = idListToExhibits(idList)
 
         for (i in exhibits.indices) {
-            exhibits[i].metadata[MetadataType.SOM_IDS.key] =
+            exhibits[i].metadata[MetadataType.MEMBER_IDS.key] =
                 Json.encodeToString(ListSerializer(IdDoublePair.serializer()), nodeMap.map[i]!!)
         }
 
@@ -179,10 +179,9 @@ class SomGenerator(
         room.size = getRoomDimFromWalls(walls)
         room.walls.addAll(walls)
 
-        // Encode node map to JSON to add as metadata.
-//        room.metadata[MetadataType.SOM_IDS.key] = Json.encodeToString(NodeMap.serializer(), nodeMap)
-
         // Add seed information to room.
+        // TODO Possibly don't add those here and let VREP do it instead.
+        room.metadata[MetadataType.GENERATED.key] = "true"
         room.metadata[MetadataType.SEED.key] = genConfig.seed.toString()
 
         return room
