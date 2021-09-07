@@ -1,11 +1,13 @@
 package ch.unibas.dmi.dbis.vrem.generation.model
 
 enum class GenerationType(
-    val featureList: ArrayList<IdDoublePair> = arrayListOf()
+    val featureList: ArrayList<IdDoublePair> = arrayListOf(),
+    val categoryName: ArrayList<String> = arrayListOf()
 ) {
 
-    // TODO Decide on how to load features (Cineast category or list of table names).
+    // TODO Cineast categories are probably better here to avoid relying on table names.
     // TODO Allow storage of SOM features to use via config (similarity features should be defined in the Cineast config).
+
     SEMANTIC_SOM(
         arrayListOf(IdDoublePair("features_visualtextcoembedding", 1.0))
     ),
@@ -29,10 +31,18 @@ enum class GenerationType(
         )
     ),
 
-    SEMANTIC_SIMILARITY, // Similarity evaluated via Cineast config.
+    SEMANTIC_SIMILARITY( // Similarity evaluated via Cineast config.
+        categoryName = arrayListOf(
 
-    VISUAL_SIMILARITY, // Similarity evaluated via Cineast config.
+        )
+    ),
 
-    RANDOM
+    VISUAL_SIMILARITY( // Similarity evaluated via Cineast config.
+        categoryName = arrayListOf(
+
+        )
+    ),
+
+    RANDOM // Nothing to specify here.
 
 }

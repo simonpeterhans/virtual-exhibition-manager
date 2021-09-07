@@ -23,7 +23,8 @@ abstract class Generator(
 
     fun getTextSuffix(): LocalDateTime? = LocalDateTime.now()
 
-    fun genExhibition(): Exhibition {
+    open fun genExhibition(): Exhibition {
+        // Generic exhibition generation function, can be overwritten.
         val room = genRoom()
 
         val ex = Exhibition(name = exhibitionText + " " + getTextSuffix())

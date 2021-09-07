@@ -10,7 +10,7 @@ import ch.unibas.dmi.dbis.vrem.rest.status.StatusCode
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
 
-class ExhibitionGenerationHandler(cineastConfig: CineastConfig) : PostRestHandler<Exhibition> {
+class ExhibitionGenerationHandler(private val cineastConfig: CineastConfig) : PostRestHandler<Exhibition> {
 
     private val cineastHttp = CineastHttp(cineastConfig)
 
@@ -36,7 +36,7 @@ class ExhibitionGenerationHandler(cineastConfig: CineastConfig) : PostRestHandle
     override fun doPost(ctx: Context): Exhibition {
         val config = ctx.body<GenerationRequest>()
 
-        return GenerationRequest.getGenerator(config, cineastHttp).genExhibition()
+        return GenerationRequest.getGenerator(cineastConfig, config, cineastHttp).genExhibition()
     }
 
 }

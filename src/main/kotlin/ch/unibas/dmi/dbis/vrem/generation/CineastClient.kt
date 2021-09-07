@@ -8,9 +8,9 @@ import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 
 object CineastClient {
 
-    private const val SEGMENT_SUFFIX = "_1"
-    private const val CINEAST_FEATURE_LABEL = "feature"
-    private const val CINEAST_ID_LABEL = "id"
+    const val SEGMENT_SUFFIX = "_1"
+    const val CINEAST_FEATURE_LABEL = "feature"
+    const val CINEAST_ID_LABEL = "id"
 
     fun getAllIds(): List<String> {
         val ids = ObjectApi().findObjectsAll()
