@@ -29,9 +29,9 @@ enum class GenerationType(
         )
     ),
 
-    SEMANTIC_SIMILARITY,
+    SEMANTIC_SIMILARITY, // Similarity evaluated via Cineast config.
 
-    VISUAL_SIMILARITY,
+    VISUAL_SIMILARITY, // Similarity evaluated via Cineast config.
 
     RANDOM
 

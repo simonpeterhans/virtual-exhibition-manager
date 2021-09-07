@@ -6,13 +6,10 @@ import ch.unibas.dmi.dbis.som.grids.Grid2DSquare
 import ch.unibas.dmi.dbis.som.util.DistanceFunction
 import ch.unibas.dmi.dbis.som.util.DistanceScalingFunction
 import ch.unibas.dmi.dbis.som.util.TimeFunction
-import ch.unibas.dmi.dbis.vrem.generation.CineastClient
 import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
 import ch.unibas.dmi.dbis.vrem.generation.Generator
-import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 import ch.unibas.dmi.dbis.vrem.generation.model.IdDoublePair
 import ch.unibas.dmi.dbis.vrem.generation.model.NodeMap
-import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.MetadataType
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
@@ -31,7 +28,6 @@ class SomGenerator(
     cineastHttp: CineastHttp
 ) : Generator(genConfig, cineastHttp) {
 
-    override val exhibitionText = "Generated Exhibition (SOM)"
     override val roomText = "Generated Room (SOM)"
 
     private fun getFeatureRanges(features: Array<DoubleArray>): Pair<DoubleArray, DoubleArray> {
@@ -140,24 +136,7 @@ class SomGenerator(
     }
 
     override fun genRoom(): Room {
-        // TODO Move this to the generic Generator.
-        val featureDataList = arrayListOf<DoubleFeatureData>()
-
-        for (tablePair in genConfig.genType.featureList) {
-            val featureData = CineastClient.getFeatureDataFromTableName(tablePair.id)
-
-            // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
-            featureData.filterByList(genConfig.idList)
-
-            // Normalize data.
-            featureData.normalize(tablePair.value)
-
-            featureDataList.add(featureData)
-        }
-
-        val features = DoubleFeatureData.concatenate(featureDataList)
-
-        val room = Room(text = roomText + " " + getTextSuffix())
+        val features = getFeatures()
 
         // Get all values as 2D array.
         val data = features.valuesTo2DArray() // Same order as the IDs.
@@ -175,26 +154,7 @@ class SomGenerator(
         // Create exhibitions depending on settings (we could create the sub-rooms right away as well).
         val walls = createWallsFromNodeMap(som.grid.dims, nodeMap)
 
-        // Set room size and add walls.
-        room.size = getRoomDimFromWalls(walls)
-        room.walls.addAll(walls)
-
-        // Add seed information to room.
-        // TODO Possibly don't add those here and let VREP do it instead.
-        room.metadata[MetadataType.GENERATED.key] = "true"
-        room.metadata[MetadataType.SEED.key] = genConfig.seed.toString()
-
-        return room
-    }
-
-    override fun genExhibition(): Exhibition {
-        val room = genRoom()
-
-        val ex = Exhibition(name = exhibitionText + " " + getTextSuffix())
-
-        ex.rooms.add(room)
-
-        return ex
+        return wallsToRoom(walls)
     }
 
 }

@@ -2,8 +2,6 @@ package ch.unibas.dmi.dbis.vrem.rest.handlers.generation
 
 import ch.unibas.dmi.dbis.vrem.config.CineastConfig
 import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
-import ch.unibas.dmi.dbis.vrem.generation.model.GenerationType
-import ch.unibas.dmi.dbis.vrem.generation.som.SomGenerator
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.rest.handlers.PostRestHandler
 import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
@@ -38,17 +36,7 @@ class ExhibitionGenerationHandler(cineastConfig: CineastConfig) : PostRestHandle
     override fun doPost(ctx: Context): Exhibition {
         val config = ctx.body<GenerationRequest>()
 
-        val gen = when (config.genType) {
-            GenerationType.SEMANTIC_SOM, GenerationType.VISUAL_SOM -> {
-                SomGenerator(config, cineastHttp)
-            }
-
-            GenerationType.SEMANTIC_SIMILARITY -> TODO()
-            GenerationType.VISUAL_SIMILARITY -> TODO()
-            GenerationType.RANDOM -> TODO()
-        }
-
-        return gen.genExhibition()
+        return GenerationRequest.getGenerator(config, cineastHttp).genExhibition()
     }
 
 }

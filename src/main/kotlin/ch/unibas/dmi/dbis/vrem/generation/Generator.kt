@@ -1,5 +1,6 @@
 package ch.unibas.dmi.dbis.vrem.generation
 
+import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit.Companion.URL_ID_SUFFIX
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
@@ -14,17 +15,43 @@ abstract class Generator(
     val cineastHttp: CineastHttp
 ) {
 
-    abstract val exhibitionText: String
-
     abstract val roomText: String
 
     abstract fun genRoom(): Room
 
-    abstract fun genExhibition(): Exhibition
+    val exhibitionText: String = "Generated Exhibition"
 
     fun getTextSuffix(): LocalDateTime? = LocalDateTime.now()
 
-    fun idListToExhibits(ids: List<String?>): MutableList<Exhibit> {
+    fun genExhibition(): Exhibition {
+        val room = genRoom()
+
+        val ex = Exhibition(name = exhibitionText + " " + getTextSuffix())
+
+        ex.rooms.add(room)
+
+        return ex
+    }
+
+    protected fun getFeatures(): DoubleFeatureData {
+        val featureDataList = arrayListOf<DoubleFeatureData>()
+
+        for (tablePair in genConfig.genType.featureList) {
+            val featureData = CineastClient.getFeatureDataFromTableName(tablePair.id)
+
+            // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
+            featureData.filterByList(genConfig.idList)
+
+            // Normalize data.
+            featureData.normalize(tablePair.value)
+
+            featureDataList.add(featureData)
+        }
+
+        return DoubleFeatureData.concatenate(featureDataList)
+    }
+
+    protected fun idListToExhibits(ids: List<String?>): MutableList<Exhibit> {
         val exhibits = mutableListOf<Exhibit>()
 
         for (id in ids) {
@@ -50,7 +77,7 @@ abstract class Generator(
         return exhibits
     }
 
-    fun exhibitListToWalls(dims: IntArray, exhibitList: MutableList<Exhibit>): MutableList<Wall> {
+    protected fun exhibitListToWalls(dims: IntArray, exhibitList: MutableList<Exhibit>): MutableList<Wall> {
         val walls = mutableListOf<Wall>()
 
         // Add a wall for every direction.
@@ -72,6 +99,20 @@ abstract class Generator(
         }
 
         return walls
+    }
+
+    protected fun wallsToRoom(walls: List<Wall>): Room {
+        val room = Room(text = roomText + " " + getTextSuffix())
+
+        // Set room size and add walls.
+        room.size = getRoomDimFromWalls(walls)
+        room.walls.addAll(walls)
+
+        // Add metadata to room.
+        room.metadata[MetadataType.GENERATED.key] = true.toString()
+        room.metadata[MetadataType.SEED.key] = genConfig.seed.toString()
+
+        return room
     }
 
     fun calculateExhibitSize(exhibitFile: ByteArray, exhibit: Exhibit, defaultLongSide: Double) {
