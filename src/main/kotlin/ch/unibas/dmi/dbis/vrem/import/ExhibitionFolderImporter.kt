@@ -30,35 +30,44 @@ private val logger = KotlinLogging.logger {}
  * To be used directly as CLI command; the exhibition should include everything as in the
  * [sample exhibition](git@github.com:VIRTUE-DBIS/vre-mixnhack19.git).
  */
-class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Imports a folder-based exhibition") {
+class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Imports a folder-based exhibition.") {
 
-    val exhibitionPath by option("-p", "--path", help = "Path to the exhibition root folder").required()
+    val exhibitionPath by option(
+        "-p",
+        "--path",
+        help = "Path to the exhibition root folder (where the room folders reside)."
+    ).required()
+
     val config by option(
         "-c",
         "--config",
-        help = "Relative of full path to the config file to be used"
+        help = "Path to the configuration file to use (defaults to config.json)."
     ).default("config.json")
-    val clean by option("--clean", help = "Remove old exhibitions with the same name").flag(
-        "--keep",
-        default = false
-    )
+
+    val clean by option(
+        "--clean", help = "Overrides old exhibitions with the same name from the database."
+    ).flag("--keep", default = false)
+
     val exhibitionDescription by option(
         "-d",
         "--description",
-        help = "Description of the exhibition"
+        help = "Description of the exhibition (defaults to empty)."
     ).default("")
+
     val name by option(
         "-n",
         "--name",
-        help = "The name of the exhibition. Shall be unique"
-    ).default("default-name")
+        help = "The name of the exhibition (must be unique)."
+    ).default("")
+
     val ignore by option(
         "--ignore",
-        help = "An ignore prefix to ignore folders and not treat them as a room folder"
+        help = "A prefix for folders to ignore instead of treating them as a room folders (defaults to __)."
     ).default("__")
+
     val defaultLongSide: Float by option(
         "--default-long-side",
-        help = "The length of the long side of an image in meters"
+        help = "The length of the longer side of an image in meters (defaults to 2.0)."
     ).float().default(2f)
 
     private lateinit var exhibition: Exhibition
@@ -119,16 +128,15 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
 
         validFolders.forEach { copyRoomFolder(it.toPath()) }
 
-        // TODO Handle any errors upon MongoDB import or file copy.
-
         logger.info { "Finished import." }
     }
 
     private fun copyRoomFolder(folder: Path) {
-        // Get everything that's not JSON
+        // Get everything that's not JSON.
         val files: Stream<Path> =
             Files.walk(folder).filter { !it.isDirectory() && it.extension != ImportUtils.JSON_EXTENSION }
 
+        // Copy everything.
         for (f in files) {
             val targetPath = storageRoot.toPath().resolve(f.relativeTo(importRoot.toPath()))
 
