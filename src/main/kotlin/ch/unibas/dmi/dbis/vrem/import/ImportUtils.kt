@@ -24,15 +24,23 @@ object ImportUtils {
     val IMAGE_FILE_EXTENSIONS = listOf(JPEG_EXTENSION, JPG_EXTENSION, PNG_EXTENSION, BMP_EXTENSION)
 
     /**
-     * Calculates the room position depending on the number of siblings.
-     * As of now, the room X coordinate is simply the room number.
+     * Calculates the room position depending on the number of siblings, arranging rooms in a line.
      *
      * @param room The room to calculate the position for.
      * @param siblings The list of all current rooms.
      * @return The vector of the room's position.
      */
     fun calculateRoomPosition(room: Room, siblings: List<Room>): Vector3f {
-        return Vector3f(siblings.size, 0, 0)
+        // Automated room position calculation: Use origin if unspecified.
+        if (siblings.isEmpty()) {
+            return Vector3f(0.0f, 0.0f, 0.0f)
+        }
+
+        val offset = 1.0f;
+        val last = siblings.last()
+        val dist = last.position.x + 0.5 * last.size.x + 0.5 * room.size.x + offset
+
+        return Vector3f(dist, 0.0f, 0.0f)
     }
 
     /**
