@@ -1,9 +1,9 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
+import io.swagger.v3.oas.annotations.media.Schema
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonNames
 import org.litote.kmongo.newId
 
 /**
@@ -23,7 +23,7 @@ import org.litote.kmongo.newId
 @Serializable
 data class Exhibit(
     @SerialName("_id")
-    @JsonNames("id", "_id")
+    @Schema(name = "_id") // OpenAPI spec.
     override val id: String = newId<Exhibit>().toString(),
     override var name: String,
     override var description: String = "",

@@ -1,8 +1,8 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
+import io.swagger.v3.oas.annotations.media.Schema
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonNames
 import org.litote.kmongo.newId
 import java.util.*
 
@@ -18,8 +18,8 @@ import java.util.*
 
 @Serializable
 data class Exhibition(
-    @SerialName("_id") // KMongo.
-    @JsonNames("id", "_id") // JSON deserialization (Kotlinx).
+    @SerialName("_id")
+    @Schema(name = "_id") // OpenAPI spec.
     val id: String = newId<Exhibition>().toString(),
     val name: String,
     val description: String = "",

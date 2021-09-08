@@ -1,6 +1,8 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
+import io.swagger.v3.oas.annotations.media.Schema
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.litote.kmongo.newId
 
@@ -22,6 +24,8 @@ import org.litote.kmongo.newId
  */
 @Serializable
 data class Room(
+    @SerialName("_id")
+    @Schema(name = "_id") // OpenAPI spec.
     val id: String = newId<Exhibition>().toString(),
     var text: String = "",
     var floor: String = DEFAULT_FLOOR,

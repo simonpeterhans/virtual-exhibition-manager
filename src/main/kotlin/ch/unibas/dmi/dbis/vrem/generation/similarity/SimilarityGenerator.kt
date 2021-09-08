@@ -20,6 +20,8 @@ class SimilarityGenerator(
     cineastHttp: CineastHttp
 ) : Generator(genConfig, cineastHttp) {
 
+    private val dataString = "data:image/png;base64,"
+
     override val roomText: String = "Generated Room (Similarity)"
 
     override fun genRoom(): Room {
@@ -41,7 +43,7 @@ class SimilarityGenerator(
                 mutableListOf(
                     QueryTerm(
                         QueryTerm.Type.IMAGE,
-                        "data:image/png;base64,$img",
+                        "$dataString$img",
                         mutableListOf("localcolor")
                     )
                 )

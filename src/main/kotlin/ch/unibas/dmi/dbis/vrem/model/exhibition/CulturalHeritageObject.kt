@@ -1,8 +1,8 @@
 package ch.unibas.dmi.dbis.vrem.model.exhibition
 
+import io.swagger.v3.oas.annotations.media.Schema
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonNames
 
 /**
  * Cultural heritage object.
@@ -15,9 +15,8 @@ import kotlinx.serialization.json.JsonNames
  */
 @Serializable
 abstract class CulturalHeritageObject {
-
     @SerialName("_id")
-    @JsonNames("id", "_id")
+    @get:Schema(name = "_id") // OpenAPI spec.
     abstract val id: String
     abstract var name: String
     abstract var type: CHOType

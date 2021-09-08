@@ -36,7 +36,7 @@ object ImportUtils {
             return Vector3f(0.0f, 0.0f, 0.0f)
         }
 
-        val offset = 1.0f;
+        val offset = 1.0f
         val last = siblings.last()
         val dist = last.position.x + 0.5 * last.size.x + 0.5 * room.size.x + offset
 

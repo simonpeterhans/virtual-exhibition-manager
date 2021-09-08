@@ -28,8 +28,8 @@ abstract class Generator(
         val room = genRoom()
 
         val ex = Exhibition(name = exhibitionText + " " + getTextSuffix())
-
         ex.rooms.add(room)
+        ex.metadata[MetadataType.GENERATED.key] = true.toString()
 
         return ex
     }
