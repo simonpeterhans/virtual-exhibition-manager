@@ -16,12 +16,9 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
 import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
-import mu.KotlinLogging
 import java.lang.Double.max
 import java.lang.Double.min
 import kotlin.random.Random
-
-private val logger = KotlinLogging.logger {}
 
 class SomGenerator(
     genConfig: GenerationRequest,
@@ -53,7 +50,7 @@ class SomGenerator(
     private fun trainSom(features: Array<DoubleArray>): SOM {
         val height = genConfig.height
         val width = genConfig.width
-        val epochs = 1 // TODO Calculate this dynamically?
+        val epochs = 20_000 / features.size // TODO Find a smart way to determine this.
         val seed = Random(genConfig.seed)
 
         val g = Grid2DSquare(

@@ -38,10 +38,7 @@ abstract class Generator(
         val featureDataList = arrayListOf<DoubleFeatureData>()
 
         for (tablePair in genConfig.genType.featureList) {
-            val featureData = CineastClient.getFeatureDataFromTableName(tablePair.id)
-
-            // TODO If this is too expensive, create a new Cineast API call to obtain features for certain IDs only.
-            featureData.filterByList(genConfig.idList)
+            val featureData = CineastClient.getFeatureDataFromTableName(tablePair.id, genConfig.idList)
 
             // Normalize data.
             featureData.normalize(tablePair.value)
@@ -62,9 +59,11 @@ abstract class Generator(
                 e = Exhibit(name = "Empty Exhibit", path = "")
                 e.size = Vector3f(1.0, 1.0)
             } else {
-                e = Exhibit(name = id, path = id + URL_ID_SUFFIX)
+                val cleanId = CineastClient.cleanId(id)
 
-                val imageBytes = cineastHttp.objectRequest(id)
+                e = Exhibit(name = cleanId, path = cleanId + URL_ID_SUFFIX)
+
+                val imageBytes = cineastHttp.objectRequest(cleanId)
 
                 calculateExhibitSize(imageBytes, e, 2.0)
 

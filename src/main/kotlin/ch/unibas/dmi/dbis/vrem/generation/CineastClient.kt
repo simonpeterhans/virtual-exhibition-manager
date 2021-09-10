@@ -2,8 +2,8 @@ package ch.unibas.dmi.dbis.vrem.generation
 
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.MetadataApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.ObjectApi
-import ch.unibas.dmi.dbis.vrem.cineast.client.models.AllFeaturesByCategoryQueryResult
-import ch.unibas.dmi.dbis.vrem.cineast.client.models.AllFeaturesByTableNameQueryResult
+import ch.unibas.dmi.dbis.vrem.cineast.client.models.FeaturesByCategoryQueryResult
+import ch.unibas.dmi.dbis.vrem.cineast.client.models.FeaturesByTableNameQueryResult
 import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 
 object CineastClient {
@@ -11,6 +11,10 @@ object CineastClient {
     const val SEGMENT_SUFFIX = "_1"
     const val CINEAST_FEATURE_LABEL = "feature"
     const val CINEAST_ID_LABEL = "id"
+
+    fun cleanId(id: String): String {
+        return id.substringBeforeLast(SEGMENT_SUFFIX)
+    }
 
     fun getAllIds(): List<String> {
         val ids = ObjectApi().findObjectsAll()
@@ -22,8 +26,8 @@ object CineastClient {
         return ids.content.map { o -> o.objectId + SEGMENT_SUFFIX }.toCollection(ArrayList())
     }
 
-    fun getFeaturesByCategory(category: String): Map<String, List<Map<String, Any>>> {
-        val features: AllFeaturesByCategoryQueryResult = MetadataApi().findAllFeatByCat(category)
+    fun getFeaturesByCategory(category: String, idList: List<String>): Map<String, List<Map<String, Any>>> {
+        val features: FeaturesByCategoryQueryResult = MetadataApi().findFeaturesByCategory(category, idList)
 
         if (features.featureMap == null) {
             return mapOf()
@@ -32,8 +36,8 @@ object CineastClient {
         return features.featureMap
     }
 
-    fun getFeatureDataByTableName(tableName: String): List<Map<String, Any>> {
-        val feature: AllFeaturesByTableNameQueryResult = MetadataApi().findAllFeatByTableName(tableName)
+    fun getFeatureDataByTableName(tableName: String, idList: List<String>): List<Map<String, Any>> {
+        val feature: FeaturesByTableNameQueryResult = MetadataApi().findFeaturesByTableName(tableName, idList)
 
         if (feature.featureMap == null) {
             return listOf()
@@ -48,7 +52,7 @@ object CineastClient {
         for (e in featureList) {
             @Suppress("UNCHECKED_CAST")
             featureData.addSample(
-                (e[CINEAST_ID_LABEL] as String).substringBeforeLast(SEGMENT_SUFFIX),
+                (e[CINEAST_ID_LABEL] as String),
                 e[CINEAST_FEATURE_LABEL] as ArrayList<Double>
             )
         }
@@ -56,8 +60,8 @@ object CineastClient {
         return featureData
     }
 
-    fun getFeatureDataFromCategory(category: String): MutableMap<String, DoubleFeatureData> {
-        val allFeatures = getFeaturesByCategory(category)
+    fun getFeatureDataFromCategory(category: String, idList: List<String>): MutableMap<String, DoubleFeatureData> {
+        val allFeatures = getFeaturesByCategory(category, idList)
 
         val featureDataList = mutableMapOf<String, DoubleFeatureData>()
 
@@ -68,8 +72,8 @@ object CineastClient {
         return featureDataList
     }
 
-    fun getFeatureDataFromTableName(tableName: String): DoubleFeatureData {
-        return featureListToFeatureData(tableName, getFeatureDataByTableName(tableName))
+    fun getFeatureDataFromTableName(tableName: String, idList: List<String>): DoubleFeatureData {
+        return featureListToFeatureData(tableName, getFeatureDataByTableName(tableName, idList))
     }
 
 }
