@@ -29,7 +29,7 @@ class SimilarityGenerator(
     override fun genRoom(): Room {
 
         // First ID in list is the image to query for.
-        val imageId = genConfig.idList[0]
+        val imageId = CineastClient.cleanId(genConfig.idList[0])
 
         val (_, _, result) = cineastConfig.getCineastObjectUrlString(imageId).httpGet().response()
 
@@ -66,7 +66,7 @@ class SimilarityGenerator(
 
         content = content.subList(0, min(genConfig.height * genConfig.width, content.size))
 
-        val ids = content.map { it.key!!.substringBeforeLast(CineastClient.SEGMENT_SUFFIX) }.toList()
+        val ids = content.map { it.key!! }.toList()
 
         val exhibits = idListToExhibits(ids)
 
