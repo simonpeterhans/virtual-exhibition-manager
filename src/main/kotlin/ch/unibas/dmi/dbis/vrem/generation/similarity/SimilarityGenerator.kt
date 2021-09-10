@@ -20,11 +20,14 @@ class SimilarityGenerator(
     cineastHttp: CineastHttp
 ) : Generator(genConfig, cineastHttp) {
 
+    private val category = genConfig.genType.categoryName.first()
+
     private val dataString = "data:image/png;base64,"
 
     override val roomText: String = "Generated Room (Similarity)"
 
     override fun genRoom(): Room {
+
         // First ID in list is the image to query for.
         val imageId = genConfig.idList[0]
 
@@ -44,7 +47,7 @@ class SimilarityGenerator(
                     QueryTerm(
                         QueryTerm.Type.IMAGE,
                         "$dataString$img",
-                        mutableListOf("localcolor")
+                        mutableListOf(category)
                     )
                 )
             )
@@ -57,7 +60,7 @@ class SimilarityGenerator(
 
         val apiClient = SegmentsApi()
         val request = apiClient.findSegmentSimilar(query)
-        val res: SimilarityQueryResult? = request.results?.find { it.category == "localcolor" }
+        val res: SimilarityQueryResult? = request.results?.find { it.category == category }
 
         var content: List<StringDoublePair> = res?.content!! // Contains key and value.
 
