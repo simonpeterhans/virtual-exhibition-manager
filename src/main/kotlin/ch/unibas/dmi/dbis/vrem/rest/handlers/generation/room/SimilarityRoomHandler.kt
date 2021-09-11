@@ -1,28 +1,29 @@
-package ch.unibas.dmi.dbis.vrem.rest.handlers.generation
+package ch.unibas.dmi.dbis.vrem.rest.handlers.generation.room
 
 import ch.unibas.dmi.dbis.vrem.config.CineastConfig
 import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
+import ch.unibas.dmi.dbis.vrem.generation.similarity.SimilarityRoomGenerator
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.rest.handlers.PostRestHandler
-import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
+import ch.unibas.dmi.dbis.vrem.rest.requests.SimilarityGenerationRequest
 import ch.unibas.dmi.dbis.vrem.rest.responses.ResponseMessage
 import ch.unibas.dmi.dbis.vrem.rest.status.StatusCode
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
 
-class RoomGenerationHandler(private val cineastConfig: CineastConfig) : PostRestHandler<Room> {
+class SimilarityRoomHandler(private val cineastConfig: CineastConfig) : PostRestHandler<Room> {
 
     private val cineastHttp = CineastHttp(cineastConfig)
 
-    override val route: String = "/generate/room"
+    override val route: String = "/generate/room/similar"
 
     @OpenApi(
         method = HttpMethod.POST,
-        summary = "Generates a new room with the specified parameters.",
-        path = "/api/generate/room",
+        summary = "Generates a new room of similar exhibits with the specified parameters.",
+        path = "/api/generate/room/similar",
         tags = ["Generation"],
         requestBody = OpenApiRequestBody(
-            content = [OpenApiContent(GenerationRequest::class)],
+            content = [OpenApiContent(SimilarityGenerationRequest::class)],
             required = true,
             description = "The generation configuration object as JSON string."
         ),
@@ -33,9 +34,9 @@ class RoomGenerationHandler(private val cineastConfig: CineastConfig) : PostRest
         ]
     )
     override fun doPost(ctx: Context): Room {
-        val config = ctx.body<GenerationRequest>()
+        val config = ctx.body<SimilarityGenerationRequest>()
 
-        return GenerationRequest.getGenerator(cineastConfig, config, cineastHttp).genRoom()
+        return SimilarityRoomGenerator(cineastConfig, config, cineastHttp).genRoom()
     }
 
 }

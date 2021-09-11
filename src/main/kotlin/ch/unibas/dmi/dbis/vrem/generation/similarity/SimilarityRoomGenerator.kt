@@ -5,20 +5,19 @@ import ch.unibas.dmi.dbis.vrem.cineast.client.models.*
 import ch.unibas.dmi.dbis.vrem.config.CineastConfig
 import ch.unibas.dmi.dbis.vrem.generation.CineastClient
 import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
-import ch.unibas.dmi.dbis.vrem.generation.Generator
+import ch.unibas.dmi.dbis.vrem.generation.RoomGenerator
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
-import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
-import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
+import ch.unibas.dmi.dbis.vrem.rest.requests.SimilarityGenerationRequest
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import java.util.*
 import kotlin.math.min
 
-class SimilarityGenerator(
-    val cineastConfig: CineastConfig,
-    genConfig: GenerationRequest,
+class SimilarityRoomGenerator(
+    private val cineastConfig: CineastConfig,
+    private val genConfig: SimilarityGenerationRequest,
     cineastHttp: CineastHttp
-) : Generator(genConfig, cineastHttp) {
+) : RoomGenerator(cineastHttp) {
 
     private val category = genConfig.genType.categoryName.first()
 
@@ -29,7 +28,7 @@ class SimilarityGenerator(
     override fun genRoom(): Room {
 
         // First ID in list is the image to query for.
-        val imageId = CineastClient.cleanId(genConfig.idList[0])
+        val imageId = CineastClient.cleanId(genConfig.objectId)
 
         val (_, _, result) = cineastConfig.getCineastObjectUrlString(imageId).httpGet().response()
 
@@ -64,13 +63,13 @@ class SimilarityGenerator(
 
         var content: List<StringDoublePair> = res?.content!! // Contains key and value.
 
-        content = content.subList(0, min(genConfig.height * genConfig.width, content.size))
+        content = content.subList(0, min(genConfig.roomSpec.height * genConfig.roomSpec.width, content.size))
 
         val ids = content.map { it.key!! }.toList()
 
         val exhibits = idListToExhibits(ids)
 
-        val walls: MutableList<Wall> = exhibitListToWalls(intArrayOf(genConfig.height, genConfig.width), exhibits)
+        val walls = exhibitListToWalls(intArrayOf(genConfig.roomSpec.height, genConfig.roomSpec.width), exhibits)
 
         return wallsToRoom(walls)
     }

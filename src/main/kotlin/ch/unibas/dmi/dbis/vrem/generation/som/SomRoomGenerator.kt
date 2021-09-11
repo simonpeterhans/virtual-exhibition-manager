@@ -6,26 +6,43 @@ import ch.unibas.dmi.dbis.som.grids.Grid2DSquare
 import ch.unibas.dmi.dbis.som.util.DistanceFunction
 import ch.unibas.dmi.dbis.som.util.DistanceScalingFunction
 import ch.unibas.dmi.dbis.som.util.TimeFunction
+import ch.unibas.dmi.dbis.vrem.generation.CineastClient
 import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
-import ch.unibas.dmi.dbis.vrem.generation.Generator
+import ch.unibas.dmi.dbis.vrem.generation.RoomGenerator
+import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 import ch.unibas.dmi.dbis.vrem.generation.model.IdDoublePair
 import ch.unibas.dmi.dbis.vrem.generation.model.NodeMap
 import ch.unibas.dmi.dbis.vrem.model.exhibition.MetadataType
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
-import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
+import ch.unibas.dmi.dbis.vrem.rest.requests.SomGenerationRequest
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import java.lang.Double.max
 import java.lang.Double.min
 import kotlin.random.Random
 
-class SomGenerator(
-    genConfig: GenerationRequest,
+class SomRoomGenerator(
+    private val genConfig: SomGenerationRequest,
     cineastHttp: CineastHttp
-) : Generator(genConfig, cineastHttp) {
+) : RoomGenerator(cineastHttp) {
 
     override val roomText = "Generated Room (SOM)"
+
+    private fun getFeatures(): DoubleFeatureData {
+        val featureDataList = arrayListOf<DoubleFeatureData>()
+
+        for (tablePair in genConfig.genType.featureList) {
+            val featureData = CineastClient.getFeatureDataFromTableName(tablePair.id, genConfig.idList)
+
+            // Normalize data.
+            featureData.normalize(tablePair.value)
+
+            featureDataList.add(featureData)
+        }
+
+        return DoubleFeatureData.concatenate(featureDataList)
+    }
 
     private fun getFeatureRanges(features: Array<DoubleArray>): Pair<DoubleArray, DoubleArray> {
         val len = features[0].size
@@ -48,8 +65,8 @@ class SomGenerator(
     }
 
     private fun trainSom(features: Array<DoubleArray>): SOM {
-        val height = genConfig.height
-        val width = genConfig.width
+        val height = genConfig.roomSpec.height
+        val width = genConfig.roomSpec.width
         val epochs = 20_000 / features.size // TODO Find a smart way to determine this.
         val seed = Random(genConfig.seed)
 
@@ -151,7 +168,10 @@ class SomGenerator(
         // Create exhibitions depending on settings (we could create the sub-rooms right away as well).
         val walls = createWallsFromNodeMap(som.grid.dims, nodeMap)
 
-        return wallsToRoom(walls)
+        val room = wallsToRoom(walls)
+        room.metadata[MetadataType.SEED.key] = genConfig.seed.toString()
+
+        return room
     }
 
 }

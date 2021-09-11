@@ -1,53 +1,21 @@
 package ch.unibas.dmi.dbis.vrem.generation
 
-import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit.Companion.URL_ID_SUFFIX
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
-import ch.unibas.dmi.dbis.vrem.rest.requests.GenerationRequest
 import java.io.ByteArrayInputStream
-import java.time.LocalDateTime
 import javax.imageio.ImageIO
 import kotlin.math.max
 
-abstract class Generator(
-    val genConfig: GenerationRequest,
+abstract class RoomGenerator(
     val cineastHttp: CineastHttp
-) {
+) : ExhibitionGenerator() {
 
     abstract val roomText: String
 
     abstract fun genRoom(): Room
 
-    val exhibitionText: String = "Generated Exhibition"
-
-    fun getTextSuffix(): LocalDateTime? = LocalDateTime.now()
-
-    open fun genExhibition(): Exhibition {
-        // Generic exhibition generation function, can be overwritten.
-        val room = genRoom()
-
-        val ex = Exhibition(name = exhibitionText + " " + getTextSuffix())
-        ex.rooms.add(room)
-        ex.metadata[MetadataType.GENERATED.key] = true.toString()
-
-        return ex
-    }
-
-    protected fun getFeatures(): DoubleFeatureData {
-        val featureDataList = arrayListOf<DoubleFeatureData>()
-
-        for (tablePair in genConfig.genType.featureList) {
-            val featureData = CineastClient.getFeatureDataFromTableName(tablePair.id, genConfig.idList)
-
-            // Normalize data.
-            featureData.normalize(tablePair.value)
-
-            featureDataList.add(featureData)
-        }
-
-        return DoubleFeatureData.concatenate(featureDataList)
-    }
+    private val exhibitionText: String = "Generated Exhibition"
 
     protected fun idListToExhibits(ids: List<String?>): MutableList<Exhibit> {
         val exhibits = mutableListOf<Exhibit>()
@@ -69,6 +37,7 @@ abstract class Generator(
 
                 // Set generation metadata.
                 e.metadata[MetadataType.GENERATED.key] = "true"
+                e.metadata[MetadataType.OBJECT_ID.key] = id // Set original ID to maintain this information.
             }
 
             exhibits.add(e)
@@ -110,7 +79,6 @@ abstract class Generator(
 
         // Add metadata to room.
         room.metadata[MetadataType.GENERATED.key] = true.toString()
-        room.metadata[MetadataType.SEED.key] = genConfig.seed.toString()
 
         return room
     }

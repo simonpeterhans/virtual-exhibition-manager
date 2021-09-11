@@ -14,8 +14,10 @@ import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibition.ListExhibitionsHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibition.LoadExhibitionByIdHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibition.LoadExhibitionByNameHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibition.SaveExhibitionHandler
-import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.ExhibitionGenerationHandler
-import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.RoomGenerationHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.exhibition.EmptyExhibitionHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.room.RandomRoomHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.room.SimilarityRoomHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.room.SomRoomHandler
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -98,8 +100,10 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
             LoadExhibitionByIdHandler(reader),
             LoadExhibitionByNameHandler(reader),
             SaveExhibitionHandler(writer),
-            RoomGenerationHandler(config.cineast),
-            ExhibitionGenerationHandler(config.cineast)
+            EmptyExhibitionHandler(),
+            RandomRoomHandler(config.cineast),
+            SimilarityRoomHandler(config.cineast),
+            SomRoomHandler(config.cineast),
         )
 
         // API endpoint.
