@@ -138,6 +138,10 @@ abstract class RoomGenerator(
         var zDimLen = 0.0
 
         for (w in walls) {
+            if (w.exhibits.isEmpty()) {
+                continue
+            }
+
             val lastPos = w.exhibits.last().position
 
             // Use exhibit x coordinate for both dimensions since it's relative to the wall, and not to the world.
