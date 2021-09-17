@@ -5,6 +5,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class RoomSpecification(
     // TODO Consider adding epochs/iterations to the config.
-    val height: Int, val
-    width: Int
-)
+    var height: Int,
+    var width: Int
+) {
+
+    fun getTotalElements(): Int = height * width
+
+}

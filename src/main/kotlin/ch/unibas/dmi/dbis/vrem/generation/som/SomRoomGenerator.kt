@@ -2,10 +2,10 @@ package ch.unibas.dmi.dbis.vrem.generation.som
 
 import ch.unibas.dmi.dbis.som.PredictionResult
 import ch.unibas.dmi.dbis.som.SOM
+import ch.unibas.dmi.dbis.som.functions.DistanceFunction
+import ch.unibas.dmi.dbis.som.functions.NeighborhoodFunction
+import ch.unibas.dmi.dbis.som.functions.TimeFunction
 import ch.unibas.dmi.dbis.som.grids.Grid2DSquare
-import ch.unibas.dmi.dbis.som.util.DistanceFunction
-import ch.unibas.dmi.dbis.som.util.DistanceScalingFunction
-import ch.unibas.dmi.dbis.som.util.TimeFunction
 import ch.unibas.dmi.dbis.vrem.generation.CineastClient
 import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
 import ch.unibas.dmi.dbis.vrem.generation.RoomGenerator
@@ -18,9 +18,11 @@ import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
 import ch.unibas.dmi.dbis.vrem.rest.requests.SomGenerationRequest
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
-import java.lang.Double.max
 import java.lang.Double.min
+import kotlin.math.sqrt
 import kotlin.random.Random
+import java.lang.Double.max as maxDouble
+import java.lang.Integer.max as maxInt
 
 class SomRoomGenerator(
     private val genConfig: SomGenerationRequest,
@@ -54,7 +56,7 @@ class SomRoomGenerator(
 
             for (i in features.indices) {
                 minVal = min(features[i][j], minVal)
-                maxVal = max(features[i][j], minVal)
+                maxVal = maxDouble(features[i][j], minVal)
             }
 
             ranges.first[j] = minVal
@@ -64,16 +66,16 @@ class SomRoomGenerator(
         return ranges
     }
 
-    private fun trainSom(features: Array<DoubleArray>): SOM {
+    private fun trainSom(samples: Array<DoubleArray>): SOM {
         val height = genConfig.roomSpec.height
         val width = genConfig.roomSpec.width
-        val epochs = 20_000 / features.size // TODO Find a smart way to determine this.
+        val epochs = 250_000 / samples.size // TODO Find a smart way to determine this.
         val seed = Random(genConfig.seed)
 
         val g = Grid2DSquare(
             height,
             width,
-            neighborhoodFunction = DistanceFunction.euclideanNorm2DTorus(
+            distanceFunction = DistanceFunction.euclideanNorm2DTorus(
                 intArrayOf(height, width),
                 booleanArrayOf(false, true) // Wrap around width, but do not wrap around height.
             ),
@@ -81,18 +83,27 @@ class SomRoomGenerator(
         )
 
         // Initialize weights based on the feature ranges we have.
-        val ranges = getFeatureRanges(features)
-        g.initializeWeights(features[0].size, ranges.first, ranges.second)
+        val ranges = getFeatureRanges(samples)
+        g.initializeWeights(samples[0].size, ranges.first, ranges.second)
+
+        val initAlpha = 0.9
+        val initSigma = 0.25 * sqrt((width * width + height * height).toDouble())
+        val sigma = TimeFunction { t, T ->
+            kotlin.math.max(
+                initSigma * ((T - t).toDouble() / T),
+                0.55
+            )
+        }
 
         val s = SOM(
             g,
-            distanceScaling = DistanceScalingFunction.exponentialDecreasing(),
-            alpha = TimeFunction.linearDecreasingFactorScaled(1.0),
-            sigma = TimeFunction.defaultSigmaFunction(intArrayOf(height, width), 2.0),
+            neighborhoodFunction = NeighborhoodFunction.exponentialDecreasing(),
+            alpha = TimeFunction.linearDecreasingFactorScaled(initAlpha),
+            sigma = sigma,
             rand = seed
         )
 
-        s.train(features, epochs)
+        s.train(samples, epochs)
 
         return s
     }
@@ -149,12 +160,32 @@ class SomRoomGenerator(
         return exhibitListToWalls(dims, exhibits)
     }
 
+    private fun fixRoomSize(numSamples: Int) {
+        val spec = genConfig.roomSpec
+
+        if (2.0 * spec.getTotalElements() <= numSamples || spec.getTotalElements() <= 4) {
+            return
+        }
+
+        // Fix height first, then, if necessary, width.
+        while (2.0 * spec.getTotalElements() > numSamples && spec.getTotalElements() > 4) {
+            if (spec.height > 1) {
+                spec.height--
+            } else {
+                spec.width = maxInt(spec.width - 4, 4)
+            }
+        }
+    }
+
     override fun genRoom(): Room {
         val features = getFeatures()
 
         // Get all values as 2D array.
         val data = features.valuesTo2DArray() // Same order as the IDs.
         val ids = features.getSortedIds()
+
+        // Adjust room size if necessary.
+        fixRoomSize(features.numSamples())
 
         // Train SOM.
         val som = trainSom(data)

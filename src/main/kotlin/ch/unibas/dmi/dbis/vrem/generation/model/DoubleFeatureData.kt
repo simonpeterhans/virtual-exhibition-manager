@@ -35,6 +35,8 @@ data class DoubleFeatureData(val featureName: String) {
 
     }
 
+    fun numSamples(): Int = idMap.size
+
     fun addSample(id: String, value: ArrayList<Double>) {
         idMap[id] = value
     }

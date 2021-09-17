@@ -1,7 +1,7 @@
 package ch.unibas.dmi.dbis.som.grids
 
 import ch.unibas.dmi.dbis.som.Node
-import ch.unibas.dmi.dbis.som.util.DistanceFunction
+import ch.unibas.dmi.dbis.som.functions.DistanceFunction
 import kotlin.random.Random
 
 /**
@@ -17,17 +17,15 @@ import kotlin.random.Random
  *
  * @property height The height of the grid.
  * @property width The width of the grid.
- * @property distanceFunction A distance function to calculate the distance between the sample and the best matching node.
- * @property neighborhoodFunction A distance function to calculate the neighborhood of a node.
+ * @property distanceFunction A distance function to calculate the distance between two nodes on the grid.
  * @property rand The random seed to use.
  */
 class Grid2DSquare(
     val height: Int,
     val width: Int,
-    distanceFunction: DistanceFunction = DistanceFunction.squaredDistance(),
-    neighborhoodFunction: DistanceFunction = DistanceFunction.euclideanNorm(),
+    distanceFunction: DistanceFunction = DistanceFunction.euclideanNorm(),
     rand: Random = Random(Random.nextInt())
-) : Grid2D(intArrayOf(height, width), distanceFunction, neighborhoodFunction, rand) {
+) : Grid2D(intArrayOf(height, width), distanceFunction, rand) {
 
     override val nodeGrid: Array<Array<Node>> = run {
         val nodes = Array(height) { Array(width) { Node() } }
