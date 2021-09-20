@@ -1,9 +1,8 @@
-package ch.unibas.dmi.dbis.vrem.generation.similarity
+package ch.unibas.dmi.dbis.vrem.generation.generators
 
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.SegmentsApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.models.*
-import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
-import ch.unibas.dmi.dbis.vrem.generation.RoomGenerator
+import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastHttp
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Direction
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room

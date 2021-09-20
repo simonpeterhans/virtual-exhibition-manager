@@ -1,4 +1,4 @@
-package ch.unibas.dmi.dbis.vrem.generation.som
+package ch.unibas.dmi.dbis.vrem.generation.generators
 
 import ch.unibas.dmi.dbis.som.PredictionResult
 import ch.unibas.dmi.dbis.som.SOM
@@ -6,9 +6,8 @@ import ch.unibas.dmi.dbis.som.functions.DistanceFunction
 import ch.unibas.dmi.dbis.som.functions.NeighborhoodFunction
 import ch.unibas.dmi.dbis.som.functions.TimeFunction
 import ch.unibas.dmi.dbis.som.grids.Grid2DSquare
-import ch.unibas.dmi.dbis.vrem.generation.CineastClient
-import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
-import ch.unibas.dmi.dbis.vrem.generation.RoomGenerator
+import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastClient
+import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastHttp
 import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 import ch.unibas.dmi.dbis.vrem.generation.model.IdDoublePair
 import ch.unibas.dmi.dbis.vrem.generation.model.NodeMap
@@ -69,7 +68,7 @@ class SomRoomGenerator(
     private fun trainSom(samples: Array<DoubleArray>): SOM {
         val height = genConfig.roomSpec.height
         val width = genConfig.roomSpec.width
-        val epochs = 250_000 / samples.size // TODO Find a smart way to determine this.
+        val epochs = genConfig.numIter // TODO Find a smart way to determine this.
         val seed = Random(genConfig.seed)
 
         val g = Grid2DSquare(

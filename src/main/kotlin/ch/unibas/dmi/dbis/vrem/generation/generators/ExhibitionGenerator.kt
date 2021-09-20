@@ -1,4 +1,4 @@
-package ch.unibas.dmi.dbis.vrem.generation
+package ch.unibas.dmi.dbis.vrem.generation.generators
 
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.model.exhibition.MetadataType

@@ -1,8 +1,7 @@
-package ch.unibas.dmi.dbis.vrem.generation.random
+package ch.unibas.dmi.dbis.vrem.generation.generators
 
-import ch.unibas.dmi.dbis.vrem.generation.CineastClient
-import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
-import ch.unibas.dmi.dbis.vrem.generation.RoomGenerator
+import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastClient
+import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastHttp
 import ch.unibas.dmi.dbis.vrem.model.exhibition.MetadataType
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.rest.requests.RandomGenerationRequest

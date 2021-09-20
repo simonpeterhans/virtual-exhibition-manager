@@ -8,5 +8,6 @@ data class SomGenerationRequest(
     val roomSpec: RoomSpecification,
     val genType: SomGenType,
     val idList: ArrayList<String>,
-    val seed: Int
+    val seed: Int,
+    val numIter: Int
 )

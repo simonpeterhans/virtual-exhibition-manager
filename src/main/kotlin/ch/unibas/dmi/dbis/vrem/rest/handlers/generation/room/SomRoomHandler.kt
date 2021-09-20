@@ -1,8 +1,8 @@
 package ch.unibas.dmi.dbis.vrem.rest.handlers.generation.room
 
 import ch.unibas.dmi.dbis.vrem.config.CineastConfig
-import ch.unibas.dmi.dbis.vrem.generation.CineastHttp
-import ch.unibas.dmi.dbis.vrem.generation.som.SomRoomGenerator
+import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastHttp
+import ch.unibas.dmi.dbis.vrem.generation.generators.SomRoomGenerator
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.rest.handlers.PostRestHandler
 import ch.unibas.dmi.dbis.vrem.rest.requests.SomGenerationRequest

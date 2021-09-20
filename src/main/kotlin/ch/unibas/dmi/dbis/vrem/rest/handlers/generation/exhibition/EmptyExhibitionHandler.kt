@@ -1,6 +1,6 @@
 package ch.unibas.dmi.dbis.vrem.rest.handlers.generation.exhibition
 
-import ch.unibas.dmi.dbis.vrem.generation.ExhibitionGenerator
+import ch.unibas.dmi.dbis.vrem.generation.generators.ExhibitionGenerator
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibition
 import ch.unibas.dmi.dbis.vrem.rest.handlers.PostRestHandler
 import ch.unibas.dmi.dbis.vrem.rest.responses.ResponseMessage

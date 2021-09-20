@@ -1,5 +1,7 @@
-package ch.unibas.dmi.dbis.vrem.generation
+package ch.unibas.dmi.dbis.vrem.generation.generators
 
+import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastClient
+import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastHttp
 import ch.unibas.dmi.dbis.vrem.model.exhibition.*
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit.Companion.URL_ID_SUFFIX
 import ch.unibas.dmi.dbis.vrem.model.math.Vector3f

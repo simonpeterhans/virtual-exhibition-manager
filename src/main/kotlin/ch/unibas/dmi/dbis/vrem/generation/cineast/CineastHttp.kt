@@ -1,4 +1,4 @@
-package ch.unibas.dmi.dbis.vrem.generation
+package ch.unibas.dmi.dbis.vrem.generation.cineast
 
 import ch.unibas.dmi.dbis.vrem.config.CineastConfig
 import com.github.kittinunf.fuel.httpGet
