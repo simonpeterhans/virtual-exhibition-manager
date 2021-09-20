@@ -89,6 +89,10 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
         val docRoot = File(config.server.documentRoot).toPath()
 
         // Give Cineast enough time to process the request before timing out.
+        System.getProperties().setProperty(
+            "ch.unibas.dmi.dbis.vrem.cineast.client.baseUrl",
+            "http://${config.cineast.host}:${config.cineast.port}"
+        )
         ApiClient.builder.readTimeout(Duration.ofSeconds(config.cineast.queryTimeoutSeconds))
 
         // Handlers.
