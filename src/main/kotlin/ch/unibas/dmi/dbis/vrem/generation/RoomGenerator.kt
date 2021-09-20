@@ -15,8 +15,6 @@ abstract class RoomGenerator(
 
     abstract fun genRoom(): Room
 
-    private val exhibitionText: String = "Generated Exhibition"
-
     protected fun idListToExhibits(ids: List<String?>): MutableList<Exhibit> {
         val exhibits = mutableListOf<Exhibit>()
 
@@ -27,7 +25,7 @@ abstract class RoomGenerator(
                 e = Exhibit(name = "Empty Exhibit", path = "")
                 e.size = Vector3f(1.0, 1.0)
             } else {
-                val cleanId = CineastClient.cleanId(id)
+                val cleanId = CineastClient.cleanId(id) // Hide segment number in exhibit label name.
 
                 e = Exhibit(name = cleanId, path = cleanId + URL_ID_SUFFIX)
 
