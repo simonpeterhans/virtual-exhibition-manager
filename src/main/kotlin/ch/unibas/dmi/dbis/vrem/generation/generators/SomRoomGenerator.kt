@@ -68,7 +68,7 @@ class SomRoomGenerator(
     private fun trainSom(samples: Array<DoubleArray>): SOM {
         val height = genConfig.roomSpec.height
         val width = genConfig.roomSpec.width
-        val epochs = genConfig.numIter // TODO Find a smart way to determine this.
+        val epochs = genConfig.numEpochs // TODO Find a smart way to determine this.
         val seed = Random(genConfig.seed)
 
         val g = Grid2DSquare(

@@ -9,5 +9,5 @@ data class SomGenerationRequest(
     val genType: SomGenType,
     val idList: ArrayList<String>,
     val seed: Int,
-    val numIter: Int
+    val numEpochs: Int
 )
