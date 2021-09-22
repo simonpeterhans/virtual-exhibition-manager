@@ -31,30 +31,25 @@ class SimilarityRoomGenerator(
         // Remove first exhibit with the highest similarity.
         val queryExhibit = exhibits.removeFirst()
 
-        // Set query exhibit position to center (take opposing wall as reference for width/height).
-        val queryExhibitX = 0.5 * getRoomDimFromWalls(walls).x
-        val queryExhibitY = getWallPositionByCoords(0, 0).y
-        queryExhibit.position = Vector3f(queryExhibitX, queryExhibitY, 0.0f)
-
         // Add exhibit separately to north wall.
         walls[0].exhibits.add(queryExhibit)
 
         if (exhibits.isEmpty()) {
+            // Set query exhibit position (just place it, it's the only one).
+            queryExhibit.position = getWallPositionByCoords(0, 0)
+
             return walls
         }
 
-        // Process remaining images.
-        val similarExhibits = exhibits.subList(1, exhibits.size)
-
-        // Place exhibits on the 3 remaining walls.
+        // Place remaining exhibits on the 3 remaining walls.
         for (i in 0 until genConfig.roomSpec.height) {
             for (w in 1 until walls.size) { // Ignore north wall!
                 for (j in 0 until genConfig.roomSpec.width / walls.size) {
-                    if (similarExhibits.isEmpty()) {
+                    if (exhibits.isEmpty()) {
                         break
                     }
 
-                    val exhibit = similarExhibits.removeFirst()
+                    val exhibit = exhibits.removeFirst()
 
                     exhibit.position = getWallPositionByCoords(i, j)
 
@@ -62,6 +57,10 @@ class SimilarityRoomGenerator(
                 }
             }
         }
+
+        val queryExhibitX = 0.5 * getRoomDimFromWalls(walls).x
+        val queryExhibitY = getWallPositionByCoords(0, 0).y
+        queryExhibit.position = Vector3f(queryExhibitX, queryExhibitY, 0.0f)
 
         return walls
     }
