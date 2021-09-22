@@ -46,11 +46,7 @@ abstract class RoomGenerator(
         return exhibits
     }
 
-    protected fun exhibitListToWalls(
-        dims: IntArray,
-        exhibitList: MutableList<Exhibit>,
-        ignoreEmptyExhibits: Boolean = true
-    ): MutableList<Wall> {
+    protected fun wallEnumToList(): MutableList<Wall> {
         val walls = mutableListOf<Wall>()
 
         // Add a wall for every direction.
@@ -58,10 +54,24 @@ abstract class RoomGenerator(
             walls.add(Wall(e, "CONCRETE"))
         }
 
+        return walls
+    }
+
+    protected fun exhibitListToWalls(
+        dims: IntArray,
+        exhibitList: MutableList<Exhibit>,
+        ignoreEmptyExhibits: Boolean = true
+    ): MutableList<Wall> {
+        val walls = wallEnumToList()
+
         // Place exhibits on walls (this will only work for 2D setups with 4 walls).
         for (i in 0 until dims[0]) {
             for (w in 0 until walls.size) {
                 for (j in 0 until dims[1] / walls.size) {
+                    if (exhibitList.isEmpty()) {
+                        break
+                    }
+
                     val exhibit = exhibitList.removeFirst()
 
                     if (exhibit.path == "" && ignoreEmptyExhibits) {

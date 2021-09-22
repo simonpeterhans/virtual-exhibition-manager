@@ -3,7 +3,6 @@ package ch.unibas.dmi.dbis.vrem.generation.generators
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.SegmentsApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.models.*
 import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastHttp
-import ch.unibas.dmi.dbis.vrem.model.exhibition.Direction
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Room
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Wall
@@ -21,29 +20,16 @@ class SimilarityRoomGenerator(
     override val roomText: String = "Generated Room (Similarity)"
 
     private fun similarExhibitsToWalls(
-        dims: IntArray,
-        queryExhibit: Exhibit,
-        similarExhibits: MutableList<Exhibit>
+        exhibits: MutableList<Exhibit>
     ): MutableList<Wall> {
-        val walls = mutableListOf<Wall>()
+        val walls = wallEnumToList()
 
-        // Add a wall for every direction.
-        enumValues<Direction>().forEach { e ->
-            walls.add(Wall(e, "CONCRETE"))
+        if (exhibits.isEmpty()) {
+            return walls
         }
 
-        // Place exhibits on the 3 remaining walls.
-        for (i in 0 until dims[0]) {
-            for (w in 1 until walls.size) { // Ignore north wall.
-                for (j in 0 until dims[1] / walls.size) {
-                    val exhibit = similarExhibits.removeFirst()
-
-                    exhibit.position = getWallPositionByCoords(i, j)
-
-                    walls[w].exhibits.add(exhibit)
-                }
-            }
-        }
+        // Remove first exhibit with the highest similarity.
+        val queryExhibit = exhibits.removeFirst()
 
         // Set query exhibit position to center (take opposing wall as reference for width/height).
         val queryExhibitX = 0.5 * getRoomDimFromWalls(walls).x
@@ -52,6 +38,30 @@ class SimilarityRoomGenerator(
 
         // Add exhibit separately to north wall.
         walls[0].exhibits.add(queryExhibit)
+
+        if (exhibits.isEmpty()) {
+            return walls
+        }
+
+        // Process remaining images.
+        val similarExhibits = exhibits.subList(1, exhibits.size)
+
+        // Place exhibits on the 3 remaining walls.
+        for (i in 0 until genConfig.roomSpec.height) {
+            for (w in 1 until walls.size) { // Ignore north wall!
+                for (j in 0 until genConfig.roomSpec.width / walls.size) {
+                    if (similarExhibits.isEmpty()) {
+                        break
+                    }
+
+                    val exhibit = similarExhibits.removeFirst()
+
+                    exhibit.position = getWallPositionByCoords(i, j)
+
+                    walls[w].exhibits.add(exhibit)
+                }
+            }
+        }
 
         return walls
     }
@@ -85,11 +95,7 @@ class SimilarityRoomGenerator(
 
         val exhibits = idListToExhibits(ids)
 
-        val walls = similarExhibitsToWalls(
-            intArrayOf(genConfig.roomSpec.height, genConfig.roomSpec.width),
-            exhibits[0], // First exhibit (queried).
-            exhibits.subList(1, exhibits.size) // The other exhibits (results).
-        )
+        val walls = similarExhibitsToWalls(exhibits)
 
         return wallsToRoom(walls)
     }
