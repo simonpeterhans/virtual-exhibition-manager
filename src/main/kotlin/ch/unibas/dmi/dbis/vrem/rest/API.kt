@@ -23,12 +23,11 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
-import io.javalin.plugin.json.FromJsonMapper
-import io.javalin.plugin.json.JavalinJson
-import io.javalin.plugin.json.ToJsonMapper
+import io.javalin.plugin.json.JsonMapper
 import io.javalin.plugin.openapi.OpenApiOptions
 import io.javalin.plugin.openapi.OpenApiPlugin
 import io.javalin.plugin.openapi.jackson.JacksonToJsonMapper
+import io.javalin.plugin.openapi.jackson.ToJsonMapper
 import io.javalin.plugin.openapi.ui.SwaggerOptions
 import io.swagger.v3.oas.models.info.Info
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -55,10 +54,9 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
         }
     }
 
-    init {
-        // Overwrites the default mapper (Jackson) of Javalin for serialization to make sure we're using Kotlinx.
-        JavalinJson.toJsonMapper = object : ToJsonMapper {
-            override fun map(obj: Any): String {
+    companion object {
+        val jsonMapper = object : JsonMapper {
+            override fun toJsonString(obj: Any): String {
                 val serializer = serializer(obj.javaClass)
                 val jsonObj = Json {
                     // serializersModule = IdKotlinXSerializationModule // To properly serialize IDs.
@@ -66,11 +64,8 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
                 }
                 return jsonObj.encodeToString(serializer, obj)
             }
-        }
 
-        // Overwrites the default mapper (Jackson) of Javalin for deserialization to make sure we're using Kotlinx.
-        JavalinJson.fromJsonMapper = object : FromJsonMapper {
-            override fun <T> map(json: String, targetClass: Class<T>): T {
+            override fun <T : Any?> fromJsonString(json: String, targetClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 val deserializer = serializer(targetClass) as KSerializer<T>
                 val jsonObj = Json {
@@ -130,6 +125,7 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
 
             conf.defaultContentType = "application/json"
             conf.enableCorsForAllOrigins()
+            conf.jsonMapper(jsonMapper)
 
             // Logger.
             conf.requestLogger { ctx, ms ->

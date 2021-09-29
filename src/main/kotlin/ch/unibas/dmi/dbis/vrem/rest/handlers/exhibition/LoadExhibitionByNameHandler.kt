@@ -12,7 +12,7 @@ class LoadExhibitionByNameHandler(private val reader: VREMReader) : GetRestHandl
 
     companion object {
 
-        const val PARAM_KEY_NAME = ":name"
+        const val PARAM_KEY_NAME = "{name}"
 
     }
 
@@ -22,7 +22,7 @@ class LoadExhibitionByNameHandler(private val reader: VREMReader) : GetRestHandl
     @OpenApi(
         method = HttpMethod.GET,
         summary = "Loads an exhibition by name.",
-        path = "/api/exhibitions/load/name/:name",
+        path = "/api/exhibitions/load/name/{name}",
         pathParams = [
             OpenApiParam(
                 name = "id",

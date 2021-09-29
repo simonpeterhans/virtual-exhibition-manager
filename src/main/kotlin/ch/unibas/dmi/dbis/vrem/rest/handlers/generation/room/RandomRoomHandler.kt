@@ -34,7 +34,7 @@ class RandomRoomHandler(cineastConfig: CineastConfig) : PostRestHandler<Room> {
         ]
     )
     override fun doPost(ctx: Context): Room {
-        val config = ctx.body<RandomGenerationRequest>()
+        val config = ctx.bodyAsClass<RandomGenerationRequest>()
 
         return RandomRoomGenerator(config, cineastHttp).genRoom()
     }

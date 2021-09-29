@@ -34,7 +34,7 @@ class SomRoomHandler(cineastConfig: CineastConfig) : PostRestHandler<Room> {
         ]
     )
     override fun doPost(ctx: Context): Room {
-        val config = ctx.body<SomGenerationRequest>()
+        val config = ctx.bodyAsClass<SomGenerationRequest>()
 
         return SomRoomGenerator(config, cineastHttp).genRoom()
     }

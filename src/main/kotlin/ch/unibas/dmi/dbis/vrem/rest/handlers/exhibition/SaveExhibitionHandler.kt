@@ -30,7 +30,7 @@ class SaveExhibitionHandler(private val writer: VREMWriter) : PostRestHandler<Re
         ]
     )
     override fun doPost(ctx: Context): ResponseMessage {
-        val exhibition = ctx.body<Exhibition>()
+        val exhibition = ctx.bodyAsClass<Exhibition>()
 
         return if (writer.saveExhibition(exhibition)) {
             ResponseMessage("Successfully saved exhibition.")

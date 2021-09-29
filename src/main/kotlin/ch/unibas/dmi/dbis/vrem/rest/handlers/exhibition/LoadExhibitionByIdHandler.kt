@@ -12,7 +12,7 @@ class LoadExhibitionByIdHandler(private val reader: VREMReader) : GetRestHandler
 
     companion object {
 
-        const val PARAM_KEY_ID = ":id"
+        const val PARAM_KEY_ID = "{id}"
 
     }
 
@@ -22,7 +22,7 @@ class LoadExhibitionByIdHandler(private val reader: VREMReader) : GetRestHandler
     @OpenApi(
         method = HttpMethod.GET,
         summary = "Loads an exhibition by ID.",
-        path = "/api/exhibitions/load/id/:id",
+        path = "/api/exhibitions/load/id/{id}",
         pathParams = [
             OpenApiParam(
                 name = "id",

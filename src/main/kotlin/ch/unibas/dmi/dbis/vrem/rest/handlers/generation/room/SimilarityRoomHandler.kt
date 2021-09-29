@@ -34,7 +34,7 @@ class SimilarityRoomHandler(cineastConfig: CineastConfig) : PostRestHandler<Room
         ]
     )
     override fun doPost(ctx: Context): Room {
-        val config = ctx.body<SimilarityGenerationRequest>()
+        val config = ctx.bodyAsClass<SimilarityGenerationRequest>()
 
         return SimilarityRoomGenerator(config, cineastHttp).genRoom()
     }

@@ -18,7 +18,7 @@ class ContentHandler(private val docRoot: Path, private val cineastConfig: Cinea
 
     companion object {
 
-        const val PARAM_KEY_PATH = ":path"
+        const val PARAM_KEY_PATH = "{path}"
 
     }
 
@@ -30,7 +30,7 @@ class ContentHandler(private val docRoot: Path, private val cineastConfig: Cinea
     @OpenApi(
         method = HttpMethod.GET,
         summary = "Retrieves exhibit content (e.g., an image) based on a url.",
-        path = "/api/content/:path",
+        path = "/api/content/{path}",
         pathParams = [
             OpenApiParam(
                 name = "path",
