@@ -2,52 +2,23 @@ package ch.unibas.dmi.dbis.vrem.rest.handlers.content
 
 import ch.unibas.dmi.dbis.vrem.config.CineastConfig
 import ch.unibas.dmi.dbis.vrem.model.exhibition.Exhibit.Companion.URL_ID_SUFFIX
-import ch.unibas.dmi.dbis.vrem.rest.handlers.GetRestHandler
-import ch.unibas.dmi.dbis.vrem.rest.responses.ResponseMessage
-import ch.unibas.dmi.dbis.vrem.rest.status.StatusCode
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import io.javalin.http.Context
-import io.javalin.plugin.openapi.annotations.*
 import java.io.ByteArrayInputStream
 import java.net.URLConnection
 import java.nio.file.Files
 import java.nio.file.Path
 
-class ContentHandler(private val docRoot: Path, private val cineastConfig: CineastConfig) : GetRestHandler<Any> {
+abstract class ContentHandler(private val docRoot: Path, private val cineastConfig: CineastConfig) {
 
-    companion object {
-
-        const val PARAM_KEY_PATH = "{path}"
-
+    private fun setHeader(ctx: Context) {
+        ctx.header("Transfer-Encoding", "identity")
+        ctx.header("Access-Control-Allow-Origin", "*")
+        ctx.header("Access-Control-Allow-Headers", "*")
     }
 
-    override val route: String
-        get() = "/content/${PARAM_KEY_PATH}"
-
-    override fun doGet(ctx: Context): Any = "" // Not used, we return bytes via get() instead.
-
-    @OpenApi(
-        method = HttpMethod.GET,
-        summary = "Retrieves exhibit content (e.g., an image) based on a url.",
-        path = "/api/content/{path}",
-        pathParams = [
-            OpenApiParam(
-                name = "path",
-                type = String::class,
-                description = "The path of the exhibit's content.",
-                required = true
-            )
-        ],
-        tags = ["Content"],
-        responses = [
-            OpenApiResponse(StatusCode.OK.toString(), [OpenApiContent(ByteArray::class)]),
-            OpenApiResponse(StatusCode.INTERNAL_SERVER_ERROR.toString(), [OpenApiContent(ResponseMessage::class)]),
-        ]
-    )
-    override fun get(ctx: Context) {
-        val path = ctx.pathParam(PARAM_KEY_PATH)
-
+    protected fun getContent(ctx: Context, path: String) {
         if (path.isBlank()) {
             ctx.status(404)
             return
@@ -66,20 +37,21 @@ class ContentHandler(private val docRoot: Path, private val cineastConfig: Cinea
         }
     }
 
-    fun getFromLocal(ctx: Context, path: String): Boolean {
+    protected fun getFromLocal(ctx: Context, path: String): Boolean {
         val absolute = docRoot.resolve(path)
 
         if (!Files.exists(absolute)) {
             return false
         }
 
+        setHeader(ctx)
         ctx.contentType(Files.probeContentType(absolute))
         ctx.result(absolute.toFile().inputStream())
 
         return true
     }
 
-    fun getFromRemote(ctx: Context, path: String): Boolean {
+    protected fun getFromRemote(ctx: Context, path: String): Boolean {
         // ID is composed as exhibitionID/imageID.remote.
         var resultBytes: ByteArray? = null
         val id = path.substring(path.indexOf("/") + 1, path.indexOf(URL_ID_SUFFIX))
@@ -91,6 +63,7 @@ class ContentHandler(private val docRoot: Path, private val cineastConfig: Cinea
             is Result.Success -> resultBytes = result.get()
         }
 
+        setHeader(ctx)
         ctx.contentType(URLConnection.guessContentTypeFromStream(ByteArrayInputStream(resultBytes)))
         ctx.result(resultBytes)
 

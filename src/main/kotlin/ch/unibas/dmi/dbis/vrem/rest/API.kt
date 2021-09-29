@@ -7,7 +7,8 @@ import ch.unibas.dmi.dbis.vrem.rest.handlers.DeleteRestHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.GetRestHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.PostRestHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.PutRestHandler
-import ch.unibas.dmi.dbis.vrem.rest.handlers.content.ContentHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.content.PathContentHandler
+import ch.unibas.dmi.dbis.vrem.rest.handlers.content.QueryContentHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibit.ListExhibitsHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibit.SaveExhibitHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.exhibition.ListExhibitionsHandler
@@ -23,6 +24,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
+import io.javalin.http.staticfiles.Location
 import io.javalin.plugin.json.JsonMapper
 import io.javalin.plugin.openapi.OpenApiOptions
 import io.javalin.plugin.openapi.OpenApiPlugin
@@ -35,8 +37,14 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import mu.KotlinLogging
+import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory
+import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory
+import org.eclipse.jetty.server.*
+import org.eclipse.jetty.util.ssl.SslContextFactory
+import org.eclipse.jetty.util.thread.QueuedThreadPool
 import java.io.File
 import java.time.Duration
+import kotlin.io.path.exists
 
 private val logger = KotlinLogging.logger {}
 
@@ -80,8 +88,11 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
 
     override fun run() {
         val config = Config.readConfig(this.config)
+
         val (reader, writer) = VREMDao.getDAOs(config.database)
         val docRoot = File(config.server.documentRoot).toPath()
+
+        // TODO Warn if failed to connect to MongoDB.
 
         // Give Cineast enough time to process the request before timing out.
         System.getProperties().setProperty(
@@ -92,7 +103,8 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
 
         // Handlers.
         val apiRestHandlers = listOf(
-            ContentHandler(docRoot, config.cineast),
+            QueryContentHandler(docRoot, config.cineast),
+            PathContentHandler(docRoot, config.cineast),
             ListExhibitsHandler(reader),
             SaveExhibitHandler(writer, docRoot),
             ListExhibitionsHandler(reader),
@@ -123,6 +135,13 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
                 )
             )
 
+            // Only add document root if it exists.
+            if (docRoot.exists()) {
+                conf.addStaticFiles(config.server.documentRoot, Location.EXTERNAL)
+            }
+
+            conf.server { setupServer(config) }
+            conf.enforceSsl = config.server.enableSsl
             conf.defaultContentType = "application/json"
             conf.enableCorsForAllOrigins()
             conf.jsonMapper(jsonMapper)
@@ -164,7 +183,7 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
             ctx.header("Access-Control-Allow-Headers", "*")
         }
 
-        endpoint.start(config.server.port.toInt())
+        endpoint.start(config.server.httpPort)
 
         println("Started the server.")
         println("Ctrl+C to stop the server.")
@@ -172,4 +191,76 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
         // TODO CLI to process commands (/quit and the like).
     }
 
+}
+
+private fun setupServer(config: Config): Server {
+    val threadPool = QueuedThreadPool()
+    threadPool.name = "server"
+
+    val httpConfig = HttpConfiguration().apply {
+        sendServerVersion = false
+        sendXPoweredBy = false
+
+        if (config.server.enableSsl) {
+            secureScheme = "https"
+            securePort = config.server.httpsPort
+        }
+    }
+
+    // https://www.eclipse.org/jetty/documentation/jetty-11/programming_guide.php
+    // Section "encrypted http/2".
+    if (config.server.enableSsl) {
+        // SSL.
+        val httpsConfig = HttpConfiguration(httpConfig).apply {
+            addCustomizer(SecureRequestCustomizer())
+        }
+
+        val fallback = HttpConnectionFactory(httpsConfig)
+
+        val alpn = ALPNServerConnectionFactory().apply {
+            defaultProtocol = fallback.protocol
+        }
+
+        val sslContextFactory = SslContextFactory.Server().apply {
+            keyStorePath = config.server.keystorePath
+            setKeyStorePassword(config.server.keystorePass)
+            // cipherComparator = HTTP2Cipher.COMPARATOR
+            provider = "Conscrypt"
+        }
+
+        val ssl = SslConnectionFactory(sslContextFactory, alpn.protocol)
+        val http2 = HTTP2ServerConnectionFactory(httpsConfig)
+
+        return Server(threadPool).apply {
+            // HTTP Connector.
+            addConnector(
+                ServerConnector(
+                    server,
+                    HttpConnectionFactory(httpConfig),
+                    HTTP2ServerConnectionFactory(httpConfig)
+                ).apply {
+                    port = config.server.httpPort
+                }
+            )
+
+            // HTTPS Connector.
+            addConnector(ServerConnector(server, ssl, alpn, http2, fallback).apply {
+                port = config.server.httpsPort
+            })
+        }
+    } else {
+        // No SSL.
+        return Server(threadPool).apply {
+            // HTTP Connector.
+            addConnector(
+                ServerConnector(
+                    server,
+                    HttpConnectionFactory(httpConfig),
+                    HTTP2ServerConnectionFactory(httpConfig)
+                ).apply {
+                    port = config.server.httpPort
+                }
+            )
+        }
+    }
 }
