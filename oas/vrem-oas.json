@@ -865,11 +865,7 @@
             "$ref": "#/components/schemas/RoomSpecification"
           },
           "genType": {
-            "type": "string",
-            "enum": [
-              "SEMANTIC",
-              "VISUAL"
-            ]
+            "type": "string"
           },
           "objectId": {
             "type": "string"
@@ -890,11 +886,7 @@
             "$ref": "#/components/schemas/RoomSpecification"
           },
           "genType": {
-            "type": "string",
-            "enum": [
-              "SEMANTIC",
-              "VISUAL"
-            ]
+            "type": "string"
           },
           "idList": {
             "type": "array",

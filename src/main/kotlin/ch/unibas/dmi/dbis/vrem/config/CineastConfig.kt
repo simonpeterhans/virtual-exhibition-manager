@@ -16,9 +16,12 @@ data class CineastConfig(
     val host: String,
     val port: Int,
     val objectPath: String,
-    val queryTimeoutSeconds: Long
+    val queryTimeoutSeconds: Long,
+    val somFeatures: SomFeatureConfig,
+    val simCategories: Map<String, String>
 ) {
 
+    // TODO Use HTTPS (let user define in config).
     private val cineastUrl = "http://$host:$port"
     private val cineastObjectUrl = "$cineastUrl$objectPath"
 

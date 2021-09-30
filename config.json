@@ -16,6 +16,26 @@
     "host": "127.0.0.1",
     "port": 4567,
     "objectPath": "/objects",
-    "queryTimeoutSeconds": 60
+    "queryTimeoutSeconds": 60,
+    "somFeatures": {
+      "featureMap": {
+        "semantic": [
+          {
+            "tableName": "features_visualtextcoembedding",
+            "weight": 1.0
+          }
+        ],
+        "visual": [
+          {
+            "tableName": "features_MedianColorGrid8",
+            "weight": 1.0
+          }
+        ]
+      }
+    },
+    "simCategories": {
+      "semantic": "semantic",
+      "visual": "visual"
+    }
   }
 }

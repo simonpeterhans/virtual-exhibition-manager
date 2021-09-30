@@ -6,6 +6,7 @@ import ch.unibas.dmi.dbis.som.functions.DistanceFunction
 import ch.unibas.dmi.dbis.som.functions.NeighborhoodFunction
 import ch.unibas.dmi.dbis.som.functions.TimeFunction
 import ch.unibas.dmi.dbis.som.grids.Grid2DSquare
+import ch.unibas.dmi.dbis.vrem.config.FeatureWeightPair
 import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastClient
 import ch.unibas.dmi.dbis.vrem.generation.cineast.CineastHttp
 import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
@@ -25,6 +26,7 @@ import java.lang.Integer.max as maxInt
 
 class SomRoomGenerator(
     private val genConfig: SomGenerationRequest,
+    private val features: List<FeatureWeightPair>,
     cineastHttp: CineastHttp
 ) : RoomGenerator(cineastHttp) {
 
@@ -33,11 +35,11 @@ class SomRoomGenerator(
     private fun getFeatures(): DoubleFeatureData {
         val featureDataList = arrayListOf<DoubleFeatureData>()
 
-        for (tablePair in genConfig.genType.featureList) {
-            val featureData = CineastClient.getFeatureDataFromTableName(tablePair.id, genConfig.idList)
+        for (featureWeightPair in features) {
+            val featureData = CineastClient.getFeatureDataFromTableName(featureWeightPair.tableName, genConfig.idList)
 
             // Normalize data.
-            featureData.normalize(tablePair.value)
+            featureData.normalize(featureWeightPair.weight)
 
             featureDataList.add(featureData)
         }

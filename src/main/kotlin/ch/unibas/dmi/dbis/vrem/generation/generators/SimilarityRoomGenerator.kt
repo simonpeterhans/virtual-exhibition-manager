@@ -12,10 +12,9 @@ import kotlin.math.min
 
 class SimilarityRoomGenerator(
     private val genConfig: SimilarityGenerationRequest,
+    private val category: String,
     cineastHttp: CineastHttp
 ) : RoomGenerator(cineastHttp) {
-
-    private val category = genConfig.genType.categoryName.first()
 
     override val roomText: String = "Generated Room (Similarity)"
 

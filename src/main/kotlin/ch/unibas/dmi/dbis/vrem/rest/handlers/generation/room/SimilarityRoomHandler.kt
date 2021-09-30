@@ -11,7 +11,7 @@ import ch.unibas.dmi.dbis.vrem.rest.status.StatusCode
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
 
-class SimilarityRoomHandler(cineastConfig: CineastConfig) : PostRestHandler<Room> {
+class SimilarityRoomHandler(private val cineastConfig: CineastConfig) : PostRestHandler<Room> {
 
     private val cineastHttp = CineastHttp(cineastConfig)
 
@@ -35,8 +35,9 @@ class SimilarityRoomHandler(cineastConfig: CineastConfig) : PostRestHandler<Room
     )
     override fun doPost(ctx: Context): Room {
         val config = ctx.bodyAsClass<SimilarityGenerationRequest>()
+        val category = cineastConfig.simCategories[config.genType]!!
 
-        return SimilarityRoomGenerator(config, cineastHttp).genRoom()
+        return SimilarityRoomGenerator(config, category, cineastHttp).genRoom()
     }
 
 }

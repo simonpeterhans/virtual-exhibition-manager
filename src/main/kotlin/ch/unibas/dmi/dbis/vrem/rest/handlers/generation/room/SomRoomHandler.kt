@@ -11,7 +11,7 @@ import ch.unibas.dmi.dbis.vrem.rest.status.StatusCode
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
 
-class SomRoomHandler(cineastConfig: CineastConfig) : PostRestHandler<Room> {
+class SomRoomHandler(private val cineastConfig: CineastConfig) : PostRestHandler<Room> {
 
     private val cineastHttp = CineastHttp(cineastConfig)
 
@@ -35,8 +35,9 @@ class SomRoomHandler(cineastConfig: CineastConfig) : PostRestHandler<Room> {
     )
     override fun doPost(ctx: Context): Room {
         val config = ctx.bodyAsClass<SomGenerationRequest>()
+        val features = cineastConfig.somFeatures.featureMap[config.genType]!!
 
-        return SomRoomGenerator(config, cineastHttp).genRoom()
+        return SomRoomGenerator(config, features, cineastHttp).genRoom()
     }
 
 }

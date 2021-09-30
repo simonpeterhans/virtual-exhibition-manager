@@ -73,7 +73,7 @@ object ImportUtils {
     }
 
     fun calculateExhibitSize(exhibitFile: ByteArray, exhibit: Exhibit, defaultLongSide: Float) {
-        // Load image as stream so we don't have to load the entire thing.
+        // Load image as stream and only check for width/height we don't have to load the entire thing.
         val imageStream = ImageIO.createImageInputStream(ByteArrayInputStream(exhibitFile))
 
         val reader = ImageIO.getImageReaders(imageStream).next()
