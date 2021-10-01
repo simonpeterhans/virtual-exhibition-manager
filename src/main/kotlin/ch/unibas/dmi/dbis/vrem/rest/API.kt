@@ -193,6 +193,12 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
 
 }
 
+/**
+ * Setup for the server for HTTP(S).
+ *
+ * @param config A configuration object.
+ * @return The created server instance.
+ */
 private fun setupServer(config: Config): Server {
     val threadPool = QueuedThreadPool()
     threadPool.name = "server"

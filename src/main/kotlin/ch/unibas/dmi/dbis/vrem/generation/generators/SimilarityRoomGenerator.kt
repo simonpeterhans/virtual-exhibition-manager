@@ -10,6 +10,13 @@ import ch.unibas.dmi.dbis.vrem.model.math.Vector3f
 import ch.unibas.dmi.dbis.vrem.rest.requests.SimilarityGenerationRequest
 import kotlin.math.min
 
+/**
+ * Similarity room generator.
+ *
+ * @property genConfig The request issued for the room generation.
+ * @property category The category to use for the similarity search in Cineast.
+ * @property cineastHttp Cineast HTTP client to obtain data.
+ */
 class SimilarityRoomGenerator(
     private val genConfig: SimilarityGenerationRequest,
     private val category: String,
@@ -18,6 +25,12 @@ class SimilarityRoomGenerator(
 
     override val roomText: String = "Generated Room (Similarity)"
 
+    /**
+     * Puts the first exhibit on the north wall and splits the remaining ones across the other walls.
+     *
+     * @param exhibits The exhibits to put
+     * @return A list of the four walls with their exhibits.
+     */
     private fun similarExhibitsToWalls(
         exhibits: MutableList<Exhibit>
     ): MutableList<Wall> {

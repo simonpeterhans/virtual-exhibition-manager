@@ -9,14 +9,30 @@ import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
 import kotlin.math.max
 
+/**
+ * Generic room generator.
+ *
+ * @property cineastHttp Cineast HTTP client to obtain data.
+ */
 abstract class RoomGenerator(
     val cineastHttp: CineastHttp
 ) : ExhibitionGenerator() {
 
     abstract val roomText: String
 
+    /**
+     * Generates a new room.
+     *
+     * @return The newly generated room.
+     */
     abstract fun genRoom(): Room
 
+    /**
+     * Converts a list of IDs to exhibit objects.
+     *
+     * @param ids The IDs to use.
+     * @return A list of the created exhibits for each ID.
+     */
     protected fun idListToExhibits(ids: List<String?>): MutableList<Exhibit> {
         val exhibits = mutableListOf<Exhibit>()
 
@@ -46,6 +62,11 @@ abstract class RoomGenerator(
         return exhibits
     }
 
+    /**
+     * Returns a list of walls for every compass direction.
+     *
+     * @return The list of walls.
+     */
     protected fun wallEnumToList(): MutableList<Wall> {
         val walls = mutableListOf<Wall>()
 
@@ -57,6 +78,14 @@ abstract class RoomGenerator(
         return walls
     }
 
+    /**
+     * Assigns a list of exhibits to walls, calculating their position on the walls.
+     *
+     * @param dims The dimension of the image grid (to be specified by VREP).
+     * @param exhibitList The list of the exhibits to use.
+     * @param ignoreEmptyExhibits Whether to silently ignore exhibits that do not have a path assigned.
+     * @return A list of walls with exhibits and their positions assigned.
+     */
     protected fun exhibitListToWalls(
         dims: IntArray,
         exhibitList: MutableList<Exhibit>,
@@ -88,6 +117,12 @@ abstract class RoomGenerator(
         return walls
     }
 
+    /**
+     * Creates a room object based on a list of walls, calculating the position based on them.
+     *
+     * @param walls The list of walls to use
+     * @return The created room object.
+     */
     protected fun wallsToRoom(walls: List<Wall>): Room {
         val room = Room(text = roomText + " " + getTextSuffix())
 
@@ -101,6 +136,13 @@ abstract class RoomGenerator(
         return room
     }
 
+    /**
+     * Calculates the size of exhibits based on the image they hold.
+     *
+     * @param exhibitFile The exhibit file as bytes.
+     * @param exhibit The exhibit to calculate the size for.
+     * @param defaultLongSide The default length of the long side to use/scale for.
+     */
     fun calculateExhibitSize(exhibitFile: ByteArray, exhibit: Exhibit, defaultLongSide: Double) {
         // Load image as stream so that we don't have to load the entire thing.
         val imageStream = ImageIO.createImageInputStream(ByteArrayInputStream(exhibitFile))
@@ -131,7 +173,16 @@ abstract class RoomGenerator(
         exhibit.size = Vector3f(width, height)
     }
 
-    // TODO Let the user define the padding/base height/longer side length and put it in a config.
+    /**
+     * Calculates the wall position of an exhibit based on its coordinates in the image grid.
+     *
+     * @param row The row of the exhibit in the image grid.
+     * @param column The column of the exhibit in the image grid.
+     * @param padding The padding to use between the exhibits.
+     * @param baseHeight The base height above the ground to use as height offset.
+     * @param longerSideLength The length of the longer side.
+     * @return A vector holding the calculated position.
+     */
     fun getWallPositionByCoords(
         row: Int,
         column: Int,
@@ -139,6 +190,7 @@ abstract class RoomGenerator(
         baseHeight: Double = 2.0, // Offset towards the ground.
         longerSideLength: Double = 2.0 // Maximum length/height of an exhibit.
     ): Vector3f {
+        // TODO Let the user define the padding/base height/longer side length and put it in a config.
         return Vector3f(
             (longerSideLength + padding) * column + padding,
             (longerSideLength + padding) * row + baseHeight,
@@ -146,6 +198,14 @@ abstract class RoomGenerator(
         )
     }
 
+    /**
+     * Calculates the dimension of a room based on a list of walls.
+     *
+     * @param walls The walls to use for the calculation.
+     * @param padding The padding to use after the last image (this should be the same as in [getWallPositionByCoords]).
+     * @param baseHeight The base height of the images, used as offset for height (should also be the same as in [getWallPositionByCoords]).
+     * @return A vector holding the calculated position.
+     */
     fun getRoomDimFromWalls(
         walls: List<Wall>,
         padding: Double = 1.5,

@@ -1,5 +1,8 @@
 package ch.unibas.dmi.dbis.vrem.rest.status
 
+/**
+ * HTTP status codes as constants.
+ */
 object StatusCode {
 
     // https://en.wikipedia.org/wiki/List_of_HTTP_status_codes

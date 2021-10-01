@@ -8,6 +8,12 @@ import ch.unibas.dmi.dbis.vrem.rest.requests.RandomGenerationRequest
 import kotlin.math.min
 import kotlin.random.Random
 
+/**
+ * Random room generator.
+ *
+ * @property genConfig The request issued for the room generation.
+ * @property cineastHttp Cineast HTTP client to obtain data.
+ */
 class RandomRoomGenerator(
     private val genConfig: RandomGenerationRequest,
     cineastHttp: CineastHttp

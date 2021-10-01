@@ -24,6 +24,13 @@ import kotlin.random.Random
 import java.lang.Double.max as maxDouble
 import java.lang.Integer.max as maxInt
 
+/**
+ * SOM room generator.
+ *
+ * @property genConfig The request issued for the room generation.
+ * @property category The category to use for the similarity search in Cineast.
+ * @property cineastHttp Cineast HTTP client to obtain data.
+ */
 class SomRoomGenerator(
     private val genConfig: SomGenerationRequest,
     private val features: List<FeatureWeightPair>,
@@ -32,6 +39,11 @@ class SomRoomGenerator(
 
     override val roomText = "Generated Room (SOM)"
 
+    /**
+     * Obtains the required features from Cineast.
+     *
+     * @return The wrapped features.
+     */
     private fun getFeatures(): DoubleFeatureData {
         val featureDataList = arrayListOf<DoubleFeatureData>()
 
@@ -47,6 +59,12 @@ class SomRoomGenerator(
         return DoubleFeatureData.concatenate(featureDataList)
     }
 
+    /**
+     * Calculates the range (min/max) of every feature for its dimensions.
+     *
+     * @param features A list of feature arrays
+     * @return A pair holding the minimum and maximum value respectively.
+     */
     private fun getFeatureRanges(features: Array<DoubleArray>): Pair<DoubleArray, DoubleArray> {
         val len = features[0].size
         val ranges = Pair(DoubleArray(len), DoubleArray(len))
@@ -67,10 +85,16 @@ class SomRoomGenerator(
         return ranges
     }
 
+    /**
+     * Trains a SOM based on a feature array.
+     *
+     * @param samples The array holding the samples.
+     * @return The trained SOM object.
+     */
     private fun trainSom(samples: Array<DoubleArray>): SOM {
         val height = genConfig.roomSpec.height
         val width = genConfig.roomSpec.width
-        val epochs = genConfig.numEpochs // TODO Find a smart way to determine this.
+        val epochs = genConfig.numEpochs
         val seed = Random(genConfig.seed)
 
         val g = Grid2DSquare(
@@ -109,6 +133,14 @@ class SomRoomGenerator(
         return s
     }
 
+    /**
+     * Maps predictions to a node map, allowing to easily obtain the result of the classification.
+     *
+     * @param numNodes The number of nodes in the grid.
+     * @param predictions A list of all prediction results.
+     * @param ids The IDs of the predicted nodes.
+     * @return A map with all nodes and their assigned IDs.
+     */
     private fun predictionsToNodeMap(
         numNodes: Int,
         predictions: ArrayList<PredictionResult>,
@@ -135,6 +167,13 @@ class SomRoomGenerator(
         return nodeMap
     }
 
+    /**
+     * Creates all walls by mapping the results of the classification (from the grid) to walls.
+     *
+     * @param dims The dimensions of the grid.
+     * @param nodeMap The node map obtained after classification.
+     * @return A list of walls and their exhibits.
+     */
     private fun createWallsFromNodeMap(dims: IntArray, nodeMap: NodeMap): MutableList<Wall> {
         val idList = mutableListOf<String?>()
 
@@ -161,6 +200,11 @@ class SomRoomGenerator(
         return exhibitListToWalls(dims, exhibits)
     }
 
+    /**
+     * Fixes room size if too few images are in the ID list.
+     *
+     * @param numSamples The number of samples to use for SOM training.
+     */
     private fun fixRoomSize(numSamples: Int) {
         val spec = genConfig.roomSpec
 
