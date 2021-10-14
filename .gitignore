@@ -3,6 +3,12 @@ data/
 logs/
 .idea/
 out/
+bin/
+
+# Keystore
+*.pem
+*.jks
+*.p12
 
 ### Kotlin ###
 # Compiled class file
