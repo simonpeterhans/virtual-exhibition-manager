@@ -235,7 +235,7 @@ class ExhibitionFolderImporter : CliktCommand(name = "import-folder", help = "Im
             exhibit.path = exhibitPath
 
             if (exhibit.audio != null) {
-                exhibit.audio = this.exhibition.id + "/" + exhibit.audio
+                exhibit.audio = exhibitPath.substringBeforeLast("/") + "/" + exhibit.audio
             }
 
             exhibit
