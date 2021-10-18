@@ -48,8 +48,6 @@ object ImportUtils {
      * Starts on the left-hand side of the wall and fills up towards the right.
      * Note that, if there are too many exhibits, the images can get placed outside of the wall.
      *
-     * TODO Improve automatic position calculation.
-     *
      * @param exhibit The exhibit to calculate the position for.
      * @param siblings The siblings of the exhibit on the same wall.
      * @param roomBorder The border of the room (x offset).

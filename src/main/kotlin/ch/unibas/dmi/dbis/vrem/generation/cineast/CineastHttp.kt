@@ -8,7 +8,6 @@ import com.github.kittinunf.fuel.httpGet
  *
  * @property cineastConfig A configuration for the Cineast instance.
  */
-@Suppress("HttpUrlsUsage")
 class CineastHttp(private val cineastConfig: CineastConfig) {
 
     /**
@@ -18,7 +17,7 @@ class CineastHttp(private val cineastConfig: CineastConfig) {
      * @return A byte array of the object.
      */
     fun objectRequest(id: String): ByteArray {
-        val (_, _, result) = "http://${cineastConfig.host}:${cineastConfig.port}${cineastConfig.objectPath}/$id"
+        val (_, _, result) = cineastConfig.getCineastObjectUrlString(id)
             .httpGet()
             .timeout(cineastConfig.queryTimeoutSeconds.toInt())
             .response()

@@ -13,7 +13,7 @@
     "keystorePass": ""
   },
   "cineast": {
-    "host": "127.0.0.1",
+    "host": "http://127.0.0.1",
     "port": 4567,
     "objectPath": "/objects",
     "queryTimeoutSeconds": 60,

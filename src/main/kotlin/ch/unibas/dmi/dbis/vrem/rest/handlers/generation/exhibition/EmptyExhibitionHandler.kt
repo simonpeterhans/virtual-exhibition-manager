@@ -20,7 +20,6 @@ class EmptyExhibitionHandler : PostRestHandler<Exhibition> {
         summary = "Generates a new, empty exhibition.",
         path = "/api/generate/exhibition",
         tags = ["Generation"],
-        // TODO Perhaps specify a name in the request body (and add as argument to genExhibition()).
         /*requestBody = OpenApiRequestBody(
             content = [OpenApiContent(RandomGenerationRequest::class)],
             required = true,

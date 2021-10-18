@@ -35,7 +35,6 @@ class SaveExhibitionHandler(private val writer: VREMWriter) : PostRestHandler<Re
         return if (writer.saveExhibition(exhibition)) {
             ResponseMessage("Successfully saved exhibition.")
         } else {
-            // TODO Throw exception here.
             ResponseMessage("Failed to save exhibition.")
         }
     }

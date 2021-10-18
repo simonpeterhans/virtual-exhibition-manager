@@ -3,6 +3,8 @@ package ch.unibas.dmi.dbis.vrem.rest
 import ch.unibas.dmi.dbis.vrem.cineast.client.infrastructure.ApiClient
 import ch.unibas.dmi.dbis.vrem.config.Config
 import ch.unibas.dmi.dbis.vrem.database.VREMDao
+import ch.unibas.dmi.dbis.vrem.database.VREMReader
+import ch.unibas.dmi.dbis.vrem.database.VREMWriter
 import ch.unibas.dmi.dbis.vrem.rest.handlers.DeleteRestHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.GetRestHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.PostRestHandler
@@ -56,6 +58,10 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
 
     private val config: String by option("-c", "--config", help = "Path to the config file").default("config.json")
 
+    /**
+     * Serializer for OpenAPI; unfortunately requires Jackson (or a custom implementation of kotlinx since we cannot
+     * annotate the required OpenAPI classes).
+     */
     private val openApiSerializer = object : ToJsonMapper {
         override fun map(obj: Any): String {
             return JacksonToJsonMapper(JacksonToJsonMapper.defaultObjectMapper).map(obj)
@@ -63,6 +69,9 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
     }
 
     companion object {
+        /**
+         * Replaces the Jackson mapper with a kotlinx serialization mapper.
+         */
         val jsonMapper = object : JsonMapper {
             override fun toJsonString(obj: Any): String {
                 val serializer = serializer(obj.javaClass)
@@ -88,16 +97,16 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
 
     override fun run() {
         val config = Config.readConfig(this.config)
-
-        val (reader, writer) = VREMDao.getDAOs(config.database)
         val docRoot = File(config.server.documentRoot).toPath()
 
-        // TODO Warn if failed to connect to MongoDB.
+        val pair = VREMDao.getDAOs(config.database)
+        val reader: VREMReader = pair.first
+        val writer: VREMWriter = pair.second
 
         // Give Cineast enough time to process the request before timing out.
         System.getProperties().setProperty(
             "ch.unibas.dmi.dbis.vrem.cineast.client.baseUrl",
-            "http://${config.cineast.host}:${config.cineast.port}"
+            "${config.cineast.host}:${config.cineast.port}"
         )
         ApiClient.builder.readTimeout(Duration.ofSeconds(config.cineast.queryTimeoutSeconds))
 
@@ -124,13 +133,13 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
                     OpenApiOptions(
                         Info().apply {
                             version("1.0")
-                            description("")
+                            description("Virtual Exhibition Manager API")
                         }
                     ).apply {
                         path("/swagger-docs")
                         swagger(SwaggerOptions("/swagger-ui"))
                         activateAnnotationScanningFor("ch.unibas.dmi.dbis.vrem")
-                        toJsonMapper(openApiSerializer)
+                        toJsonMapper(openApiSerializer) // Set serializer.
                     }
                 )
             )
@@ -140,6 +149,7 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
                 conf.addStaticFiles(config.server.documentRoot, Location.EXTERNAL)
             }
 
+            // Various config stuff.
             conf.server { setupServer(config) }
             conf.enforceSsl = config.server.enableSsl
             conf.defaultContentType = "application/json"
@@ -187,8 +197,6 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
 
         println("Started the server.")
         println("Ctrl+C to stop the server.")
-
-        // TODO CLI to process commands (/quit and the like).
     }
 
 }

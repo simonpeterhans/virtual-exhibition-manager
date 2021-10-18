@@ -100,7 +100,7 @@ class SomRoomGenerator(
         val g = Grid2DSquare(
             height,
             width,
-            distanceFunction = DistanceFunction.euclideanNorm2DTorus(
+            distanceFunction = DistanceFunction.euclideanNormToroidal(
                 intArrayOf(height, width),
                 booleanArrayOf(false, true) // Wrap around width, but do not wrap around height.
             ),

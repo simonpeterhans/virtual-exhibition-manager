@@ -24,8 +24,7 @@ data class CineastConfig(
     val simCategories: Map<String, String>
 ) {
 
-    // TODO Use HTTPS (let user define in config).
-    private val cineastUrl = "http://$host:$port"
+    private val cineastUrl = "$host:$port"
     private val cineastObjectUrl = "$cineastUrl$objectPath"
 
     fun getCineastObjectUrlString(objectId: String): String {

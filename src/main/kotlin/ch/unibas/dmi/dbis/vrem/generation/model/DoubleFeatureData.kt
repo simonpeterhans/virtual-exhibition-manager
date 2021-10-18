@@ -57,8 +57,10 @@ data class DoubleFeatureData(val featureName: String) {
                 currDist += value * value
             }
 
-            maxDist = max(maxDist, sqrt(currDist))
+            maxDist = max(maxDist, currDist)
         }
+
+        maxDist = sqrt(maxDist)
 
         // Scale everything.
         for (arr in idMap.values) {
