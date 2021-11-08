@@ -3,7 +3,8 @@ package ch.unibas.dmi.dbis.vrem.generation.cineast
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.MetadataApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.apis.ObjectApi
 import ch.unibas.dmi.dbis.vrem.cineast.client.models.FeaturesByCategoryQueryResult
-import ch.unibas.dmi.dbis.vrem.cineast.client.models.FeaturesByTableNameQueryResult
+import ch.unibas.dmi.dbis.vrem.cineast.client.models.FeaturesByEntityQueryResult
+import ch.unibas.dmi.dbis.vrem.cineast.client.models.IdList
 import ch.unibas.dmi.dbis.vrem.generation.model.DoubleFeatureData
 
 /**
@@ -44,10 +45,12 @@ object CineastClient {
      * Obtains features for a given category.
      *
      * @param category The category to obtain the features for.
-     * @param idList The IDs to obtain the features for (uses all IDs if unspecified).
+     * @param ids The IDs to obtain the features for (uses all IDs if unspecified).
      * @return A mapping of the feature's name to a list with the values and their associated IDs.
      */
-    fun getFeaturesByCategory(category: String, idList: List<String>): Map<String, List<Map<String, Any>>> {
+    fun getFeaturesByCategory(category: String, ids: List<String>): Map<String, List<Map<String, Any>>> {
+        val idList = IdList(ids)
+
         val features: FeaturesByCategoryQueryResult = MetadataApi().findFeaturesByCategory(category, idList)
 
         if (features.featureMap == null) {
@@ -61,11 +64,13 @@ object CineastClient {
      * Obtains features for a given table name.
      *
      * @param tableName The name of the table to obtain the features for.
-     * @param idList The IDs to obtain the features for (uses all IDs if unspecified).
+     * @param ids The IDs to obtain the features for (uses all IDs if unspecified).
      * @return A list of the obtained feature values and their associated IDs.
      */
-    fun getFeatureDataByTableName(tableName: String, idList: List<String>): List<Map<String, Any>> {
-        val feature: FeaturesByTableNameQueryResult = MetadataApi().findFeaturesByTableName(tableName, idList)
+    fun getFeatureDataByTableName(tableName: String, ids: List<String>): List<Map<String, Any>> {
+        val idList = IdList(ids)
+
+        val feature: FeaturesByEntityQueryResult = MetadataApi().findFeaturesByEntity(tableName, idList)
 
         if (feature.featureMap == null) {
             return listOf()
@@ -99,11 +104,11 @@ object CineastClient {
      * Obtains features for a category and converts them to [DoubleFeatureData] objects.
      *
      * @param category The name of the category in Cineast to retrieve.
-     * @param idList An ID list to filter for (all IDs are used if empty or unspecified).
+     * @param ids An ID list to filter for (all IDs are used if empty or unspecified).
      * @return A mapping of the feature names and their associated [DoubleFeatureData] object.
      */
-    fun getFeatureDataFromCategory(category: String, idList: List<String>): MutableMap<String, DoubleFeatureData> {
-        val allFeatures = getFeaturesByCategory(category, idList)
+    fun getFeatureDataFromCategory(category: String, ids: List<String>): MutableMap<String, DoubleFeatureData> {
+        val allFeatures = getFeaturesByCategory(category, ids)
 
         val featureDataList = mutableMapOf<String, DoubleFeatureData>()
 
@@ -118,11 +123,12 @@ object CineastClient {
      * Obtains feature data for a given table name from Cineast.
      *
      * @param tableName The name of the table.
-     * @param idList An ID list to filter for (all IDs are used if empty or unspecified).
+     * @param ids An ID list to filter for (all IDs are used if empty or unspecified).
      * @return The obtained data wrapped in a [DoubleFeatureData] object.
      */
-    fun getFeatureDataFromTableName(tableName: String, idList: List<String>): DoubleFeatureData {
-        return featureListToFeatureData(tableName, getFeatureDataByTableName(tableName, idList))
+    fun getFeatureDataFromTableName(tableName: String, ids: List<String>): DoubleFeatureData {
+        val data = getFeatureDataByTableName(tableName, ids)
+        return featureListToFeatureData(tableName, data)
     }
 
 }

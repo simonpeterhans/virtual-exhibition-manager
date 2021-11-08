@@ -21,11 +21,13 @@ import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.exhibition.EmptyExhibiti
 import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.room.RandomRoomHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.room.SimilarityRoomHandler
 import ch.unibas.dmi.dbis.vrem.rest.handlers.generation.room.SomRoomHandler
+import ch.unibas.dmi.dbis.vrem.rest.responses.ResponseMessage
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
+import io.javalin.http.HttpCode
 import io.javalin.http.staticfiles.Location
 import io.javalin.plugin.json.JsonMapper
 import io.javalin.plugin.openapi.OpenApiOptions
@@ -191,6 +193,12 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
         endpoint.after { ctx ->
             ctx.header("Access-Control-Allow-Origin", "*")
             ctx.header("Access-Control-Allow-Headers", "*")
+        }
+
+        endpoint.exception(Exception::class.java) { e, ctx ->
+            logger.error(e) { "Exception occurred!" }
+            ctx.status(HttpCode.INTERNAL_SERVER_ERROR)
+                .json(ResponseMessage("Error of type ${e.javaClass.simpleName} occurred."))
         }
 
         endpoint.start(config.server.httpPort)

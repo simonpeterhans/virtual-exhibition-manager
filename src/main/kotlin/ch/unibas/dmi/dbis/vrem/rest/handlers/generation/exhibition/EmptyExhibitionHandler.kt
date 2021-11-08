@@ -20,11 +20,6 @@ class EmptyExhibitionHandler : PostRestHandler<Exhibition> {
         summary = "Generates a new, empty exhibition.",
         path = "/api/generate/exhibition",
         tags = ["Generation"],
-        /*requestBody = OpenApiRequestBody(
-            content = [OpenApiContent(RandomGenerationRequest::class)],
-            required = true,
-            description = "The generation configuration object as JSON string."
-        ),*/
         responses = [
             OpenApiResponse(StatusCode.OK.toString(), [OpenApiContent(Exhibition::class)]),
             OpenApiResponse(StatusCode.FORBIDDEN.toString(), [OpenApiContent(ResponseMessage::class)]),
