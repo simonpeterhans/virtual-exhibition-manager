@@ -108,7 +108,7 @@ class API : CliktCommand(name = "server", help = "Start the REST API endpoint") 
         // Give Cineast enough time to process the request before timing out.
         System.getProperties().setProperty(
             "ch.unibas.dmi.dbis.vrem.cineast.client.baseUrl",
-            "${config.cineast.host}:${config.cineast.port}"
+            "${config.cineast.host}:${config.cineast.httpPort}"
         )
         ApiClient.builder.readTimeout(Duration.ofSeconds(config.cineast.queryTimeoutSeconds))
 
@@ -245,7 +245,7 @@ private fun setupServer(config: Config): Server {
 
         val sslContextFactory = SslContextFactory.Server().apply {
             keyStorePath = config.server.keystorePath
-            setKeyStorePassword(config.server.keystorePass)
+            setKeyStorePassword(config.server.keystorePassword)
             // cipherComparator = HTTP2Cipher.COMPARATOR
             provider = "Conscrypt"
         }

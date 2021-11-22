@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
  * @property httpsPort The HTTPS port of the endpoint.
  * @property enableSsl Whether to enable SSL (HTTPS) or not.
  * @property keystorePath The path to find the keystore for SSL on.
- * @property keystorePass The password for the keystore.
+ * @property keystorePassword The password for the keystore.
  */
 @Serializable
 data class WebServerConfig(
@@ -19,5 +19,5 @@ data class WebServerConfig(
     val httpsPort: Int,
     val enableSsl: Boolean,
     val keystorePath: String,
-    val keystorePass: String
+    val keystorePassword: String
 )

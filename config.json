@@ -10,11 +10,13 @@
     "httpsPort": 4546,
     "enableSsl": false,
     "keystorePath": "keystore.jks",
-    "keystorePass": ""
+    "keystorePassword": "password"
   },
   "cineast": {
-    "host": "http://127.0.0.1",
-    "port": 4567,
+    "host": "127.0.0.1",
+    "httpPort": 4567,
+    "httpsPort": 4568,
+    "enableSsl": false,
     "objectPath": "/objects",
     "queryTimeoutSeconds": 60,
     "somFeatures": {
