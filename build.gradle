@@ -15,7 +15,7 @@ def javaCompatibility = 11
 
 // Project settings.
 group 'ch.unibas.dmi.dbis'
-version '2.1.0'
+version '2.1.1'
 
 // Main class.
 mainClassName = 'ch.unibas.dmi.dbis.vrem.VREMKt'
